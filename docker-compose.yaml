@@ -55,7 +55,7 @@ services:
     command: >
       bash -c "
               sleep 3 &&
-              celery -A tep worker -E -B -ldebug
+              celery -A backend worker -E -B -ldebug
               "
 
   redis:
