@@ -70,3 +70,6 @@ coverage.xml
 # Pytest
 .pytest_cache/
 pytest-debug.log
+
+
+/docker/redis/redis_data
