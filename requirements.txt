@@ -1,0 +1,29 @@
+# Django and Django REST framework
+Django==4.2.2
+djangorestframework==3.14.0
+
+# Django Filters
+django-filter==23.2
+
+# Celery for asynchronous task queue
+celery==5.2.7
+
+# Redis as the message broker for Celery
+redis==4.5.1
+
+# Django Modeltranslation
+django-modeltranslation
+transliterate
+
+# PostgreSQL Database support
+psycopg2-binary==2.9.6
+pillow
+
+# Additional dependencies
+pytz==2023.3
+asgiref==3.7.2
+sqlparse==0.4.4
+
+# Optional: For using Celery with Django
+django-celery-beat==2.5.0
+django-celery-results==2.5.0
