@@ -4,11 +4,36 @@ on:
   push:
     branches: [ "main" ]
 
-jobs:
 
+jobs:
   build:
 
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: tep
+          POSTGRES_USER: tep
+          POSTGRES_PASSWORD: super_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -17,7 +42,19 @@ jobs:
         DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
         run: docker-login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - name: Docker build
-      run: docker-build -t cicd-pipeline
-    - name: Push to dockerhub
-      run: docker push hordii-rushynets/cicd-pipeline:latest
+
+    - name: Set up Docker Compose
+      run: docker-compose -f docker-compose.yml up -d
+
+    - name: Wait for Postgres and Redis to be ready
+      run: |
+        docker-compose run web sh -c "until pg_isready -h db -U myuser; do sleep 1; done"
+        docker-compose run web sh -c "until redis-cli -h redis ping; do sleep 1; done"
+
+    - name: Build
+      run: |
+        docker-compose run web python manage.py migrate
+
+
+    - name: Stop services
+      run: docker-compose down
