@@ -45,11 +45,17 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     
-    - name: Check if docker-compose.yaml exists
+    - name: Find docker-compose.yaml
+      id: find-compose-file
       run: |
-        if [ ! -f "./docker-compose.yaml" ]; then
+        # Search for docker-compose.yaml file
+        COMPOSE_FILE=$(find . -name "docker-compose.yaml" -type f -print -quit)
+        if [ -z "$COMPOSE_FILE" ]; then
           echo "Error: docker-compose.yaml file not found."
           exit 1
+        else
+          echo "Found docker-compose.yaml file at: $COMPOSE_FILE"
+          echo "::set-output name=docker-compose-path::$COMPOSE_FILE"  # Set output for later use if needed
         fi
 
         
