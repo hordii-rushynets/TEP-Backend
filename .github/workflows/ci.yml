@@ -46,11 +46,12 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     
     - name: Set up Docker Compose
-      run: docker-compose -f docker-compose.yaml up -d
+      run: docker-compose up -d
+      working-directory: /app
 
     - name: Wait for Postgres and Redis to be ready
       run: |
-        docker-compose run web sh -c "until pg_isready -h db -U myuser; do sleep 1; done"
+        docker-compose run web sh -c "until pg_isready -h db -U tep; do sleep 1; done"
         docker-compose run web sh -c "until redis-cli -h redis ping; do sleep 1; done"
 
     - name: Build
