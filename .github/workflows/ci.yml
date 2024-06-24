@@ -53,10 +53,10 @@ jobs:
       run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         
     - name: Build Docker Image
-      run: docker build -t hordiirushynets/cicd-pipeline:latest .
+      run: docker build -t hordiirushynets/tep-core:latest .
 
     - name: Push Docker Image to Docker Hub
-      run: docker push hordiirushynets/cicd-pipeline:latest
+      run: docker push hordiirushynets/tep-core:latest
 
     - name: Set up Docker Compose
       run: docker-compose up -d
