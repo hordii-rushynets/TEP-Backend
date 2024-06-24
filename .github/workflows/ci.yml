@@ -46,7 +46,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     
     - name: Set up Docker Compose
-      run: docker-compose -f docker-compose.yml up -d
+      run: docker-compose -f docker-compose.yaml up -d
 
     - name: Wait for Postgres and Redis to be ready
       run: |
