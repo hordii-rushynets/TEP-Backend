@@ -45,9 +45,17 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     
+    - name: Check if docker-compose.yaml exists
+      run: |
+        if [ ! -f "./docker-compose.yaml" ]; then
+          echo "Error: docker-compose.yaml file not found."
+          exit 1
+        fi
+
+        
     - name: Set up Docker Compose
       run: docker-compose up -d
-      working-directory: /app
+      working-directory: ./
 
     - name: Wait for Postgres and Redis to be ready
       run: |
