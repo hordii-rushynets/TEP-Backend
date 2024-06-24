@@ -59,7 +59,7 @@ jobs:
       run: docker push hordiirushynets/tep-core:latest
 
     - name: Set up Docker Compose
-      run: docker-compose up -d --force-recreate
+      run: yes | docker-compose up -d --force-recreate
       working-directory: ./
 
     - name: Wait for Postgres and Redis to be ready
