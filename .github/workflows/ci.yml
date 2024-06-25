@@ -26,11 +26,6 @@ jobs:
       with:
         compose-file: "docker-compose.yaml"
 
-    - name: Wait for Postgres and Redis to be ready
-      run: |
-        docker-compose run web sh -c "until pg_isready -h db -U tep; do sleep 1; done"
-        docker-compose run web sh -c "until redis-cli -h redis ping; do sleep 1; done"
-
     - name: Push Docker Image to Docker Hub
       run: docker push hordiirushynets/tep-core:latest
 
