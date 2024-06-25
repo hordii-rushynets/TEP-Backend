@@ -1,0 +1,19 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+        - completed
+
+jobs:
+  build:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Pull Docker image
+        run: sudo docker pull hordiirushynets/tep-core:latest
+      - name: Delete old Docker container
+        run: sudo docker rm -f tep-core-container || true
+      - name: Run Docker container
+        run: sudo docker-compose up -d
