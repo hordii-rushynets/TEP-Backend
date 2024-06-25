@@ -1,0 +1,12 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+
+class CustomUser(AbstractUser):
+    """
+        Custom user class to create and save users in database.
+        All atributes are standart Django attributes, but with additional attribute "role"
+    """
+    policy = models.BooleanField()
+    wantInfo = models.BooleanField()
+    wholesale = models.BooleanField()

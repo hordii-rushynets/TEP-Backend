@@ -27,3 +27,6 @@ sqlparse==0.4.4
 # Optional: For using Celery with Django
 django-celery-beat==2.5.0
 django-celery-results==2.5.0
+
+# For JWT token with DRF
+djangorestframework-simplejwt
