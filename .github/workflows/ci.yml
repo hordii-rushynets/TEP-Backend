@@ -45,12 +45,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        
-    - name: Build Docker Image
-      run: docker build -t hordiirushynets/tep-core:latest .
 
-    - name: Push Docker Image to Docker Hub
-      run: docker push hordiirushynets/tep-core:latest
+    - name: Check if Docker image exists
+      id: check_image
+      run: |
+        if ! docker pull tep-core:latest --quiet; then
+          echo "Image tep-core:latest does not exist or access denied."
+          exit 1
+        fi
 
     - name: Set up Docker Compose Action
       uses: hoverkraft-tech/compose-action@v2.0.1
@@ -61,6 +63,9 @@ jobs:
       run: |
         docker-compose run web sh -c "until pg_isready -h db -U tep; do sleep 1; done"
         docker-compose run web sh -c "until redis-cli -h redis ping; do sleep 1; done"
+
+    - name: Push Docker Image to Docker Hub
+      run: docker push hordiirushynets/tep-core:latest
 
     - name: Run Django migrations
       run: docker-compose run web python manage.py migrate
