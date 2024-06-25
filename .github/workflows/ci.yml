@@ -49,23 +49,16 @@ jobs:
     - name: Attempt to pull Docker image
       id: check_image
       run: |
-        if ! docker pull tep-core:latest 2>&1 | tee output.log | grep -q 'requested access to the resource is denied'; then
-          echo "Image tep-core:latest does not require login."
-        else
-          echo "Image tep-core:latest requires login."
+        if docker pull hordiirushynets/tep-core:latest 2>&1 | tee output.log | grep -q 'requested access to the resource is denied'; then
+          echo "Image hordiirushynets/tep-core:latest requires login."
           echo "login_required=true" >> $GITHUB_ENV
+        else
+          echo "Image hordiirushynets/tep-core:latest does not require login."
         fi
-  
-    - name: Login to Docker Hub if required
-      if: env.login_required == 'true'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Pull Docker image after login
       if: env.login_required == 'true'
-      run: docker pull tep-core:latest
+      run: docker pull hordiirushynets/tep-core:latest
 
     - name: Set up Docker Compose Action
       uses: hoverkraft-tech/compose-action@v2.0.1
