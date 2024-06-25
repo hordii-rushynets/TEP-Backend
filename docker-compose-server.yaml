@@ -3,6 +3,7 @@ version: '3.8'
 services:
   web:
     image: hordiirushynets/tep-core:latest
+    build: .
     ports:
       - "8000:8000"
     depends_on:
@@ -11,7 +12,7 @@ services:
     environment:
       - DATABASE_URL=postgres://tep:super_pass@db:5432/tep
       - REDIS_URL=redis://redis:6379/0
-    command: gunicorn your_app.wsgi:application
+    command: ./manage.py runserver 0.0.0.0:8000"
 
   db:
     image: postgres:12
