@@ -15,10 +15,10 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Pull Docker image
-      run: sudo docker-compose pull
+      run: sudo docker pull hordiirushynets/tep-core:latest
 
-    - name: Stop and remove old containers (if any)
-      run: sudo docker-compose down --remove-orphans
+    - name: Delete old Docker container
+      run: sudo docker rm -f tep-core-container || true
 
-    - name: Start containers
-      run: sudo docker-compose up -d
+    - name: Run Docker container
+      run: sudo docker run -d -p 8000:8000 --name tep-core-container hordiirushynets/tep-core:latest

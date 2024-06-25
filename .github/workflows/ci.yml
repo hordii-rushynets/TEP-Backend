@@ -21,19 +21,34 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Set up Docker Compose Action
-      uses: hoverkraft-tech/compose-action@v2.0.1
-      with:
-        compose-file: "docker-compose.yaml"
+    - name: Set up Docker Compose
+      run: docker-compose -f docker-compose-server.yaml up -d
+      working-directory: ./
+      env:
+        SECRET_KEY: jfgirojorjopifrkjofjk3riofjioj34213lkj4oi31j24ioj1342j123j412412412
+        POSTGRES_DB: tep
+        POSTGRES_USER: tep
+        POSTGRES_PASSWORD: super_pass
+        POSTGRES_HOST: db
+        POSTGRES_PORT: 5432
+        REDIS_PASSWORD: redis
 
-    - name: Push Docker Image to Docker Hub
-      run: docker push hordiirushynets/tep-core:latest
+    - name: Wait for services to be ready
+      run: |
+        docker-compose -f docker-compose-server.yaml run web sh -c "until pg_isready -h db -U tep; do sleep 1; done"
+        docker-compose -f docker-compose-server.yaml run web sh -c "until redis-cli -h redis ping; do sleep 1; done"
 
     - name: Run Django migrations
-      run: docker-compose run web python manage.py migrate
+      run: docker-compose -f docker-compose-server.yaml exec web python manage.py migrate
 
     - name: Collect static files (if needed)
-      run: docker-compose run web python manage.py collectstatic --noinput
+      run: docker-compose -f docker-compose-server.yaml exec web python manage.py collectstatic --noinput
 
     - name: Check Docker Compose logs
-      run: docker-compose logs web
+      run: docker-compose -f docker-compose-server.yaml logs web
+
+    - name: Run Celery
+      run: docker-compose -f docker-compose-server.yaml exec web celery -A backedn worker -l info
+
+    - name: Run Celery Beat (if needed)
+      run: docker-compose -f docker-compose-server.yaml exec web celery -A backedn beat -l info
