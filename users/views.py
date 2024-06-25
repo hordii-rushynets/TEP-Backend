@@ -18,6 +18,14 @@ class UserRegisterViewSet(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]  # Allow any user (unauthenticated) to register
 
+    def perform_create(self, serializer):
+        user = serializer.save()  # Save the user
+        refresh = RefreshToken.for_user(user)  # Generate JWT tokens
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_201_CREATED)
+
 
 class ObtainTokenViewSet(generics.GenericAPIView):
     """
