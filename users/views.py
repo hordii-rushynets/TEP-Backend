@@ -1,10 +1,17 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
+from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import CustomUserSerializer, UserRegisterSerializer
 
 
-class UserRegisterView(generics.CreateAPIView):
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class UserRegisterViewSet(generics.CreateAPIView):
     """
     View for user registration.
     """
@@ -12,7 +19,7 @@ class UserRegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]  # Allow any user (unauthenticated) to register
 
 
-class ObtainTokenView(generics.GenericAPIView):
+class ObtainTokenViewSet(generics.GenericAPIView):
     """
     View to obtain JWT token.
     """
