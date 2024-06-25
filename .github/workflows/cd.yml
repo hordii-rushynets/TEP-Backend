@@ -4,16 +4,18 @@ on:
   workflow_run:
     workflows: ["CI Pipeline"]
     types:
-        - completed
+      - completed
 
 jobs:
+
   build:
+
     runs-on: self-hosted
-    
+
     steps:
-      - name: Pull Docker image
-        run: sudo docker pull hordiirushynets/tep-core:latest
-      - name: Delete old Docker container
-        run: sudo docker rm -f tep-core-container || true
-      - name: Run Docker container
-        run: sudo docker-compose up -d
+    - name: Pull Docker image
+      run: sudo docker pull hordiirushynets/tep-core:latest
+    - name: Delete Old docker container
+      run: sudo docker rm -f tep-core-container || true
+    - name: Run Docker Container
+      run: sudo docker run -d -p 8080:8080 --name tep-core-container hordiirushynets/tep-core
