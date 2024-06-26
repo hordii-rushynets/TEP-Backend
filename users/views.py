@@ -1,28 +1,28 @@
-from rest_framework import status
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import viewsets
 from .models import CustomUser
-from .serializers import CustomUserSerializer, CustomUserLoginSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer
+from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
-from django.contrib.auth.backends import ModelBackend
+from rest_framework.views import APIView
 
 
-class CustomUserViewSet(ModelViewSet):
+class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+
+class RegisterView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.create(serializer.validated_data)
-            print(user)
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.validated_data['tokens'])
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
