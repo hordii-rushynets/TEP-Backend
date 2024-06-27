@@ -26,8 +26,8 @@ services:
       && ./manage.py migrate
       && ./manage.py collectstatic --noinput
       && ./manage.py compilemessages
-      && ./manage.py runserver 0.0.0.0:8000"
-      # && gunicorn --bind 0.0.0.0:8000 tep.wsgi:application"
+      && gunicorn --bind 0.0.0.0:8000 backend.wsgi:application"
+      # && ./manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
       - ./static:/var/static
