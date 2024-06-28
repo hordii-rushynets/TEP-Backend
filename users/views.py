@@ -1,12 +1,15 @@
 from rest_framework import viewsets
 from .models import CustomUser
 from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from django.contrib.auth import authenticate
+from django.core.mail import send_mail
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+from django.utils.crypto import get_random_string
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -23,20 +26,26 @@ class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            if user:
-                password = request.data.get('password')
-                user.set_password(password)
-                user.save()
+            # Generate one-time password
+            otp = get_random_string(length=6, allowed_chars='0123456789')
 
+            # Do not save user yet, wait for email confirmation
+            user = serializer.save(is_active=False, otp=otp)
+
+            # Send email with one-time password
+            subject = 'Email confirmation'
+            message = f'Your one-time confirmation password: {otp}'
+            from_email = settings.EMAIL_HOST_USER
+            to_email = user.email
+            send_mail(subject, message, from_email, [to_email])
+
+            if user:
                 refresh = RefreshToken.for_user(user)
                 token = {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 }
-
                 return Response({
-                    'message': 'User registered successfully',
                     'token': token,
                     'data': serializer.data
                 }, status=status.HTTP_201_CREATED)
@@ -62,7 +71,6 @@ class LoginView(APIView):
                 'access': str(refresh.access_token),
             }
             return Response({
-                'message': 'User logged in successfully',
                 'token': token,
                 'data': serializer.data
             }, status=status.HTTP_200_OK)
