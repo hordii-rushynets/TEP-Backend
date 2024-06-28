@@ -26,4 +26,12 @@ urlpatterns = [
     path('api/store/', include('store.urls')),
     path('api/blog/', include('blog.urls')),
     path('api/account/', include('users.urls'))
-] + static(MEDIA_URL, document_root=MEDIA_ROOT)
+]
+
+
+if settings.DEBUG:
+    urlpatterns += list(
+        static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) +
+        static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    )
+
