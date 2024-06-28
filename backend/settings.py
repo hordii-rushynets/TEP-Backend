@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-)g_rd3*j)dnkrd!8b@mb821t0yq129hzx*!f%r97(j2$#%@it)
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.getenv("CSRF_TRUSTED_ORIGINS").split(",")]
 LOCALE_PATHS = [BASE_DIR / 'locale']
 
 # Application definition
@@ -143,7 +144,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-STATIC_URL = '/statico/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
