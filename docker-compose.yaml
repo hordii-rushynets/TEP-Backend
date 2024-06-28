@@ -23,11 +23,11 @@ services:
     command:
       bash -c "
       sleep 1
-      && ./manage.py migrate
-      && ./manage.py collectstatic --noinput
-      && ./manage.py compilemessages
-      && gunicorn --bind 0.0.0.0:8000 backend.wsgi:application"
-      # && ./manage.py runserver 0.0.0.0:8000"
+      && python manage.py makemigrations
+      && python manage.py migrate
+      && python manage.py collectstatic --noinput
+      && python manage.py runserver 0.0.0.0:8000"
+      # && gunicorn --bind 0.0.0.0:8000 tep.wsgi:application"
     volumes:
       - .:/app
       - ./static:/var/static

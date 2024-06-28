@@ -25,12 +25,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/store/', include('store.urls')),
     path('api/blog/', include('blog.urls')),
-]
-
-if settings.DEBUG:
-    from django.conf.urls.static import static
-
-    urlpatterns += list(
-        static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) +
-        static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    )
+    path('api/account/', include('users.urls'))
+] + static(MEDIA_URL, document_root=MEDIA_ROOT)
