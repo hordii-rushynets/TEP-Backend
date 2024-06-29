@@ -196,6 +196,13 @@ MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.tep.ua'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'customersupport@tep.ua'
+EMAIL_HOST_PASSWORD = '12231223!!hA'
+
 
 
 
