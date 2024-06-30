@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
     'store',
     'blog',
     'users',
@@ -67,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -206,4 +208,8 @@ EMAIL_USE_TLS = False
 EMAIL_HOST_USER = 'customersupport@tep.ua'
 EMAIL_HOST_PASSWORD = '12231223!!hA'
 
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000'
+]
 

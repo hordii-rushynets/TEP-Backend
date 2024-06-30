@@ -2,15 +2,14 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import CustomUser
-from .serializers import CustomUserSerializer, UserRegistrationSerializer
-from django.core.mail import send_mail
+from .serializers import (CustomUserSerializer, UserRegistrationSerializer,
+                          OTPVerificationSerializer)
 import secrets
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from rest_framework import permissions
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserRegistrationAPIView(APIView):
@@ -19,28 +18,26 @@ class UserRegistrationAPIView(APIView):
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
-            otp = serializer.validated_data['otp']
 
-            # Validate OTP (check against the stored OTP or other logic)
+            if CustomUser.objects.filter(email=email).exists():
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Create user
             user = CustomUser(email=email)
             user.set_password(password)
             user.save()
 
-            # Generate JWT token
-            from rest_framework_simplejwt.tokens import RefreshToken
-            refresh = RefreshToken.for_user(user)
-            token = {'token': str(refresh.access_token)}
+            otp = secrets.token_hex(3)
+            user.otp = otp
+            user.save()
+            #send_otp_email(email, otp)
+            print(otp)
 
-            return Response(token, status=status.HTTP_201_CREATED)
+            return Response({'message': 'User registered. Please verify OTP sent to your email.'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Function to send OTP via email
-def send_otp_email(self, email):
-    otp = secrets.token_hex(6)  # Generate a 6-digit OTP
-    # Send OTP logic (e.g., using Django's send_mail function)
+def send_otp_email(email, otp):
     send_mail(
         'OTP for Registration',
         f'Your OTP for registration is: {otp}',
@@ -56,8 +53,8 @@ class PasswordResetRequestAPIView(APIView):
 
         user = get_object_or_404(CustomUser, email=email)
 
-        # Generate and send OTP via email
-        otp = self.send_otp_email(email)
+        otp = secrets.token_hex(3)
+        send_otp_email(email, otp)
 
         # Save OTP to user's record or another appropriate store
 
@@ -69,9 +66,6 @@ class PasswordResetConfirmAPIView(APIView):
         email = request.data.get('email')
         otp = request.data.get('otp')
         new_password = request.data.get('new_password')
-
-        # Validate OTP (check against the stored OTP or other logic)
-        # Implement your OTP validation logic here
 
         user = get_object_or_404(CustomUser, email=email)
 
@@ -127,3 +121,25 @@ class UserLoginAPIView(APIView):
             return Response(token, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class OTPVerificationAPIView(APIView):
+    def post(self, request):
+        serializer = OTPVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            otp = serializer.validated_data['otp']
+
+            try:
+                user = CustomUser.objects.get(email=email, otp=otp)
+                user.is_active = True
+                user.otp = ''
+                user.save()
+
+                refresh = RefreshToken.for_user(user)
+                token = {'token': str(refresh.access_token)}
+
+                return Response(token, status=status.HTTP_200_OK)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'Invalid OTP or email'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

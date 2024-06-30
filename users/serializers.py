@@ -12,4 +12,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class UserRegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    otp = serializers.CharField(write_only=True)
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
