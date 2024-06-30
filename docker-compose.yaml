@@ -70,6 +70,13 @@ services:
     env_file:
       - .env
     command: redis-server /usr/local/etc/redis/redis.conf --requirepass "${REDIS_PASSWORD}"
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - 8080:8080
+    volumes:
+      - jenkins_home:/var/jenkins_home
 
 volumes:
   postgres_data:
+  jenkins_home:
