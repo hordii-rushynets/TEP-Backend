@@ -1,79 +1,129 @@
-from rest_framework import viewsets
-from .models import CustomUser
-from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer
-from rest_framework import permissions
-from django.contrib.auth import authenticate
-from django.core.mail import send_mail
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import CustomUser
+from .serializers import CustomUserSerializer, UserRegistrationSerializer
+from django.core.mail import send_mail
+import secrets
+from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from rest_framework import permissions
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
-from django.utils.crypto import get_random_string
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'pk'
-
-
-class RegisterView(APIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = RegisterSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = RegisterSerializer(data=request.data)
+class UserRegistrationAPIView(APIView):
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            # Generate one-time password
-            otp = get_random_string(length=6, allowed_chars='0123456789')
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            otp = serializer.validated_data['otp']
 
-            # Do not save user yet, wait for email confirmation
-            user = serializer.save(is_active=False, otp=otp)
+            # Validate OTP (check against the stored OTP or other logic)
 
-            # Send email with one-time password
-            subject = 'Email confirmation'
-            message = f'Your one-time confirmation password: {otp}'
-            from_email = settings.EMAIL_HOST_USER
-            to_email = user.email
-            send_mail(subject, message, from_email, [to_email])
+            # Create user
+            user = CustomUser(email=email)
+            user.set_password(password)
+            user.save()
 
-            if user:
-                refresh = RefreshToken.for_user(user)
-                token = {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-                return Response({
-                    'token': token,
-                    'data': serializer.data
-                }, status=status.HTTP_201_CREATED)
+            # Generate JWT token
+            from rest_framework_simplejwt.tokens import RefreshToken
+            refresh = RefreshToken.for_user(user)
+            token = {'token': str(refresh.access_token)}
+
+            return Response(token, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginView(APIView):
-    serializer_class = LoginSerializer
+# Function to send OTP via email
+def send_otp_email(self, email):
+    otp = secrets.token_hex(6)  # Generate a 6-digit OTP
+    # Send OTP logic (e.g., using Django's send_mail function)
+    send_mail(
+        'OTP for Registration',
+        f'Your OTP for registration is: {otp}',
+        'from@example.com',
+        [email],
+        fail_silently=False,
+    )
 
-    def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data.get('email')
-        password = serializer.validated_data.get('password')
+class PasswordResetRequestAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
 
-        user = authenticate(request, username=email, password=password)
+        user = get_object_or_404(CustomUser, email=email)
+
+        # Generate and send OTP via email
+        otp = self.send_otp_email(email)
+
+        # Save OTP to user's record or another appropriate store
+
+        return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+
+        # Validate OTP (check against the stored OTP or other logic)
+        # Implement your OTP validation logic here
+
+        user = get_object_or_404(CustomUser, email=email)
+
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+
+        return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+
+
+class UserDeleteAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({'message': 'Account deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class UserProfileUpdateAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        data = request.data
+
+        # Validate OTP (check against the stored OTP or other logic)
+        otp = data.get('otp')
+        # Implement your OTP validation logic here
+
+        # Update user profile data
+        serializer = CustomUserSerializer(user, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLoginAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        user = authenticate(email=email, password=password)
 
         if user:
+            # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
             token = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'access_token': str(refresh.access_token),
+                'refresh_token': str(refresh),
             }
-            return Response({
-                'token': token,
-                'data': serializer.data
-            }, status=status.HTTP_200_OK)
+            return Response(token, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
