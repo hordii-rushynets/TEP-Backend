@@ -28,10 +28,9 @@ class UserRegistrationAPIView(APIView):
 
             user = CustomUser(email=email)
             user.set_password(password)
-            user.save()
-
             otp = secrets.token_hex(3)
             user.otp = otp
+            user.is_active = False
             user.save()
             print(otp)
             send_otp_email(email, otp)
