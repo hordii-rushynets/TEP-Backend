@@ -10,9 +10,13 @@ from django.core.mail import send_mail
 from rest_framework import permissions
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.authtoken.models import Token
+from django.conf import settings
 
 
 class UserRegistrationAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,25 +33,26 @@ class UserRegistrationAPIView(APIView):
             otp = secrets.token_hex(3)
             user.otp = otp
             user.save()
-            #send_otp_email(email, otp)
             print(otp)
+            send_otp_email(email, otp)
 
             return Response({'message': 'User registered. Please verify OTP sent to your email.'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# Function to send OTP via email
 def send_otp_email(email, otp):
     send_mail(
         'OTP for Registration',
         f'Your OTP for registration is: {otp}',
-        'from@example.com',
+        str(settings.EMAIL_HOST_USER),
         [email],
         fail_silently=False,
     )
 
 
 class PasswordResetRequestAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
         email = request.data.get('email')
 
@@ -56,20 +61,23 @@ class PasswordResetRequestAPIView(APIView):
         otp = secrets.token_hex(3)
         send_otp_email(email, otp)
 
-        # Save OTP to user's record or another appropriate store
+        user.otp = otp
+        user.save()
 
         return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
+
         email = request.data.get('email')
         otp = request.data.get('otp')
         new_password = request.data.get('new_password')
 
-        user = get_object_or_404(CustomUser, email=email)
+        user = get_object_or_404(CustomUser, email=email, otp=otp)
 
-        # Set new password
         user.set_password(new_password)
         user.save()
 
@@ -89,14 +97,17 @@ class UserProfileUpdateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def patch(self, request):
-        user = request.user
+        token_key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+
+        try:
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return Response({"detail": "Invalid token header. No credentials provided."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         data = request.data
 
-        # Validate OTP (check against the stored OTP or other logic)
-        otp = data.get('otp')
-        # Implement your OTP validation logic here
-
-        # Update user profile data
         serializer = CustomUserSerializer(user, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -112,7 +123,6 @@ class UserLoginAPIView(APIView):
         user = authenticate(email=email, password=password)
 
         if user:
-            # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
             token = {
                 'access_token': str(refresh.access_token),
@@ -143,3 +153,35 @@ class OTPVerificationAPIView(APIView):
             except CustomUser.DoesNotExist:
                 return Response({'error': 'Invalid OTP or email'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NewOTPPasswordAPIView(APIView):
+    def post(self, request):
+        token_key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+        user = Token.objects.get(key=token_key).user
+
+        otp = secrets.token_hex(3)
+        user.otp = otp
+        user.save()
+
+        send_otp_email(user.email, otp)
+
+        if user:
+            return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetUserDataViewSet(APIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+
+    def get(self, request, *args, **kwargs):
+        token = request.headers.get('Authorization').split(' ')[1]
+        token_obj = Token.objects.get(key=token)
+        user = token_obj.user
+        serializer = self.get_serializer(instance=user)
+        if serializer.is_valid:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

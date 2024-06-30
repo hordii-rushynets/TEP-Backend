@@ -205,8 +205,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'mail.tep.ua'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
-EMAIL_HOST_USER = 'customersupport@tep.ua'
-EMAIL_HOST_PASSWORD = '12231223!!hA'
+EMAIL_HOST_USER = os.environ.get('EMAIL_LOGIN')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 
 CORS_ALLOWED_ORIGINS = [
