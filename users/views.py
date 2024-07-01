@@ -9,8 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from rest_framework import permissions
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.conf import settings
 
 
@@ -22,20 +21,34 @@ class UserRegistrationAPIView(APIView):
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
+            first_name = serializer.validated_data['first_name']
+            last_name = serializer.validated_data['last_name']
+            policy = serializer.validated_data['policy']
+            wantInfo = serializer.validated_data['wantInfo']
+            wholesale = serializer.validated_data['wholesale']
 
             if CustomUser.objects.filter(email=email).exists():
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_409_CONFLICT)
+                return Response({'error': 'User with this email already exists.'},
+                                status=status.HTTP_409_CONFLICT)
 
-            user = CustomUser(email=email)
+            user = CustomUser(
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                policy=policy,
+                wantInfo=wantInfo,
+                wholesale=wholesale
+            )
             user.set_password(password)
             otp = secrets.token_hex(3)
             user.otp = otp
             user.is_active = False
             user.save()
             print(otp)
-            #send_otp_email(email, otp)
+            # send_otp_email(email, otp)
 
-            return Response({'message': 'User registered. Please verify OTP sent to your email.'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'User registered. Please verify OTP sent to your email.'},
+                            status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -98,14 +111,14 @@ class UserProfileUpdateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def patch(self, request):
-        token_key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+        token = request.headers.get('Authorization').split(' ')[1]
 
         try:
-            token_obj = Token.objects.get(key=token_key)
-            user = token_obj.user
-        except Token.DoesNotExist:
-            return Response({"detail": "Invalid token header. No credentials provided."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            access_token = AccessToken(token)
+            user_id = access_token['user_id']
+            user = CustomUser.objects.get(pk=user_id)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         data = request.data
 
@@ -150,7 +163,10 @@ class OTPVerificationAPIView(APIView):
                 user.save()
 
                 refresh = RefreshToken.for_user(user)
-                token = {'token': str(refresh.access_token)}
+                token = {
+                    'access_token': str(refresh.access_token),
+                    'refresh_token': str(refresh),
+                }
 
                 return Response(token, status=status.HTTP_200_OK)
             except CustomUser.DoesNotExist:
@@ -181,15 +197,31 @@ class NewOTPPasswordAPIView(APIView):
 class GetUserDataViewSet(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
-
     def get(self, request, *args, **kwargs):
         token = request.headers.get('Authorization').split(' ')[1]
-        token_obj = Token.objects.get(key=token)
-        user = token_obj.user
-        serializer = self.get_serializer(instance=user)
-        if serializer.is_valid:
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            access_token = AccessToken(token)
+            user_id = access_token['user_id']
+            user = CustomUser.objects.get(pk=user_id)
+            serializer = CustomUserSerializer(instance=user)
+            return Response({serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RefreshTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            refresh_token = request.data.get('refresh_token')
+            if not refresh_token:
+                return Response({'error': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            refresh_token_obj = RefreshToken(refresh_token)
+            access_token = str(refresh_token_obj.access_token)
+
+            return Response({'access_token': access_token}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

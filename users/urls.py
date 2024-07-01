@@ -10,7 +10,7 @@ from .views import (
 
 urlpatterns = [
     path('register/', UserRegistrationAPIView.as_view(), name='user-register'),
-    path('verify-otp/', OTPVerificationAPIView.as_view(), name='verify-otp'),
+    path('register/verify-otp/', OTPVerificationAPIView.as_view(), name='verify-otp'),
     path('login/', UserLoginAPIView.as_view(), name='user-login'),
 
     path('password/reset/', PasswordResetRequestAPIView.as_view(), name='password-reset-request'),

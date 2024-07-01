@@ -5,13 +5,15 @@ from .models import CustomUser
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'first_name', 'last_name', 'email', 'police', 'wantInfo', 'wholesale', 'password')
+        fields = ('id', 'first_name', 'last_name', 'email', 'policy', 'wantInfo', 'wholesale', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
 
-class UserRegistrationSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'email', 'password', 'policy', 'wantInfo', 'wholesale')
+        extra_kwargs = {'password': {'write_only': True}}
 
 
 class OTPVerificationSerializer(serializers.Serializer):
