@@ -25,6 +25,4 @@ urlpatterns = [
     path('login/', UserLoginAPIView.as_view(), name='user-login'),
 
     path('new_otp/', NewOTPPasswordAPIView.as_view(), name='new-otp')
-
-
 ]

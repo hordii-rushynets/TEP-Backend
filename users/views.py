@@ -33,7 +33,7 @@ class UserRegistrationAPIView(APIView):
             user.is_active = False
             user.save()
             print(otp)
-            send_otp_email(email, otp)
+            #send_otp_email(email, otp)
 
             return Response({'message': 'User registered. Please verify OTP sent to your email.'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
@@ -58,7 +58,8 @@ class PasswordResetRequestAPIView(APIView):
         user = get_object_or_404(CustomUser, email=email)
 
         otp = secrets.token_hex(3)
-        send_otp_email(email, otp)
+        #send_otp_email(email, otp)
+        print(otp)
 
         user.otp = otp
         user.save()
@@ -78,6 +79,7 @@ class PasswordResetConfirmAPIView(APIView):
         user = get_object_or_404(CustomUser, email=email, otp=otp)
 
         user.set_password(new_password)
+        user.otp = ''
         user.save()
 
         return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
@@ -152,7 +154,7 @@ class OTPVerificationAPIView(APIView):
 
                 return Response(token, status=status.HTTP_200_OK)
             except CustomUser.DoesNotExist:
-                return Response({'error': 'Invalid OTP or email'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid OTP or email'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -160,13 +162,15 @@ class NewOTPPasswordAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        user = request.user
+        email = request.email
+        user = CustomUser.objects.get(email=email)
 
         otp = secrets.token_hex(3)
         user.otp = otp
         user.save()
 
-        send_otp_email(user.email, otp)
+        #send_otp_email(email, otp)
+        print(otp)
 
         if user:
             return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
