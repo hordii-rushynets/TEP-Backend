@@ -37,5 +37,4 @@ django-celery-results==2.5.0
 # For JWT token with DRF
 djangorestframework-simplejwt
 
-# For send mail
-django.core.mail
+django-cors-headers
