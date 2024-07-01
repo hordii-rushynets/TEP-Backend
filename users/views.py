@@ -24,7 +24,7 @@ class UserRegistrationAPIView(APIView):
             password = serializer.validated_data['password']
 
             if CustomUser.objects.filter(email=email).exists():
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_409_CONFLICT)
 
             user = CustomUser(email=email)
             user.set_password(password)
@@ -115,6 +115,8 @@ class UserProfileUpdateAPIView(APIView):
 
 
 class UserLoginAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -155,9 +157,10 @@ class OTPVerificationAPIView(APIView):
 
 
 class NewOTPPasswordAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
-        token_key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
-        user = Token.objects.get(key=token_key).user
+        user = request.user
 
         otp = secrets.token_hex(3)
         user.otp = otp
@@ -172,6 +175,8 @@ class NewOTPPasswordAPIView(APIView):
 
 
 class GetUserDataViewSet(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
 
