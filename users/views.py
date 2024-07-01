@@ -204,7 +204,7 @@ class GetUserDataViewSet(APIView):
             user_id = access_token['user_id']
             user = CustomUser.objects.get(pk=user_id)
             serializer = CustomUserSerializer(instance=user)
-            return Response({serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
