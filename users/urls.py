@@ -4,7 +4,8 @@ from .views import (
     PasswordResetRequestAPIView, PasswordResetConfirmAPIView,
     UserDeleteAPIView, UserProfileUpdateAPIView,
     UserLoginAPIView, NewOTPPasswordAPIView,
-    GetUserDataViewSet, RefreshTokenView
+    GetUserDataViewSet, RefreshTokenView,
+    AccessTokenVerifyView, RefreshTokenVerifyView
 )
 
 
@@ -22,5 +23,8 @@ urlpatterns = [
 
     path('new_otp/', NewOTPPasswordAPIView.as_view(), name='new-otp'),
 
-    path('refresh/', RefreshTokenView.as_view(), name='refresh-token')
+    path('token/refresh/', RefreshTokenView.as_view(), name='refresh-token'),
+    path('token/verify/access/', AccessTokenVerifyView.as_view(), name='token_verify_access'),
+    path('token/verify/refresh/', RefreshTokenVerifyView.as_view(), name='token_verify_refresh'),
+
 ]

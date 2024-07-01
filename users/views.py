@@ -11,6 +11,8 @@ from rest_framework import permissions
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.conf import settings
+from rest_framework_simplejwt.views import TokenVerifyView
+
 
 
 class UserRegistrationAPIView(APIView):
@@ -210,7 +212,7 @@ class GetUserDataViewSet(APIView):
 
 
 class RefreshTokenView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
         try:
@@ -225,3 +227,14 @@ class RefreshTokenView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AccessTokenVerifyView(TokenVerifyView):
+    pass
+
+
+class RefreshTokenVerifyView(TokenVerifyView):
+    pass
+
+
+
