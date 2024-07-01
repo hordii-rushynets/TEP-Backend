@@ -50,7 +50,7 @@ def send_otp_email(email, otp):
 
 
 class PasswordResetRequestAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         email = request.data.get('email')
