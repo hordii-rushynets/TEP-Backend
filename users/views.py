@@ -162,7 +162,7 @@ class NewOTPPasswordAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.email
+        email = request.data.get('email')
         user = CustomUser.objects.get(email=email)
 
         otp = secrets.token_hex(3)
