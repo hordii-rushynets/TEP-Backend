@@ -69,3 +69,5 @@ pytest-debug.log
 
 
 /docker/redis/redis_data
+
+.env
