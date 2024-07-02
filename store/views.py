@@ -72,13 +72,21 @@ class ProductsImport(APIView):
 
 
 class ProductSearchViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_class = ProductFilter
-    search_fields = [
-        'title', 'description', 'category__title',
-        'category__slug', 'group_id', 'productvariant__title',
-        'productvariant__sku', 'productvariant__sizes__title',
-        'productvariant__colors__title', 'productvariant__materials__title'
-    ]
+    queryset = ProductVariant.objects.all()
+    serializer_class = ProductVariantSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        'product__id': ['exact'],
+        'title': ['exact', 'icontains'],
+        'sku': ['exact', 'icontains'],
+        'default_price': ['gte', 'lte'],
+        'wholesale_price': ['gte', 'lte'],
+        'drop_shipping_price': ['gte', 'lte'],
+        'sizes': ['exact'],
+        'colors': ['exact'],
+        'materials': ['exact'],
+        'promotion': ['exact'],
+        'promo_price': ['gte', 'lte'],
+        'count': ['gte', 'lte'],
+        'variant_order': ['gte', 'lte'],
+    }
