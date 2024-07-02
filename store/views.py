@@ -11,7 +11,6 @@ from .serializers import (
     ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter
 
 
 def generate_latin_slug(string):
