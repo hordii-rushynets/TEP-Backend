@@ -13,7 +13,7 @@ urlpatterns = [
     path('products/', ProductViewSet.as_view({'get': 'list'})),
     path('products/import/', ProductsImport.as_view()),
     path('products/<slug:slug>/', ProductViewSet.as_view({'get': 'retrieve'})),
-    path('products/search/', ProductSearchViewSet.as_view()),
+    path('products/search/', ProductSearchViewSet.as_view({'get': 'list'})),
 
     path('sizes/', SizeViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('sizes/<slug:slug>/', SizeViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
