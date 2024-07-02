@@ -2,29 +2,31 @@ from django.urls import path
 from .views import (
     ProductsImport,
     CategoryViewSet, ProductViewSet, SizeViewSet,
-    ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet
+    ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet,
+    ProductSearchViewSet
 )
 
 urlpatterns = [
     path('categories/', CategoryViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('categories/<int:pk>/', CategoryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+    path('categories/<slug:slug>/', CategoryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('products/', ProductViewSet.as_view({'get': 'list'})),
     path('products/import/', ProductsImport.as_view()),
-    path('products/<int:pk>/', ProductViewSet.as_view({'get': 'retrieve'})),
+    path('products/<slug:slug>/', ProductViewSet.as_view({'get': 'retrieve'})),
+    path('products/search/', ProductSearchViewSet.as_view()),
 
     path('sizes/', SizeViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('sizes/<int:pk>/', SizeViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+    path('sizes/<slug:slug>/', SizeViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('colors/', ColorViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('colors/<int:pk>/', ColorViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+    path('colors/<slug:slug>/', ColorViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('materials/', MaterialViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('materials/<int:pk>/', MaterialViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+    path('materials/<slug:slug>/', MaterialViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('variants/', ProductVariantViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('variants/<int:pk>/', ProductVariantViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+    path('variants/<slug:slug>/', ProductVariantViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('variant-info/', ProductVariantInfoViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('variant-info/<int:pk>/', ProductVariantInfoViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+    path('variant-info/<slug:slug>/', ProductVariantInfoViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 ]

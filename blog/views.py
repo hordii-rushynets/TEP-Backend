@@ -7,9 +7,11 @@ from .serializers import CategorySerializer
 class BlogCategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
 
 
 class BlogPostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
 

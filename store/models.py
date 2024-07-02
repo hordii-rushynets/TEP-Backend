@@ -6,6 +6,7 @@ class Category(models.Model):
     slug = models.CharField(max_length=128)
     title = models.CharField(max_length=128)
     description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='category_images/', blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -19,7 +20,7 @@ class Product(models.Model):
     group_id = models.CharField(max_length=128)
 
     def __str__(self):
-        return  str(self.pk)
+        return str(self.pk)
 
 
 class Size(models.Model):
