@@ -169,6 +169,7 @@ class ForgetPasswordConfirmCodeSerializer(UserConfirmCodeSerializer):
             EmailService(recipient=user.email, context={'full_name': user.full_name}).new_password(password).send()
         return validated_data
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer to get or update profile."""
     class Meta:
@@ -212,8 +213,12 @@ class UserResetPasswordSerializer(serializers.ModelSerializer):
         self.instance.save()
 
 
-class UserForgetPasswordSerializer(serializers.Serializer):
+class UserForgetPasswordSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
+
+    class Meta:
+        model = TEPUser
+        fields = ['email']
 
     def validate(self, attrs: dict) -> dict:
         attrs = super().validate(attrs)
