@@ -13,7 +13,7 @@ from .views import (
 
 router = DefaultRouter()
 router.register('register', UserRegistrationViewSet, basename='register')
-router.register('password/forget/', ForgetPasswordViewSet, basename='forget_password')
+router.register('password/forget', ForgetPasswordViewSet, basename='forget_password')
 
 urlpatterns = router.urls + [
     path('login/', UserLoginAPIView.as_view(), name='login'),

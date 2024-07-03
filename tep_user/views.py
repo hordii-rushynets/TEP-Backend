@@ -11,22 +11,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from tep_user.models import TEPUser
 from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserForgetPasswordSerializer,
+                                  ForgetPasswordConfirmCodeSerializer,
                                   UserLoginSerializer, UserProfileSerializer,
                                   UserRegistrationSerializer,
                                   UserResentCodeSerializer,
                                   UserResetPasswordSerializer)
 
 
-class ConfirmationCodeMixin:
-    @action(methods=['post'], detail=False)
-    def confirm(self, request: Request) -> Response:
-        serializer = UserConfirmCodeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
-
-
-class UserRegistrationViewSet(CreateModelMixin, ConfirmationCodeMixin, viewsets.GenericViewSet):
+class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
     """Registration viewset."""
     queryset = TEPUser.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -35,6 +27,13 @@ class UserRegistrationViewSet(CreateModelMixin, ConfirmationCodeMixin, viewsets.
     @action(methods=['post'], detail=False)
     def resent(self, request: Request) -> Response:
         serializer = UserResentCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+    
+    @action(methods=['post'], detail=False)
+    def confirm(self, request: Request) -> Response:
+        serializer = UserConfirmCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -73,11 +72,14 @@ class ResetPasswordView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class ForgetPasswordViewSet(viewsets.GenericViewSet, ConfirmationCodeMixin):
+class ForgetPasswordViewSet(CreateModelMixin, viewsets.GenericViewSet):
+    queryset = TEPUser.objects.all()
     permission_classes = [AllowAny]
-
-    def post(self, request: Request) -> Response:
-        serializer = UserForgetPasswordSerializer(data=request.data)
+    serializer_class = UserForgetPasswordSerializer
+    
+    @action(methods=['post'], detail=False)
+    def confirm(self, request: Request) -> Response:
+        serializer = ForgetPasswordConfirmCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
