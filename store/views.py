@@ -11,6 +11,8 @@ from .serializers import (
     ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ProductFilter
+
 
 
 def generate_latin_slug(string):
@@ -70,22 +72,8 @@ class ProductsImport(APIView):
         return Response({'status': 'success'})
 
 
-class ProductSearchViewSet(viewsets.ModelViewSet):
-    queryset = ProductVariant.objects.all()
-    serializer_class = ProductVariantSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        'product__id': ['exact'],
-        'title': ['exact', 'icontains'],
-        'sku': ['exact', 'icontains'],
-        'default_price': ['gte', 'lte'],
-        'wholesale_price': ['gte', 'lte'],
-        'drop_shipping_price': ['gte', 'lte'],
-        'sizes': ['exact'],
-        'colors': ['exact'],
-        'materials': ['exact'],
-        'promotion': ['exact'],
-        'promo_price': ['gte', 'lte'],
-        'count': ['gte', 'lte'],
-        'variant_order': ['gte', 'lte'],
-    }
+class ProductSearchViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ProductFilter
