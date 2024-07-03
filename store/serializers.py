@@ -1,8 +1,17 @@
 from rest_framework import serializers
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo
+from .models import (Category, Product, Size, Color, Material, ProductVariant,
+                     ProductVariantInfo, СustomFilterFields)
+
+
+class СustomFilterFieldsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = СustomFilterFields
+        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    filters = СustomFilterFieldsSerializer(many=True)
+
     class Meta:
         model = Category
         fields = '__all__'

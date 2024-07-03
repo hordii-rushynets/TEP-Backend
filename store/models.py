@@ -2,11 +2,20 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 
+class СustomFilterFields(models.Model):
+    title = models.CharField(max_length=128)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.title
+
+
 class Category(models.Model):
     slug = models.CharField(max_length=128)
     title = models.CharField(max_length=128)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
+    filters = models.ManyToManyField(СustomFilterFields, related_name='categories')
 
     def __str__(self):
         return self.title

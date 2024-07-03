@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage, Order, Category, PromoCode
+from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
+                     Order, Category, PromoCode, СustomFilterFields)
 from django.forms import Textarea
 from django.db import models
 from modeltranslation.admin import TranslationAdmin
@@ -55,8 +56,15 @@ class ProductVariantAdmin(admin.ModelAdmin):
     inlines = [ProductVariantImageInline, ProductVariantInfoInline]
 
 
+class CustomCategoryFilterAdmin(TranslationAdmin):
+    class Media:
+        js = JS
+        css = CSS
+
+
 admin.site.register(Order)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(СustomFilterFields, CustomCategoryFilterAdmin)
 admin.site.register(Product)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(Size, SizeAdmin)

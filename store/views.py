@@ -11,7 +11,7 @@ from .serializers import (
     ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter
+from .filters import ProductFilter, CategoryFilter
 
 
 
@@ -26,6 +26,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CategoryFilter
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -33,7 +35,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     lookup_field = 'slug'
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = ProductFilter
+    filterset_class = CategoryFilter
 
 
 class SizeViewSet(viewsets.ModelViewSet):
