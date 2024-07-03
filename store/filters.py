@@ -3,6 +3,7 @@ from .models import Product, ProductVariant
 
 
 class ProductFilter(django_filters.FilterSet):
+    slug = django_filters.CharFilter(field_name='slug', lookup_expr='icontains')
     title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
     category = django_filters.CharFilter(field_name='category__title', lookup_expr='icontains')
     price_min = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='gte')
@@ -13,4 +14,4 @@ class ProductFilter(django_filters.FilterSet):
 
     class Meta:
         model = Product
-        fields = ['title', 'category', 'price_min', 'price_max', 'size', 'color', 'material']
+        fields = ['slug', 'title', 'category', 'price_min', 'price_max', 'size', 'color', 'material']
