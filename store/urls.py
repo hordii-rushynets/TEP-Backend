@@ -1,13 +1,21 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (
     ProductsImport,
     CategoryViewSet, ProductViewSet, SizeViewSet,
     ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet,
-    ProductSearchViewSet
 )
+from rest_framework.routers import DefaultRouter
+
+
+router = DefaultRouter()
+router.register(r'products', ProductViewSet)
+
 
 urlpatterns = [
-    path('categories/', CategoryViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('', include(router.urls)),
+]
+
+"""path('categories/', CategoryViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('categories/<slug:slug>/', CategoryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('products/', ProductViewSet.as_view({'get': 'list'})),
@@ -28,5 +36,5 @@ urlpatterns = [
     path('variants/<slug:slug>/', ProductVariantViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 
     path('variant-info/', ProductVariantInfoViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('variant-info/<slug:slug>/', ProductVariantInfoViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
-]
+    path('variant-info/<slug:slug>/', ProductVariantInfoViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),"""
+

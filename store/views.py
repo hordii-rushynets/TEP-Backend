@@ -32,6 +32,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ProductFilter
 
 
 class SizeViewSet(viewsets.ModelViewSet):
@@ -70,10 +72,3 @@ class ProductsImport(APIView):
         data = request.data
         import_data_task.delay(data)
         return Response({'status': 'success'})
-
-
-class ProductSearchViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filterset_class = ProductFilter
