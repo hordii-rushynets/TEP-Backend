@@ -1,5 +1,6 @@
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Category, Product, Size, Color, ProductVariant, ProductVariantInfo, Material, СustomFilterFields
+from .models import (Category, Product, Size, Color, ProductVariant, ProductVariantInfo,
+                     Material, СustomFilter, СustomFilterField)
 
 
 class CategoryTranslationOptions(TranslationOptions):
@@ -30,8 +31,12 @@ class ProductVariantInfoTranslationOptions(TranslationOptions):
     fields = ('material_and_care', 'ecology_and_environment', 'packaging',)
 
 
-class СustomFilterFieldsTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+class СustomFilterTranslationOptions(TranslationOptions):
+    fields = ('name',)
+
+
+class СustomFilterFieldTranslationOptions(TranslationOptions):
+    fields = ('value',)
 
 
 translator.register(Category, CategoryTranslationOptions)
@@ -41,4 +46,5 @@ translator.register(Color, ColorTranslationOptions)
 translator.register(Material, MaterialTranslationOptions)
 translator.register(ProductVariant, ProductVariantTranslationOptions)
 translator.register(ProductVariantInfo, ProductVariantInfoTranslationOptions)
-translator.register(СustomFilterFields, СustomFilterFieldsTranslationOptions)
+translator.register(СustomFilter, СustomFilterTranslationOptions)
+translator.register(СustomFilterField, СustomFilterFieldTranslationOptions)

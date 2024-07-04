@@ -2,12 +2,19 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 
-class СustomFilterFields(models.Model):
-    title = models.CharField(max_length=128)
-    description = models.TextField(blank=True, null=True)
+class СustomFilterField(models.Model):
+    value = models.CharField(max_length=128, blank=True, null=True)
 
     def __str__(self):
-        return self.title
+        return self.value
+
+
+class СustomFilter(models.Model):
+    name = models.CharField(max_length=128, blank=True, null=True)
+    filter_fields = models.ManyToManyField(СustomFilterField, related_name='filter_fields')
+
+    def __str__(self):
+        return self.name
 
 
 class Category(models.Model):
@@ -15,7 +22,6 @@ class Category(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
-    filters = models.ManyToManyField(СustomFilterFields, related_name='categories')
 
     def __str__(self):
         return self.title
@@ -27,6 +33,7 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     group_id = models.CharField(max_length=128)
+    filter = models.ManyToManyField(СustomFilter, related_name='filter')
 
     def __str__(self):
         return str(self.pk)

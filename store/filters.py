@@ -5,6 +5,7 @@ from .models import Product, Category
 class ProductFilter(django_filters.FilterSet):
     slug = django_filters.CharFilter(field_name='slug', lookup_expr='icontains')
     title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
+    description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
 
     price_min = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='gte')
     price_max = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='lte')
@@ -16,17 +17,23 @@ class ProductFilter(django_filters.FilterSet):
     category_title_uk = django_filters.CharFilter(field_name='category__title_uk', lookup_expr='icontains')
     category_description = django_filters.CharFilter(field_name='category__description', lookup_expr='icontains')
     category_description_uk = django_filters.CharFilter(field_name='category__description_uk', lookup_expr='icontains')
-    category_filters_title = django_filters.CharFilter(field_name='category__filters__title', lookup_expr='icontains')
-    category_filters_title_uk = django_filters.CharFilter(field_name='category__filters__title_uk', lookup_expr='icontains')
-    category_filters_description = django_filters.CharFilter(field_name='category__filters__description', lookup_expr='icontains')
-    category_filters_description_uk = django_filters.CharFilter(field_name='category__filters__description_uk', lookup_expr='icontains')
+
+    filter_name = django_filters.CharFilter(field_name='filter__name', lookup_expr='icontains')
+    filter_name_uk = django_filters.CharFilter(field_name='filter__name_uk', lookup_expr='icontains')
+
+    filter_fields_value = django_filters.CharFilter(field_name='filter__filter_fields__value', lookup_expr='icontains')
+    filter_fields_value_uk = django_filters.CharFilter(field_name='filter__filter_fields__value_uk', lookup_expr='icontains')
 
     class Meta:
         model = Product
         fields = ['slug', 'title', 'price_min', 'price_max', 'size', 'color', 'material', 'category_title',
-                  'category_title_uk', 'category_description', 'category_description_uk', 'category_filters_title',
-                  'category_filters_title_uk', 'category_filters_description', 'category_filters_description_uk'
-        ]
+                  'category_title_uk', 'category_description', 'category_description_uk', 'filter_name',
+                  'filter_fields_value']
+
+    @property
+    def qs(self):
+        parent = super().qs
+        return parent.distinct()
 
 
 class CategoryFilter(django_filters.FilterSet):
@@ -36,16 +43,12 @@ class CategoryFilter(django_filters.FilterSet):
     description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
     description_uk = django_filters.CharFilter(field_name='description_uk', lookup_expr='icontains')
 
-    filters_title = django_filters.CharFilter(field_name='filters__title', lookup_expr='icontains')
-    filters_title_uk = django_filters.CharFilter(field_name='filters__title_uk', lookup_expr='icontains')
-    filters_description = django_filters.CharFilter(field_name='filters__description', lookup_expr='icontains')
-    filters_description_uk = django_filters.CharFilter(field_name='filters__description_uk', lookup_expr='icontains')
-
     class Meta:
         model = Category
-        fields = ['slug', 'title', 'title_uk', 'description', 'description_uk', 'filters_title', 'filters_title_uk', 'filters_description', 'filters_description_uk']
+        fields = ['slug', 'title', 'title_uk', 'description', 'description_uk']
 
     @property
     def qs(self):
         parent = super().qs
         return parent.distinct()
+
