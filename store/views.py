@@ -35,7 +35,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     lookup_field = 'slug'
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = CategoryFilter
+    filterset_class = ProductFilter
 
 
 class SizeViewSet(viewsets.ModelViewSet):
