@@ -33,7 +33,6 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     group_id = models.CharField(max_length=128)
-    filter = models.ManyToManyField(СustomFilter, related_name='filter')
 
     def __str__(self):
         return str(self.pk)
@@ -79,6 +78,7 @@ class ProductVariant(models.Model):
     promo_price = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
+    filter = models.ManyToManyField(СustomFilter, related_name='filter')
 
     def __str__(self):
         return str(self.sku)

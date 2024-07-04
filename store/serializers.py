@@ -46,6 +46,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
     colors = ColorSerializer(many=True)
     materials = MaterialSerializer(many=True)
+    filter = СustomFilterSerializer(many=True)
 
     class Meta:
         model = ProductVariant
@@ -55,7 +56,6 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     product_variants = serializers.SerializerMethodField()
-    filter = СustomFilterSerializer(many=True)
 
     class Meta:
         model = Product

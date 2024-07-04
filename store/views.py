@@ -11,8 +11,7 @@ from .serializers import (
     ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter
-
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
 
 
 def generate_latin_slug(string):
@@ -60,6 +59,8 @@ class ProductVariantViewSet(viewsets.ModelViewSet):
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
     lookup_field = 'slug'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ProductVariantFilter
 
 
 class ProductVariantInfoViewSet(viewsets.ModelViewSet):
