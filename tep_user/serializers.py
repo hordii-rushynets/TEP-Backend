@@ -163,6 +163,7 @@ class ForgetPasswordConfirmCodeSerializer(UserConfirmCodeSerializer):
 
         if user:
             password = UserService.gen_password()
+            print(f'Password {password}')
             user.set_password(password)
             user.save()
 
