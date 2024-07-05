@@ -8,14 +8,16 @@ click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
 cron-descriptor==1.4.3
+debugpy==1.8.2
 Django==4.2.2
 django-celery-beat==2.5.0
 django-celery-results==2.5.0
+django-cors-headers==4.4.0
 django-filter==23.2
 django-modeltranslation==0.19.4
+django-redis==5.0.0
 django-timezone-field==6.1.0
 djangorestframework==3.14.0
-django-redis==5.0.0
 djangorestframework-simplejwt==5.3.1
 kombu==5.3.7
 pillow==10.4.0
@@ -33,4 +35,3 @@ typing_extensions==4.12.2
 tzdata==2024.1
 vine==5.1.0
 wcwidth==0.2.13
-debugpy
