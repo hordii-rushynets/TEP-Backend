@@ -2,24 +2,30 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 
-class СustomFilterField(models.Model):
+class AbstractModel(models.Model):
+    slug = models.CharField(max_length=128)
+    title = models.CharField(max_length=128)
+
+    class Meta:
+        abstract = True
+
+
+class FilterField(models.Model):
     value = models.CharField(max_length=128, blank=True, null=True)
 
     def __str__(self):
         return self.value
 
 
-class СustomFilter(models.Model):
+class Filter(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
-    filter_fields = models.ManyToManyField(СustomFilterField, related_name='filter_fields')
+    filter_fields = models.ManyToManyField(FilterField, related_name='filter_fields')
 
     def __str__(self):
         return self.name
 
 
-class Category(models.Model):
-    slug = models.CharField(max_length=128)
-    title = models.CharField(max_length=128)
+class Category(AbstractModel):
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
 
@@ -27,9 +33,7 @@ class Category(models.Model):
         return self.title
 
 
-class Product(models.Model):
-    slug = models.CharField(max_length=128)
-    title = models.CharField(max_length=128)
+class Product(AbstractModel):
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     group_id = models.CharField(max_length=128)
@@ -38,26 +42,19 @@ class Product(models.Model):
         return str(self.pk)
 
 
-class Size(models.Model):
-    title = models.CharField(max_length=128)
-    slug = models.CharField(max_length=128)
-
+class Size(AbstractModel):
     def __str__(self):
         return self.title
 
 
-class Color(models.Model):
-    title = models.CharField(max_length=128)
-    slug = models.CharField(max_length=128)
+class Color(AbstractModel):
     hex = models.CharField(max_length=12)
 
     def __str__(self):
         return self.title
 
 
-class Material(models.Model):
-    title = models.CharField(max_length=128)
-    slug = models.CharField(max_length=128)
+class Material(AbstractModel):
 
     def __str__(self):
         return self.title
@@ -78,7 +75,7 @@ class ProductVariant(models.Model):
     promo_price = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
-    filter = models.ManyToManyField(СustomFilter, related_name='filter')
+    filter = models.ManyToManyField(Filter, related_name='filter')
 
     def __str__(self):
         return str(self.sku)
