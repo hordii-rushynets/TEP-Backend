@@ -5,10 +5,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo
+from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
-    ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer
+    ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer, FilterSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
@@ -67,6 +67,12 @@ class ProductVariantInfoViewSet(viewsets.ModelViewSet):
     queryset = ProductVariantInfo.objects.all()
     serializer_class = ProductVariantInfoSerializer
     lookup_field = 'slug'
+
+
+class FilterViewSet(viewsets.ModelViewSet):
+    queryset = Filter.objects.all()
+    serializer_class = FilterSerializer
+    lookup_field = 'name'
 
 
 @method_decorator(csrf_exempt, name='dispatch')
