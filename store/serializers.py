@@ -26,14 +26,6 @@ class MaterialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-
-    class Meta:
-        model = Product
-        fields = '__all__'
-
-
 class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
     colors = ColorSerializer(many=True)
@@ -41,6 +33,15 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductVariant
+        fields = '__all__'
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    product_variants = ProductVariantSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
         fields = '__all__'
 
 

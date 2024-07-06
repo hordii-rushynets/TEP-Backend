@@ -229,8 +229,6 @@ AWS_S3_REGION_NAME = 'us-east-1'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 DEFAULT_FILE_STORAGE  = 'backend.storages.CustomS3Boto3Storage'
 
-print('\n\n', AWS_S3_CUSTOM_DOMAIN, '\n\n')
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'

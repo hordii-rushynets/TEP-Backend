@@ -48,7 +48,7 @@ class Material(models.Model):
 
 
 class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_variants')
     title = models.CharField(max_length=128)
     sku = models.CharField(max_length=100, unique=True)
     default_price = models.IntegerField(default=0)
