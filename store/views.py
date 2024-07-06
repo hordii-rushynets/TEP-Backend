@@ -22,36 +22,43 @@ def generate_latin_slug(string):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    lookup_field = 'slug'
 
 
 class SizeViewSet(viewsets.ModelViewSet):
     queryset = Size.objects.all()
     serializer_class = SizeSerializer
+    lookup_field = 'slug'
 
 
 class ColorViewSet(viewsets.ModelViewSet):
     queryset = Color.objects.all()
     serializer_class = ColorSerializer
+    lookup_field = 'slug'
 
 
 class MaterialViewSet(viewsets.ModelViewSet):
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
+    lookup_field = 'slug'
 
 
 class ProductVariantViewSet(viewsets.ModelViewSet):
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
+    lookup_field = 'slug'
 
 
 class ProductVariantInfoViewSet(viewsets.ModelViewSet):
     queryset = ProductVariantInfo.objects.all()
     serializer_class = ProductVariantInfoSerializer
+    lookup_field = 'slug'
 
 
 @method_decorator(csrf_exempt, name='dispatch')
