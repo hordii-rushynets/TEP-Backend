@@ -6,5 +6,5 @@ from .views import (
 urlpatterns = [
     path('categories/', BlogCategoryViewSet.as_view({'get': 'list'})),
     path('posts/', BlogPostViewSet.as_view({'get': 'list'})),
-    path('post/<int:pk>/', BlogPostViewSet.as_view({'get': 'retrieve'})),
+    path('post/<slug:slug>/', BlogPostViewSet.as_view({'get': 'retrieve'})),
 ]
