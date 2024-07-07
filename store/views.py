@@ -53,6 +53,7 @@ class ProductVariantViewSet(viewsets.ModelViewSet):
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
     lookup_field = 'slug'
+    filterset_fields = ['product__id']
 
 
 class ProductVariantInfoViewSet(viewsets.ModelViewSet):
