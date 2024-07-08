@@ -72,7 +72,7 @@ class ProductVariantInfoViewSet(viewsets.ModelViewSet):
 class FilterViewSet(viewsets.ModelViewSet):
     queryset = Filter.objects.all()
     serializer_class = FilterSerializer
-    lookup_field = 'name'
+    lookup_field = 'id'
 
 
 @method_decorator(csrf_exempt, name='dispatch')

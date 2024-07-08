@@ -5,7 +5,6 @@ from .models import (Category, Product, Size, Color, Material, ProductVariant,
 
 class FilterFieldSerializer(serializers.ModelSerializer):
     class Meta:
-
         model = FilterField
         fields = '__all__'
 
