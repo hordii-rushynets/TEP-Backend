@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class AbstractModel(models.Model):
@@ -28,6 +29,7 @@ class Filter(models.Model):
 class Category(AbstractModel):
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
+    filter = models.ManyToManyField(Filter, related_name='filter')
 
     def __str__(self):
         return self.title
@@ -37,6 +39,8 @@ class Product(AbstractModel):
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     group_id = models.CharField(max_length=128)
+    last_modified = models.DateTimeField(auto_now=True)
+    number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
 
     def __str__(self):
         return str(self.pk)
@@ -67,15 +71,15 @@ class ProductVariant(models.Model):
     default_price = models.IntegerField(default=0)
     wholesale_price = models.IntegerField(default=0)
     drop_shipping_price = models.IntegerField(default=0)
-    sizes = models.ManyToManyField(Size)
-    colors = models.ManyToManyField(Color)
-    materials = models.ManyToManyField(Material)
+    sizes = models.ManyToManyField(Size, blank=True, null=True)
+    colors = models.ManyToManyField(Color, blank=True, null=True)
+    materials = models.ManyToManyField(Material, blank=True, null=True)
     main_image = models.ImageField(upload_to='products/images/', blank=True)
     promotion = models.BooleanField(default=False)
     promo_price = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
-    filter = models.ManyToManyField(Filter, related_name='filter')
+    filter_field = models.ManyToManyField(FilterField, related_name='filter')
 
     def __str__(self):
         return str(self.sku)
@@ -86,6 +90,7 @@ class ProductVariantInfo(models.Model):
     ecology_and_environment = models.TextField()
     packaging = models.TextField()
     product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.product.title

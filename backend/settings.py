@@ -132,10 +132,12 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-STATIC_URL = '/uploads/'
-STATIC_ROOT = os.path.join(BASE_DIR, "uploads")
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
+
 
 class RedisDatabases(IntEnum):
     DEFAULT: int = 0
@@ -167,9 +169,6 @@ REDIS_CONNECTION_STRING = '{protocol}://{auth}{host}:{port}/%s{query}'.format(
     **REDIS_CONNECTION,
     query=REDIS_CONNECTION_QUERY,
 )
-
-
-
 
 CELERY_TIMEZONE = "Europe/Kiev"
 CELERY_TASK_TRACK_STARTED = True

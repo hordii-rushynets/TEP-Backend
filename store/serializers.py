@@ -19,6 +19,8 @@ class FilterSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    filter = FilterSerializer(many=True)
+
     class Meta:
         model = Category
         fields = '__all__'
@@ -46,7 +48,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
     colors = ColorSerializer(many=True)
     materials = MaterialSerializer(many=True)
-    filter = FilterSerializer(many=True)
+    filter_field = FilterFieldSerializer(many=True)
 
     class Meta:
         model = ProductVariant
