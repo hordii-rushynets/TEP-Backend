@@ -62,11 +62,11 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
-
+        
     def get_product_variants(self, obj):
         variants = obj.productvariant_set.all()
         return ProductVariantSerializer(variants, many=True).data
-
+      
 
 class ProductVariantInfoSerializer(serializers.ModelSerializer):
     class Meta:

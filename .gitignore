@@ -12,10 +12,6 @@ __pycache__/
 *.db
 *.sqlite3
 
-# If you are using Django migrations
-*/migrations/*
-!*/migrations/__init__.py
-
 # Static files
 /static/
 !/static/.gitkeep

@@ -1,6 +1,6 @@
-from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.db import models
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -17,7 +17,7 @@ class Post(models.Model):
     slug = models.CharField(max_length=200, blank=True)
     title = models.CharField(max_length=200)
     date_created = models.DateTimeField(default=timezone.now)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_posts')
     categories = models.ManyToManyField('Category', related_name='posts', blank=True)
     meta_description = models.TextField()
     image = models.ImageField(blank=True)
