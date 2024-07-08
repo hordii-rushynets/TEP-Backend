@@ -1,15 +1,17 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo
+from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
-    ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer
+    ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer, FilterSerializer
 )
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
 
 
 def generate_latin_slug(string):
@@ -23,12 +25,16 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CategoryFilter
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ProductFilter
 
 
 class SizeViewSet(viewsets.ModelViewSet):
@@ -53,13 +59,20 @@ class ProductVariantViewSet(viewsets.ModelViewSet):
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
     lookup_field = 'slug'
-    filterset_fields = ['product__id']
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ProductVariantFilter
 
 
 class ProductVariantInfoViewSet(viewsets.ModelViewSet):
     queryset = ProductVariantInfo.objects.all()
     serializer_class = ProductVariantInfoSerializer
     lookup_field = 'slug'
+
+
+class FilterViewSet(viewsets.ModelViewSet):
+    queryset = Filter.objects.all()
+    serializer_class = FilterSerializer
+    lookup_field = 'id'
 
 
 @method_decorator(csrf_exempt, name='dispatch')

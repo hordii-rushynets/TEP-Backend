@@ -166,6 +166,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+
 class RedisDatabases(IntEnum):
     DEFAULT: int = 0
     CELERY: int = 1

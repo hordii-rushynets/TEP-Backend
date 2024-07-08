@@ -1,8 +1,25 @@
 from rest_framework import serializers
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo
+from .models import (Category, Product, Size, Color, Material, ProductVariant,
+                     ProductVariantInfo, Filter, FilterField)
+
+
+class FilterFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FilterField
+        fields = '__all__'
+
+
+class FilterSerializer(serializers.ModelSerializer):
+    filter_fields = FilterFieldSerializer(many=True)
+
+    class Meta:
+        model = Filter
+        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    filter = FilterSerializer(many=True)
+
     class Meta:
         model = Category
         fields = '__all__'
@@ -30,6 +47,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
     colors = ColorSerializer(many=True)
     materials = MaterialSerializer(many=True)
+    filter_field = FilterFieldSerializer(many=True)
 
     class Meta:
         model = ProductVariant
@@ -43,7 +61,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
-
+      
 
 class ProductVariantInfoSerializer(serializers.ModelSerializer):
     class Meta:
