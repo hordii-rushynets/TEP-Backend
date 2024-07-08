@@ -43,9 +43,9 @@ class ProductFilter(BaseFilter):
 
 
 class CategoryFilter(BaseFilter):
-    title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
+    title_en = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
     title_uk = django_filters.CharFilter(field_name='title_uk', lookup_expr='icontains')
-    description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
+    description_en = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
     description_uk = django_filters.CharFilter(field_name='description_uk', lookup_expr='icontains')
 
     filter_name = django_filters.CharFilter(field_name='filter__name')
@@ -55,7 +55,7 @@ class CategoryFilter(BaseFilter):
 
     class Meta:
         model = Category
-        fields = ['title', 'title_uk', 'description', 'description_uk', 'filter_name', 'filter_name_uk',
+        fields = ['title_en', 'title_uk', 'description_en', 'description_uk', 'filter_name', 'filter_name_uk',
                   'filter_fields_value', 'filter_fields_value_uk']
 
 
