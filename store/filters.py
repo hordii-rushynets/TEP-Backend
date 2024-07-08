@@ -74,7 +74,8 @@ class ProductVariantFilter(django_filters.FilterSet):
 
     class Meta:
         model = ProductVariant
-        fields = ['title', 'filter_fields_value', 'filter_fields_value_uk']
+        fields = ['title', 'filter_fields_value', 'filter_fields_value_uk', 'price_min', 'price_max',
+                  'promo_price_min', 'promo_price_max']
 
 
     @property
