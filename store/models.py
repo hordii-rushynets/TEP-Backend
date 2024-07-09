@@ -89,16 +89,16 @@ class ProductVariantInfo(models.Model):
     material_and_care = models.TextField()
     ecology_and_environment = models.TextField()
     packaging = models.TextField()
-    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now=True)
+    product_variant = models.OneToOneField(ProductVariant, on_delete=models.CASCADE, related_name='variant_info')
 
     def __str__(self):
-        return self.product.title
+        return self.product_variant.product.title
 
 
 class ProductVariantImage(models.Model):
     image = models.ImageField(upload_to='products/images/', blank=True)
-    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='variant_images')
 
 
 class Order(models.Model):
