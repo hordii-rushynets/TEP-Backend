@@ -9,11 +9,13 @@ from .views import (
     UserLoginAPIView,
     UserRegistrationViewSet,
     ForgetPasswordViewSet,
+    CartViewSet
 )
 
 router = DefaultRouter()
 router.register('register', UserRegistrationViewSet, basename='register')
 router.register('password/forget', ForgetPasswordViewSet, basename='forget_password')
+router.register('сart', CartViewSet, basename='cart')
 
 urlpatterns = router.urls + [
     path('login/', UserLoginAPIView.as_view(), name='login'),
