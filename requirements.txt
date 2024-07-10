@@ -42,3 +42,7 @@ urllib3==2.2.2
 vine==5.1.0
 wcwidth==0.2.13
 gunicorn==20.1.0
+django-allauth==0.63.3
+dj-rest-auth==6.0.0
+requests==2.32.3
+cryptography==42.0.8

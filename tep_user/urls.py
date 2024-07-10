@@ -3,12 +3,15 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenBlacklistView
 from rest_framework_simplejwt.views import TokenRefreshView
 
+
 from .views import (
     ResetPasswordView,
     ProfileView,
     UserLoginAPIView,
     UserRegistrationViewSet,
     ForgetPasswordViewSet,
+    GoogleLogin,
+    FacebookLogin
 )
 
 router = DefaultRouter()
@@ -21,4 +24,7 @@ urlpatterns = router.urls + [
     path('password/reset/', ResetPasswordView.as_view(), name='reset_password'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', ProfileView.as_view(), name='update_profile'),
+    path('login/google/', GoogleLogin.as_view(), name='google_login'),
+    path('login/facebook/', FacebookLogin.as_view(), name='fb_login'),
+
 ]

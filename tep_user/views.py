@@ -16,6 +16,9 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserRegistrationSerializer,
                                   UserResentCodeSerializer,
                                   UserResetPasswordSerializer)
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -83,3 +86,14 @@ class ForgetPasswordViewSet(CreateModelMixin, viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class GoogleLogin(SocialLoginView):
+    permission_classes = [AllowAny]
+    adapter_class = GoogleOAuth2Adapter
+
+
+class FacebookLogin(SocialLoginView):
+    permission_classes = [AllowAny]
+    adapter_class = FacebookOAuth2Adapter
+    callback_url = 'http://localhost:8000'
