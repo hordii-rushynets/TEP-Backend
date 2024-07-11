@@ -28,21 +28,17 @@ class ProductFilter(BaseFilter):
     title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
     description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
 
-    price_min = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='gte')
-    price_max = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='lte')
-    size = django_filters.CharFilter(field_name='productvariant__sizes__title', lookup_expr='icontains')
-    color = django_filters.CharFilter(field_name='productvariant__colors__title', lookup_expr='icontains')
-    material = django_filters.CharFilter(field_name='productvariant__materials__title', lookup_expr='icontains')
+    price_min = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='gte')
+    price_max = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='lte')
+    size = MultipleValuesFilter(field_name='product_variants__sizes__title')
+    color = MultipleValuesFilter(field_name='product_variants__colors__title')
+    material = MultipleValuesFilter(field_name='product_variants__materials__title')
 
     category_title = django_filters.CharFilter(field_name='category__title', lookup_expr='icontains')
     category_title_uk = django_filters.CharFilter(field_name='category__title_uk', lookup_expr='icontains')
     category_description = django_filters.CharFilter(field_name='category__description', lookup_expr='icontains')
     category_description_uk = django_filters.CharFilter(field_name='category__description_uk', lookup_expr='icontains')
 
-    filter_fields_value_en = django_filters.CharFilter(field_name='product_variants__filter_field__value_en',
-                                                       lookup_expr='icontains')
-    filter_fields_value_uk = django_filters.CharFilter(field_name='product_variants__filter_field__value_uk',
-                                                       lookup_expr='icontains')
     filter_fields_value_en_mul = MultipleValuesFilter(field_name='product_variants__filter_field__value_en')
     filter_fields_value_uk_mul = MultipleValuesFilter(field_name='product_variants__filter_field__value_uk')
 
@@ -50,7 +46,6 @@ class ProductFilter(BaseFilter):
         model = Product
         fields = ['slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
                   'category_title', 'category_title_uk', 'category_description', 'category_description_uk',
-                  'filter_fields_value_en', 'filter_fields_value_uk',
                   'filter_fields_value_en_mul', 'filter_fields_value_uk_mul']
 
 
