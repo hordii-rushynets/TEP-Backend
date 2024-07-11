@@ -2,14 +2,40 @@ import django_filters
 from .models import Product, Category, ProductVariant
 from django.db.models import Q
 
+from typing import Any, List, Optional
+import django_filters
+from django.db.models import Q, QuerySet
+
 
 class MultipleValuesFilter(django_filters.BaseCSVFilter, django_filters.CharFilter):
-    def filter(self, qs, value):
+    """
+    A custom filter class to filter querysets based on multiple CSV values.
+
+    This filter extends BaseCSVFilter and CharFilter from django_filters to allow
+    filtering of querysets where the specified field contains any of the provided values.
+
+    Attributes:
+        field_name (str): The name of the field to filter on.
+    """
+
+    def filter(self, qs: QuerySet, value: Optional[List[str]]) -> QuerySet:
+        """
+        Filters the queryset based on multiple CSV values.
+
+        Args:
+            qs (QuerySet): The initial queryset to filter.
+            value (Optional[List[str]]): A list of string values to filter the queryset.
+
+        Returns:
+            QuerySet: The filtered queryset.
+        """
         if not value:
             return qs
+
         q_objects = Q()
         for val in value:
             q_objects |= Q(**{f"{self.field_name}__icontains": val})
+
         return qs.filter(q_objects)
 
 
