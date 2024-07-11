@@ -34,6 +34,7 @@ class ProductFilter(BaseFilter):
     color = MultipleValuesFilter(field_name='product_variants__colors__title')
     material = MultipleValuesFilter(field_name='product_variants__materials__title')
 
+    category_slug = django_filters.CharFilter(field_name='category__slug', lookup_expr='icontains')
     category_title = django_filters.CharFilter(field_name='category__title', lookup_expr='icontains')
     category_title_uk = django_filters.CharFilter(field_name='category__title_uk', lookup_expr='icontains')
     category_description = django_filters.CharFilter(field_name='category__description', lookup_expr='icontains')
