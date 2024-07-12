@@ -6,6 +6,6 @@ from .serializers import CartSerializer
 
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = CartSerializer
     lookup_field = 'id'
