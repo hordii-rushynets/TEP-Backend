@@ -22,7 +22,7 @@ class TagTitleSerializer(serializers.ModelSerializer):
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
-        fields = ('types', 'title_uk', 'title_en', 'description_uk', 'description_en', 'additional_description_uk', 'additional_description_en')
+        fields = ('types', 'title_uk', 'title_en', 'description_uk', 'description_en', 'additional_description_uk', 'additional_description_en', 'image')
 
 
 class PostSerializer(serializers.ModelSerializer):
