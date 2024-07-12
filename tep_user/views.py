@@ -8,15 +8,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from tep_user.models import TEPUser, Cart
+from tep_user.models import TEPUser
 from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserForgetPasswordSerializer,
                                   ForgetPasswordConfirmCodeSerializer,
                                   UserLoginSerializer, UserProfileSerializer,
                                   UserRegistrationSerializer,
                                   UserResentCodeSerializer,
-                                  UserResetPasswordSerializer,
-                                  CartSerializer)
+                                  UserResetPasswordSerializer)
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -84,10 +83,3 @@ class ForgetPasswordViewSet(CreateModelMixin, viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
-
-
-class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
-    permission_classes = [IsAuthenticated]
-    serializer_class = CartSerializer
-    lookup_field = 'id'

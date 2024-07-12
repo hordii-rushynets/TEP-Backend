@@ -1,9 +1,6 @@
 """Model for tep_user app."""
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from store.models import ProductVariant
-
 from tep_user.constants import USER_EMAIL_REQUIRED
 
 
@@ -66,8 +63,3 @@ class TEPUser(AbstractUser):
     @property
     def full_name(self):
         return f'{self.first_name} {self.last_name}'.strip()
-
-
-class Cart(models.Model):
-    tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user')
-    product_variants = models.ManyToManyField(ProductVariant, related_name='product_variants', blank=True)

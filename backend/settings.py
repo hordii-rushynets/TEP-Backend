@@ -49,7 +49,8 @@ INSTALLED_APPS = [
 
     'store',
     'blog',
-    'tep_user'
+    'tep_user',
+    'cart'
 ]
 
 REST_FRAMEWORK = {

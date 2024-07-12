@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from tep_user.services import IPControlService, EmailService
 from tep_user import constants as user_const
-from tep_user.models import TEPUser, Cart
+from tep_user.models import TEPUser
 from tep_user.services import UserService
 from tep_user.utils import send_email_code
 from backend.settings import RedisDatabases
@@ -231,12 +231,3 @@ class UserForgetPasswordSerializer(serializers.ModelSerializer):
         self.instance = user
         send_email_code(user.email, user.full_name)
         return attrs
-
-
-class CartSerializer(serializers.ModelSerializer):
-    tep_user = UserProfileSerializer()
-    product_variants = ProductVariantSerializer(many=True)
-
-    class Meta:
-        model = Cart
-        fields = ('tep_user', 'product_variants')
