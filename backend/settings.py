@@ -234,10 +234,7 @@ DEFAULT_FILE_STORAGE  = 'backend.storages.CustomS3Boto3Storage'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-if DEBUG:
-    MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
-else:
-    MEDIA_URL = f'/uploads/'
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
