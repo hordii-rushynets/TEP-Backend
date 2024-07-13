@@ -61,6 +61,7 @@ class ProductFilter(BaseFilter):
     material = MultipleValuesFilter(field_name='product_variants__materials__title')
     promo_price_min = django_filters.NumberFilter(method='filter_promo_price_min')
     promo_price_max = django_filters.NumberFilter(method='filter_promo_price_max')
+    is_promotion = django_filters.BooleanFilter(field_name='product_variants__promotion')
 
     category_slug = django_filters.CharFilter(field_name='category__slug', lookup_expr='icontains')
     category_title = django_filters.CharFilter(field_name='category__title', lookup_expr='icontains')
@@ -73,9 +74,14 @@ class ProductFilter(BaseFilter):
 
     class Meta:
         model = Product
-        fields = ['slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
-                  'category_title', 'category_title_uk', 'category_description', 'category_description_uk',
-                  'filter_fields_value_en_mul', 'filter_fields_value_uk_mul']
+
+        class Meta:
+            model = Product
+            fields = [
+                'slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
+                'promo_price_min', 'promo_price_max', 'is_promotion', 'category_slug', 'category_title',
+                'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en_mul',
+                'filter_fields_value_uk_mul']
 
     def filter_promo_price_min(self, queryset, name, value):
         return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
