@@ -74,14 +74,11 @@ class ProductFilter(BaseFilter):
 
     class Meta:
         model = Product
-
-        class Meta:
-            model = Product
-            fields = [
-                'slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
-                'promo_price_min', 'promo_price_max', 'is_promotion', 'category_slug', 'category_title',
-                'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en_mul',
-                'filter_fields_value_uk_mul']
+        fields = [
+            'slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
+            'promo_price_min', 'promo_price_max', 'is_promotion', 'category_slug', 'category_title',
+            'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en_mul',
+            'filter_fields_value_uk_mul']
 
     def filter_promo_price_min(self, queryset, name, value):
         return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
