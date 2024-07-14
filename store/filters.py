@@ -17,11 +17,14 @@ class ProductFilter(BaseFilter):
     title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
     description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
 
-    price_min = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='gte')
-    price_max = django_filters.NumberFilter(field_name='productvariant__default_price', lookup_expr='lte')
-    size = django_filters.CharFilter(field_name='productvariant__sizes__title', lookup_expr='icontains')
-    color = django_filters.CharFilter(field_name='productvariant__colors__title', lookup_expr='icontains')
-    material = django_filters.CharFilter(field_name='productvariant__materials__title', lookup_expr='icontains')
+    price_min = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='gte')
+    price_max = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='lte')
+    size = django_filters.CharFilter(field_name='product_variants__sizes__title', lookup_expr='icontains')
+    color = django_filters.CharFilter(field_name='product_variants__colors__title', lookup_expr='icontains')
+    material = django_filters.CharFilter(field_name='product_variants__materials__title', lookup_expr='icontains')
+    promo_price_min = django_filters.NumberFilter(method='filter_promo_price_min')
+    promo_price_max = django_filters.NumberFilter(method='filter_promo_price_max')
+    is_promotion = django_filters.BooleanFilter(field_name='product_variants__promotion')
 
     category_title = django_filters.CharFilter(field_name='category__title', lookup_expr='icontains')
     category_title_uk = django_filters.CharFilter(field_name='category__title_uk', lookup_expr='icontains')
@@ -40,6 +43,12 @@ class ProductFilter(BaseFilter):
         fields = ['slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material', 'category_title',
                   'category_title_uk', 'category_description', 'category_description_uk', 'filter_name',
                   'filter_name_uk', 'filter_fields_value', 'filter_fields_value_uk']
+
+    def filter_promo_price_min(self, queryset, name, value):
+        return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
+
+    def filter_promo_price_max(self, queryset, name, value):
+        return queryset.filter(product_variants__promotion=True, product_variants__promo_price__lte=value)
 
 
 class CategoryFilter(BaseFilter):
@@ -69,12 +78,19 @@ class ProductVariantFilter(BaseFilter):
     price_min = django_filters.NumberFilter(field_name='default_price', lookup_expr='gte')
     price_max = django_filters.NumberFilter(field_name='default_price', lookup_expr='lte')
 
-    promo_price_min = django_filters.NumberFilter(field_name='promo_price', lookup_expr='gte')
-    promo_price_max = django_filters.NumberFilter(field_name='promo_price', lookup_expr='lte')
+    promo_price_min = django_filters.NumberFilter(method='filter_promo_price_min')
+    promo_price_max = django_filters.NumberFilter(method='filter_promo_price_max')
 
     class Meta:
         model = ProductVariant
         fields = ['title', 'filter_fields_value', 'filter_fields_value_uk', 'price_min', 'price_max',
                   'promo_price_min', 'promo_price_max']
+
+    def filter_promo_price_min(self, queryset, name, value):
+        return queryset.filter(promotion=True, promo_price__gte=value)
+
+    def filter_promo_price_max(self, queryset, name, value):
+        return queryset.filter(promotion=True, promo_price__lte=value)
+
 
 
