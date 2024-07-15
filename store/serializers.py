@@ -10,7 +10,7 @@ class FilterFieldSerializer(serializers.ModelSerializer):
 
 
 class FilterSerializer(serializers.ModelSerializer):
-    fields = FilterFieldSerializer(many=True, source='fields')
+    filter_field = FilterFieldSerializer(many=True)
 
     class Meta:
         model = Filter

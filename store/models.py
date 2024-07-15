@@ -14,7 +14,7 @@ class Filter(models.Model):
 
 class FilterField(models.Model):
     value = models.CharField(max_length=128, blank=True, null=True)
-    filter = models.ForeignKey(Filter, on_delete=models.CASCADE, related_name='fields', blank=True, null=True)
+    filter = models.ForeignKey(Filter, on_delete=models.CASCADE, related_name='filter_field', blank=True, null=True)
 
     def __str__(self):
         return self.value
