@@ -1,6 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from tep_user.models import TEPUser
+from tep_user.models import TEPUser, TEPUserSocialNetworks
+
+
+@admin.register(TEPUserSocialNetworks)
+class TEPUserSocialNetworksAdmin(admin.ModelAdmin):
+    list_display = ('types', 'user')
 
 
 @admin.register(TEPUser)

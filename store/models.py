@@ -1,14 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MinValueValidator
+from django.db import models
 
-
-class AbstractModel(models.Model):
-    slug = models.CharField(max_length=128)
-    title = models.CharField(max_length=128)
-
-    class Meta:
-        abstract = True
+from common.models import TitleSlug
 
 
 class FilterField(models.Model):
@@ -26,7 +20,7 @@ class Filter(models.Model):
         return self.name
 
 
-class Category(AbstractModel):
+class Category(TitleSlug):
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
     filter = models.ManyToManyField(Filter, related_name='filter')
@@ -35,7 +29,7 @@ class Category(AbstractModel):
         return self.title
 
 
-class Product(AbstractModel):
+class Product(TitleSlug):
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     group_id = models.CharField(max_length=128)
@@ -46,19 +40,19 @@ class Product(AbstractModel):
         return str(self.pk)
 
 
-class Size(AbstractModel):
+class Size(TitleSlug):
     def __str__(self):
         return self.title
 
 
-class Color(AbstractModel):
+class Color(TitleSlug):
     hex = models.CharField(max_length=12)
 
     def __str__(self):
         return self.title
 
 
-class Material(AbstractModel):
+class Material(TitleSlug):
 
     def __str__(self):
         return self.title
@@ -89,16 +83,16 @@ class ProductVariantInfo(models.Model):
     material_and_care = models.TextField()
     ecology_and_environment = models.TextField()
     packaging = models.TextField()
-    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now=True)
+    product_variant = models.OneToOneField(ProductVariant, on_delete=models.CASCADE, related_name='variant_info')
 
     def __str__(self):
-        return self.product.title
+        return self.product_variant.product.title
 
 
 class ProductVariantImage(models.Model):
     image = models.ImageField(upload_to='products/images/', blank=True)
-    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='variant_images')
 
 
 class Order(models.Model):

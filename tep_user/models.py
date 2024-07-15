@@ -58,8 +58,26 @@ class TEPUser(AbstractUser):
     objects = TEPUserManager()
 
     def __str__(self):
-        return self.username
+        return self.email
 
     @property
     def full_name(self):
         return f'{self.first_name} {self.last_name}'.strip()
+
+
+class TEPUserSocialNetworks(models.Model):
+    """User social networks model."""
+    SOCIAL_NETWORK_TYPES = (
+        ('instagram', 'Instagram'),
+        ('facebook', 'Facebook'),
+        ('youtube', 'YouTube'),
+        ('pinterest', 'Pinterest'),
+        ('linkedin', 'LinkedIn')
+    )
+
+    types = models.CharField(max_length=50, choices=SOCIAL_NETWORK_TYPES, default=SOCIAL_NETWORK_TYPES[0][0])
+    url = models.URLField(default='#')
+    user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.user.email} - {self.types}'
