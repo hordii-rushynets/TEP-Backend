@@ -1,8 +1,5 @@
-import django_filters
 from .models import Product, Category, ProductVariant
-from django.db.models import Q
-
-from typing import Any, List, Optional
+from typing import List, Optional
 import django_filters
 from django.db.models import Q, QuerySet
 
