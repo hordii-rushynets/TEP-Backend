@@ -10,7 +10,7 @@ class FilterFieldSerializer(serializers.ModelSerializer):
 
 
 class FilterSerializer(serializers.ModelSerializer):
-    filter_fields = FilterFieldSerializer(many=True)
+    fields = FilterFieldSerializer(many=True, source='fields')
 
     class Meta:
         model = Filter
@@ -75,5 +75,3 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
-      
-
