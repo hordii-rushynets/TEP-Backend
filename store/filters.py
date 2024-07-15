@@ -56,6 +56,7 @@ class ProductFilter(BaseFilter):
     size = MultipleValuesFilter(field_name='product_variants__sizes__title')
     color = MultipleValuesFilter(field_name='product_variants__colors__title')
     material = MultipleValuesFilter(field_name='product_variants__materials__title')
+
     promo_price_min = django_filters.NumberFilter(method='filter_promo_price_min')
     promo_price_max = django_filters.NumberFilter(method='filter_promo_price_max')
     is_promotion = django_filters.BooleanFilter(field_name='product_variants__promotion')
@@ -76,6 +77,12 @@ class ProductFilter(BaseFilter):
             'promo_price_min', 'promo_price_max', 'is_promotion', 'category_slug', 'category_title',
             'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en_mul',
             'filter_fields_value_uk_mul']
+
+    def filter_promo_price_min(self, queryset, name, value):
+        return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
+
+    def filter_promo_price_max(self, queryset, name, value):
+        return queryset.filter(product_variants__promotion=True, product_variants__promo_price__lte=value)
 
     def filter_promo_price_min(self, queryset, name, value):
         return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
@@ -123,5 +130,3 @@ class ProductVariantFilter(BaseFilter):
 
     def filter_promo_price_max(self, queryset, name, value):
         return queryset.filter(promotion=True, promo_price__lte=value)
-
-

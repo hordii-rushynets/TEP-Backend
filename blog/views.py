@@ -1,17 +1,17 @@
 from rest_framework import viewsets
 
-from .models import Category, Post
-from .serializers import CategorySerializer
+from .models import Tag, Post
+from .serializers import TagSerializer, PostSerializer
 
 
 class BlogCategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
     lookup_field = 'slug'
 
 
 class BlogPostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    serializer_class = CategorySerializer
+    serializer_class = PostSerializer
     lookup_field = 'slug'
 
