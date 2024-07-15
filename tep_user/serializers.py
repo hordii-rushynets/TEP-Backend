@@ -12,8 +12,6 @@ from tep_user.services import UserService
 from tep_user.utils import send_email_code
 from backend.settings import RedisDatabases
 
-from store.serializers import ProductVariantSerializer
-
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Registration serializer."""
