@@ -6,18 +6,7 @@ from store.serializers import (MaterialSerializer, SizeSerializer, FilterFieldSe
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    """
-    Serializer for CartItem model.
-
-    Fields:
-    - cart: The cart to which the item belongs.
-    - product_variants: Serialized representation of the product variants in the cart item.
-    - color: Serialized representation of the color of the product.
-    - material: Serialized representation of the material of the product.
-    - size: Serialized representation of the size of the product.
-    - filter_field: Serialized representation of additional filter fields associated with the product.
-    - quantity: The quantity of the product in the cart.
-    """
+    """CartItem Serializer"""
 
     product_variants = ProductVariantSerializer(read_only=True)
     color = ColorSerializer(read_only=True)
@@ -31,13 +20,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Cart model.
-
-    Fields:
-    - tep_user: Serialized representation of the user profile associated with the cart.
-    - order: Serialized representation of the cart items (many items).
-    """
+    """Cart Serializer"""
 
     tep_user = UserProfileSerializer(read_only=True)
     order = CartItemSerializer(read_only=True, many=True)
