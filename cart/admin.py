@@ -1,14 +1,15 @@
 from django.contrib import admin
-from .models import Cart
+from .models import Cart, Order
 
 
-@admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('id', 'get_user_email')
-    search_fields = ('id', 'tep_user__email',)
-    filter_horizontal = ('product_variants',)
+    list_display = ('tep_user',)
 
-    def get_user_email(self, obj):
-        return obj.tep_user.email
 
-    get_user_email.short_description = 'User Email'
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('cart', 'product_variants', 'color', 'material', 'size')
+    filter_horizontal = ('filter_field', )
+
+
+admin.site.register(Cart, CartAdmin)
+admin.site.register(Order, OrderAdmin)

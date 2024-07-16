@@ -95,14 +95,6 @@ class ProductVariantImage(models.Model):
     product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='variant_images')
 
 
-class Order(models.Model):
-    products = models.ManyToManyField(Product)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.user.email
-
-
 class PromoCode(models.Model):
     TYPE_CHOICES = (
         ('amount', 'AMOUNT'),
