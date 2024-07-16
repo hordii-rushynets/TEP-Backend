@@ -65,9 +65,9 @@ class ProductVariant(models.Model):
     default_price = models.IntegerField(default=0)
     wholesale_price = models.IntegerField(default=0)
     drop_shipping_price = models.IntegerField(default=0)
-    sizes = models.ManyToManyField(Size, blank=True, null=True)
-    colors = models.ManyToManyField(Color, blank=True, null=True)
-    materials = models.ManyToManyField(Material, blank=True, null=True)
+    sizes = models.ManyToManyField(Size, blank=True)
+    colors = models.ManyToManyField(Color, blank=True)
+    materials = models.ManyToManyField(Material, blank=True)
     main_image = models.ImageField(upload_to='products/images/', blank=True)
     promotion = models.BooleanField(default=False)
     promo_price = models.IntegerField(default=0)
@@ -77,6 +77,14 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return str(self.sku)
+
+
+class Order(models.Model):
+    products = models.ManyToManyField(Product)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.email
 
 
 class ProductVariantInfo(models.Model):
@@ -93,14 +101,6 @@ class ProductVariantInfo(models.Model):
 class ProductVariantImage(models.Model):
     image = models.ImageField(upload_to='products/images/', blank=True)
     product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='variant_images')
-
-
-class Order(models.Model):
-    products = models.ManyToManyField(Product)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.user.email
 
 
 class PromoCode(models.Model):

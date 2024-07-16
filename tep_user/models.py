@@ -1,8 +1,6 @@
 """Model for tep_user app."""
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-
 from tep_user.constants import USER_EMAIL_REQUIRED
 
 
