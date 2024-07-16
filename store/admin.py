@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
-                     Category, PromoCode, Filter, FilterField)
+                     Category, PromoCode, Filter, FilterField, Order)
 from django.forms import Textarea
 from django.db import models
 from modeltranslation.admin import TranslationAdmin
@@ -68,6 +68,7 @@ class СustomFilterFieldAdmin(TranslationAdmin):
         css = CSS
 
 
+admin.site.register(Order)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product)
 admin.site.register(ProductVariant, ProductVariantAdmin)

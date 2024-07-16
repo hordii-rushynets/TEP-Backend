@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Cart, Order
-from .serializers import CartSerializer, OrderSerializer
+from .models import Cart, CartItem
+from .serializers import CartSerializer, CartItemSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):
@@ -11,8 +11,8 @@ class CartViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
 
 
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
+class CartItemViewSet(viewsets.ModelViewSet):
+    queryset = CartItem.objects.all()
     permission_classes = [IsAuthenticated]
-    serializer_class = OrderSerializer
+    serializer_class = CartItemSerializer
     lookup_field = 'id'

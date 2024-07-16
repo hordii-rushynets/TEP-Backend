@@ -79,6 +79,14 @@ class ProductVariant(models.Model):
         return str(self.sku)
 
 
+class Order(models.Model):
+    products = models.ManyToManyField(Product)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.email
+
+
 class ProductVariantInfo(models.Model):
     material_and_care = models.TextField()
     ecology_and_environment = models.TextField()
