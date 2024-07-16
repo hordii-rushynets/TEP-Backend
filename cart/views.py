@@ -6,7 +6,6 @@ from .serializers import CartSerializer, CartItemSerializer
 
 class CartViewSet(viewsets.ModelViewSet):
     """Cart ViewSet"""
-
     queryset = Cart.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = CartSerializer
@@ -15,7 +14,6 @@ class CartViewSet(viewsets.ModelViewSet):
 
 class CartItemViewSet(viewsets.ModelViewSet):
     """CartItem ViewSet"""
-
     queryset = CartItem.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = CartItemSerializer

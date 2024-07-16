@@ -7,7 +7,6 @@ from store.serializers import (MaterialSerializer, SizeSerializer, FilterFieldSe
 
 class CartItemSerializer(serializers.ModelSerializer):
     """CartItem Serializer"""
-
     product_variants = ProductVariantSerializer(read_only=True)
     color = ColorSerializer(read_only=True)
     material = MaterialSerializer(read_only=True)
@@ -21,7 +20,6 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     """Cart Serializer"""
-
     tep_user = UserProfileSerializer(read_only=True)
     order = CartItemSerializer(read_only=True, many=True)
 

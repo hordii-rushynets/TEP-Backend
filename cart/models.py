@@ -5,13 +5,11 @@ from tep_user.models import TEPUser
 
 class Cart(models.Model):
     """ Model Cart """
-
     tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user')
 
 
 class CartItem(models.Model):
     """Model for ordering a specific product variant"""
-
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='order')
     product_variants = models.OneToOneField(ProductVariant, on_delete=models.CASCADE, related_name='product_variants', blank=True)
     color = models.OneToOneField(Color, on_delete=models.SET_NULL, related_name='colour', blank=True, null=True)

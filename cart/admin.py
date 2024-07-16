@@ -4,13 +4,11 @@ from .models import Cart, CartItem
 
 class CartAdmin(admin.ModelAdmin):
     """Cart admin configuration"""
-
     list_display = ('tep_user',)
 
 
 class CartItemAdmin(admin.ModelAdmin):
     """CartItem admin configuration"""
-
     list_display = ('cart', 'product_variants', 'color', 'material', 'size', )
     filter_horizontal = ('filter_field', )
 
