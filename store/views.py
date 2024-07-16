@@ -5,13 +5,16 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter
+from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter, ProductView
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer, FilterSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
+from rest_framework.decorators import action
+from rest_framework import status
+from .services import PControlService
 
 
 def generate_latin_slug(string):
@@ -36,6 +39,22 @@ class ProductViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProductFilter
 
+    @action(detail=True, methods=['post'])
+    def add_view(self, request, slug=None):
+        product = self.get_object()
+        ip_address = request.ip_address
+
+        # Check if the user has already viewed this product today
+        PControlService.check_ip_address(product, ip_address)
+
+        # Increment the number of views
+        product.number_of_views += 1
+        product.save()
+
+        # Save the product view
+        ProductView.objects.create(product=product, ip_address=ip_address)
+
+        return Response({'status': 'view added'}, status=status.HTTP_200_OK)
 
 class SizeViewSet(viewsets.ModelViewSet):
     queryset = Size.objects.all()
