@@ -44,17 +44,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         product = self.get_object()
         ip_address = request.ip_address
 
-        # Check if the user has already viewed this product today
         PControlService.check_ip_address(product, ip_address)
 
-        # Increment the number of views
         product.number_of_views += 1
         product.save()
 
-        # Save the product view
         ProductView.objects.create(product=product, ip_address=ip_address)
+        return Response(status=status.HTTP_200_OK)
 
-        return Response({'status': 'view added'}, status=status.HTTP_200_OK)
+
 
 class SizeViewSet(viewsets.ModelViewSet):
     queryset = Size.objects.all()
