@@ -1,22 +1,21 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter, ProductView
+from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
-    ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer, FilterSerializer
+    ColorSerializer, MaterialSerializer, ProductVariantSerializer,
+    ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
 from rest_framework.decorators import action
 from rest_framework import status
-from tep_user.services import IPControlService
-from backend.settings import RedisDatabases
-from rest_framework.exceptions import ValidationError
+from rest_framework.request import Request
 
 
 def generate_latin_slug(string):
@@ -41,17 +40,18 @@ class ProductViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProductFilter
 
-    @action(detail=True, methods=['post'])
-    def add_view(self, request, slug=None):
-        product = self.get_object()
+    @action(methods=['post'], detail=False)
+    def increase_number_of_view(self, request: Request) -> Response:
+        """
+        Endpoint to increase product number of views.
+        
+        :param request: http request.
 
-        ip_control_service = IPControlService(request=request,  database=RedisDatabases.LOGIN_CODE)
-        if not ip_control_service.check_product_view_ip_access(product.slug):
-            raise ValidationError(code=status.HTTP_400_BAD_REQUEST)
-
-        product.number_of_views += 1
-        product.save()
-
+        :return: response
+        """
+        serializer = IncreaseNumberOfViewsSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(status=status.HTTP_200_OK)
 
 

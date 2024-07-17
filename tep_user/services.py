@@ -59,12 +59,8 @@ class IPControlService:
         if int(ip_address_view_count) > 0:
             return False
 
-        self.redis_conn.incr(name=key, amount=1)
-        self.redis_conn.expire(name=key, time=datetime.timedelta(days=1).seconds)
-
-        print(f"IP Address: {ip_address}")
-        print(f"Redis Key: {key}")
-        print(f"IP Address View Count: {ip_address_view_count}")
+        self.redis_conn.incr(key, 1)
+        self.redis_conn.expire(key, datetime.timedelta(days=1).seconds)
 
         return True
 
