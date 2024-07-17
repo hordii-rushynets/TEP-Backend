@@ -73,7 +73,7 @@ class ProductVariant(models.Model):
     promo_price = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
-    filter_field = models.ManyToManyField(FilterField, related_name='filter_field')
+    filter_field = models.ManyToManyField(FilterField, related_name='product_variants')
 
     def __str__(self):
         return str(self.sku)
