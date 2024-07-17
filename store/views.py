@@ -14,7 +14,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
 from rest_framework.decorators import action
 from rest_framework import status
-from .services import PControlService
+from tep_user.services import IPControlService
+from backend.settings import RedisDatabases
+from rest_framework.exceptions import ValidationError
 
 
 def generate_latin_slug(string):
@@ -42,16 +44,15 @@ class ProductViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def add_view(self, request, slug=None):
         product = self.get_object()
-        ip_address = request.ip_address
 
-        PControlService.check_ip_address(product, ip_address)
+        ip_control_service = IPControlService(request=request,  database=RedisDatabases.LOGIN_CODE)
+        if not ip_control_service.check_product_view_ip_access(product.slug):
+            raise ValidationError(code=status.HTTP_400_BAD_REQUEST)
 
         product.number_of_views += 1
         product.save()
 
-        ProductView.objects.create(product=product, ip_address=ip_address)
         return Response(status=status.HTTP_200_OK)
-
 
 
 class SizeViewSet(viewsets.ModelViewSet):

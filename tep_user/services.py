@@ -46,6 +46,28 @@ class IPControlService:
 
         return True
 
+    def check_product_view_ip_access(self, product_slug: str) -> bool:
+        ip_address = self._get_ip_address()
+        if settings.DEBUG and not ip_address:
+            return True
+
+        if not ip_address:
+            return False
+
+        key = f"{ip_address}_product_{product_slug}_views"
+        ip_address_view_count = self.redis_conn.get(key) or 0
+        if int(ip_address_view_count) > 0:
+            return False
+
+        self.redis_conn.incr(name=key, amount=1)
+        self.redis_conn.expire(name=key, time=datetime.timedelta(days=1).seconds)
+
+        print(f"IP Address: {ip_address}")
+        print(f"Redis Key: {key}")
+        print(f"IP Address View Count: {ip_address_view_count}")
+
+        return True
+
 
 class INotificationService:
     def verification_code(self, code: str) -> 'INotificationService':
