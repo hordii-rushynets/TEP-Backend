@@ -24,12 +24,12 @@ class IPControlService:
         self.redis_conn.close()
 
     def _get_ip_address(self):
-        x_real_ip = self.request.META.get('HTTP_X_REAL_IP')
-        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+        x_real_ip = self.request.META.get('HTTP_REAL_IP')
+        x_forwarded_for = self.request.META.get('HTTP_FORWARDED_FOR')
         remote_addr = self.request.META.get('REMOTE_ADDR')
         return x_real_ip or (x_forwarded_for and x_forwarded_for.split(',')[0]) or remote_addr
 
-    def check_registration_ip_access(self) -> bool:
+    def _check_ip_access(self, key: str, max_count: int, expire_seconds: int) -> bool:
         ip_address = self._get_ip_address()
         if settings.DEBUG and not ip_address:
             return True
@@ -37,14 +37,26 @@ class IPControlService:
         if not ip_address:
             return False
 
-        ip_address_access_count = self.redis_conn.get(ip_address) or 0
-        if int(ip_address_access_count) == user_const.MAX_REGISTER_IP_COUNT:
+        ip_address_access_count = self.redis_conn.get(key) or 0
+        if int(ip_address_access_count) >= max_count:
             return False
 
-        self.redis_conn.incr(ip_address, 1)
-        self.redis_conn.expire(ip_address, datetime.timedelta(hours=1).seconds)
+        self.redis_conn.setex(key, expire_seconds, 1)
 
         return True
+
+    def check_registration_ip_access(self) -> bool:
+        ip_address = self._get_ip_address()
+        expire_seconds = datetime.timedelta(hours=1).seconds
+
+        return self._check_ip_access(ip_address, user_const.MAX_REGISTER_IP_COUNT, expire_seconds)
+
+    def check_product_number_of_views_ip_access(self, product_slug: str) -> bool:
+        ip_address = self._get_ip_address()
+        key = f"{ip_address}_product_{product_slug}_views"
+        expire_seconds = int(datetime.timedelta(days=7).total_seconds())
+
+        return self._check_ip_access(key, 1, expire_seconds)
 
 
 class INotificationService:

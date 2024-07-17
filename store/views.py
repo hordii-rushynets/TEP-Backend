@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
@@ -8,10 +8,14 @@ from .tasks import import_data_task
 from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
-    ColorSerializer, MaterialSerializer, ProductVariantSerializer, ProductVariantInfoSerializer, FilterSerializer
+    ColorSerializer, MaterialSerializer, ProductVariantSerializer,
+    ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer
 )
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
+from rest_framework.decorators import action
+from rest_framework import status
+from rest_framework.request import Request
 
 
 def generate_latin_slug(string):
@@ -35,6 +39,20 @@ class ProductViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProductFilter
+
+    @action(methods=['post'], detail=False)
+    def increase_number_of_view(self, request: Request) -> Response:
+        """
+        Endpoint to increase product number of views.
+        
+        :param request: http request.
+
+        :return: response
+        """
+        serializer = IncreaseNumberOfViewsSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class SizeViewSet(viewsets.ModelViewSet):
