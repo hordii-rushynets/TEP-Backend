@@ -4,9 +4,9 @@ import django_filters
 from django.db.models import Q, QuerySet
 
 
-class MultipleValuesFilter(django_filters.BaseCSVFilter, django_filters.CharFilter):
+class MultipleStringValuesFilter(django_filters.BaseCSVFilter, django_filters.CharFilter):
     """
-    A custom filter class to filter querysets based on multiple CSV values.
+    A custom filter class to filter querysets based on multiple string values.
 
     This filter extends BaseCSVFilter and CharFilter from django_filters to allow
     filtering of querysets where the specified field contains any of the provided values.
@@ -16,6 +16,38 @@ class MultipleValuesFilter(django_filters.BaseCSVFilter, django_filters.CharFilt
     """
 
     def filter(self, qs: QuerySet, value: Optional[List[str]]) -> QuerySet:
+        """
+        Filters the queryset based on multiple string values.
+
+        Args:
+            qs (QuerySet): The initial queryset to filter.
+            value (Optional[List[str]]): A list of string values to filter the queryset.
+
+        Returns:
+            QuerySet: The filtered queryset.
+        """
+        if not value:
+            return qs
+
+        q_objects = Q()
+        for val in value:
+            q_objects |= Q(**{f"{self.field_name}__icontains": val})
+
+        return qs.filter(q_objects)
+
+
+class MultipleNumberValuesFilter(django_filters.BaseCSVFilter, django_filters.NumberFilter):
+    """
+    A custom filter class to filter querysets based on multiple number values.
+
+    This filter extends BaseCSVFilter and NumberFilter from django_filters to allow
+    filtering of querysets where the specified field contains any of the provided values.
+
+    Attributes:
+        field_name (str): The name of the field to filter on.
+    """
+
+    def filter(self, qs: QuerySet, value: Optional[List[int | float]]) -> QuerySet:
         """
         Filters the queryset based on multiple CSV values.
 
@@ -31,7 +63,7 @@ class MultipleValuesFilter(django_filters.BaseCSVFilter, django_filters.CharFilt
 
         q_objects = Q()
         for val in value:
-            q_objects |= Q(**{f"{self.field_name}__icontains": val})
+            q_objects |= Q(**{f"{self.field_name}": val})
 
         return qs.filter(q_objects)
 
@@ -53,9 +85,9 @@ class ProductFilter(BaseFilter):
 
     price_min = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='gte')
     price_max = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='lte')
-    size = MultipleValuesFilter(field_name='product_variants__sizes__title')
-    color = MultipleValuesFilter(field_name='product_variants__colors__title')
-    material = MultipleValuesFilter(field_name='product_variants__materials__title')
+    size = MultipleStringValuesFilter(field_name='product_variants__sizes__title')
+    color = MultipleStringValuesFilter(field_name='product_variants__colors__title')
+    material = MultipleStringValuesFilter(field_name='product_variants__materials__title')
 
     promo_price_min = django_filters.NumberFilter(method='filter_promo_price_min')
     promo_price_max = django_filters.NumberFilter(method='filter_promo_price_max')
@@ -67,22 +99,17 @@ class ProductFilter(BaseFilter):
     category_description = django_filters.CharFilter(field_name='category__description', lookup_expr='icontains')
     category_description_uk = django_filters.CharFilter(field_name='category__description_uk', lookup_expr='icontains')
 
-    filter_fields_value_en_mul = MultipleValuesFilter(field_name='product_variants__filter_field__value_en')
-    filter_fields_value_uk_mul = MultipleValuesFilter(field_name='product_variants__filter_field__value_uk')
+    filter_fields_value_en = MultipleStringValuesFilter(field_name='product_variants__filter_field__value_en')
+    filter_fields_value_uk = MultipleStringValuesFilter(field_name='product_variants__filter_field__value_uk')
+    filter_fields_id = MultipleNumberValuesFilter(field_name='product_variants__filter_field__id')
 
     class Meta:
         model = Product
         fields = [
             'slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
             'promo_price_min', 'promo_price_max', 'is_promotion', 'category_slug', 'category_title',
-            'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en_mul',
-            'filter_fields_value_uk_mul']
-
-    def filter_promo_price_min(self, queryset, name, value):
-        return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
-
-    def filter_promo_price_max(self, queryset, name, value):
-        return queryset.filter(product_variants__promotion=True, product_variants__promo_price__lte=value)
+            'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en',
+            'filter_fields_value_uk', 'filter_fields_id']
 
     def filter_promo_price_min(self, queryset, name, value):
         return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
@@ -118,7 +145,7 @@ class ProductVariantFilter(BaseFilter):
     price_max = django_filters.NumberFilter(field_name='default_price', lookup_expr='lte')
 
     promo_price_min = django_filters.NumberFilter(field_name='promo_price', method='filter_promo_price_min')
-    promo_price_max = django_filters.NumberFilter(field_name='promo_price',method='filter_promo_price_max')
+    promo_price_max = django_filters.NumberFilter(field_name='promo_price', method='filter_promo_price_max')
 
     class Meta:
         model = ProductVariant

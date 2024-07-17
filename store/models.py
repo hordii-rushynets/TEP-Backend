@@ -5,19 +5,19 @@ from django.db import models
 from common.models import TitleSlug
 
 
-class FilterField(models.Model):
-    value = models.CharField(max_length=128, blank=True, null=True)
-
-    def __str__(self):
-        return self.value
-
-
 class Filter(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
-    filter_fields = models.ManyToManyField(FilterField, related_name='filter_fields')
 
     def __str__(self):
         return self.name
+
+
+class FilterField(models.Model):
+    value = models.CharField(max_length=128, blank=True, null=True)
+    filter = models.ForeignKey(Filter, on_delete=models.CASCADE, related_name='filter_field', blank=True, null=True)
+
+    def __str__(self):
+        return self.value
 
 
 class Category(TitleSlug):
@@ -73,7 +73,7 @@ class ProductVariant(models.Model):
     promo_price = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
-    filter_field = models.ManyToManyField(FilterField, related_name='filter_field')
+    filter_field = models.ManyToManyField(FilterField, related_name='product_variants')
 
     def __str__(self):
         return str(self.sku)
