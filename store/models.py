@@ -114,12 +114,3 @@ class PromoCode(models.Model):
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, default='percent')
     active = models.BooleanField(default=False)
     products = models.ManyToManyField(ProductVariant)
-
-
-class ProductView(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    ip_address = models.GenericIPAddressField()
-    viewed_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.product} viewed by {self.ip_address} on {self.viewed_at}"
