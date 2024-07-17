@@ -114,5 +114,6 @@ class IncreaseNumberOfViewsSerializer(serializers.Serializer):
             raise ValidationError(code=HTTP_400_BAD_REQUEST)
 
         instance.number_of_views +=1
+        instance.save()
         
         return validated_data
