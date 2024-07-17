@@ -110,7 +110,7 @@ class IncreaseNumberOfViewsSerializer(serializers.Serializer):
         
         ip_control_service = IPControlService(request=self.context.get('request'),  database=RedisDatabases.IP_CONTROL)
 
-        if not ip_control_service.check_product_view_ip_access(instance.slug):
+        if not ip_control_service.check_product_number_of_views_ip_access(instance.slug):
             raise ValidationError(code=HTTP_400_BAD_REQUEST)
 
         instance.number_of_views +=1
