@@ -7,11 +7,12 @@ from store.serializers import (MaterialSerializer, SizeSerializer, FilterFieldSe
 
 class CartItemSerializer(serializers.ModelSerializer):
     """CartItem Serializer"""
-    product_variants = ProductVariantSerializer(read_only=True)
-    color = ColorSerializer(read_only=True)
-    material = MaterialSerializer(read_only=True)
-    size = SizeSerializer(read_only=True)
-    filter_field = FilterFieldSerializer(many=True, read_only=True)
+    product_variants = ProductVariantSerializer()
+    color = ColorSerializer()
+    material = MaterialSerializer()
+    size = SizeSerializer()
+    filter_field = FilterFieldSerializer(many=True)
+    cart = serializers.PrimaryKeyRelatedField(queryset=Cart.objects.all(), required=False)
 
     class Meta:
         model = CartItem

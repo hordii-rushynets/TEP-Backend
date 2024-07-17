@@ -15,6 +15,6 @@ class CartItem(models.Model):
     color = models.OneToOneField(Color, on_delete=models.SET_NULL, related_name='colour', blank=True, null=True)
     material = models.OneToOneField(Material, on_delete=models.SET_NULL, related_name='material', blank=True, null=True)
     size = models.OneToOneField(Size, on_delete=models.SET_NULL, related_name='size', blank=True, null=True)
-    filter_field = models.ManyToManyField(FilterField, related_name='filter_field', blank=True)
+    filter_field = models.ManyToManyField(FilterField, related_name='cart_items', blank=True)
     quantity = models.PositiveIntegerField(default=1)
 
