@@ -1,5 +1,5 @@
 from django.db import models
-from store.models import ProductVariant, Color, Material, Size, FilterField
+from store.models import ProductVariant, Color, Material, Size, FilterField, Category
 from tep_user.models import TEPUser
 
 
@@ -17,4 +17,5 @@ class CartItem(models.Model):
     size = models.OneToOneField(Size, on_delete=models.SET_NULL, related_name='size', blank=True, null=True)
     filter_field = models.ManyToManyField(FilterField, related_name='cart_items', blank=True)
     quantity = models.PositiveIntegerField(default=1)
+
 
