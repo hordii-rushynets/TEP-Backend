@@ -69,3 +69,9 @@ pytest-debug.log
 
 
 /docker/redis/redis_data
+
+# apps migrations
+blog/migrations
+cart/migrations
+store/migrations
+tep_user/migrations
