@@ -103,7 +103,7 @@ class ProductFilter(BaseFilter):
     filter_fields_value_uk = MultipleStringValuesFilter(field_name='product_variants__filter_field__value_uk')
     filter_fields_id = MultipleNumberValuesFilter(field_name='product_variants__filter_field__id')
 
-    o = django_filters.OrderingFilter(
+    ordering = django_filters.OrderingFilter(
         fields=(
             ('number_of_views', 'number_of_views'),
             ('number_of_add_to_cart', 'number_of_add_to_cart'),

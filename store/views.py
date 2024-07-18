@@ -49,6 +49,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = ['-number_of_views', '-number_of_add_to_cart']
 
     def get_queryset(self):
+        """Counts how many times an item has been added to the cart."""
         return Product.objects.annotate(
             number_of_add_to_cart=Count('product_variants__cart_item')
         )
