@@ -70,6 +70,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     filter_field = FilterFieldSerializer(many=True)
     variant_info = ProductVariantInfoSerializer(read_only=True)
     variant_images = ProductVariantImageSerializer(many=True, read_only=True)
+    number_of_add_to_cart = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ProductVariant
