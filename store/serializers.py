@@ -90,6 +90,9 @@ class ProductSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
 
         try:
+            if not request.user.is_authenticated:
+                return False
+
             return FavoriteProduct.objects.get(user=request.user, product=product).favorite
         except FavoriteProduct.DoesNotExist:
             return False
