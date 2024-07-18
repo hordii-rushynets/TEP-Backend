@@ -1,4 +1,4 @@
-from .models import Product, Category, ProductVariant
+from .models import Product, Category, ProductVariant, Feedback
 from typing import List, Optional
 import django_filters
 from django.db.models import Q, QuerySet
@@ -157,3 +157,17 @@ class ProductVariantFilter(BaseFilter):
 
     def filter_promo_price_max(self, queryset, name, value):
         return queryset.filter(promotion=True, promo_price__lte=value)
+
+
+class FeedbackFilter(BaseFilter):
+    """Feedback Filter"""
+    user_id = django_filters.NumberFilter(field_name='tep_user__id')
+    user_email = django_filters.CharFilter(field_name='tep_user__email', lookup_expr='icontains')
+
+    product_id = django_filters.NumberFilter(field_name='product__id')
+
+    text = django_filters.CharFilter(field_name='text', lookup_expr='icontains')
+
+    class Meta:
+        model = Feedback
+        fields = ['user_id', 'user_email', 'product_id', 'text']

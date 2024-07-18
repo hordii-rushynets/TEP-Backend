@@ -124,3 +124,14 @@ class PromoCode(models.Model):
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, default='percent')
     active = models.BooleanField(default=False)
     products = models.ManyToManyField(ProductVariant)
+
+
+class Feedback(models.Model):
+    """Feedback Model"""
+    tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='feed_back')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='feed_back')
+    text = models.TextField()
+
+    def __str__(self):
+        return str(self.tep_user.email)
+

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
-                     Category, PromoCode, Filter, FilterField, Order)
+                     Category, PromoCode, Filter, FilterField, Order, Feedback)
 from django.forms import Textarea
 from django.db import models
 from modeltranslation.admin import TranslationAdmin
@@ -78,3 +78,4 @@ admin.site.register(Material, MaterialAdmin)
 admin.site.register(PromoCode)
 admin.site.register(Filter, СustomFilterAdmin)
 admin.site.register(FilterField, СustomFilterFieldAdmin)
+admin.site.register(Feedback)

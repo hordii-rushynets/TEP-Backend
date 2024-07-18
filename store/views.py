@@ -6,16 +6,17 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter, FavoriteProduct
+from .models import (Category, Product, Size, Color, Material, ProductVariant,
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
@@ -111,6 +112,50 @@ class FilterViewSet(viewsets.ModelViewSet):
     queryset = Filter.objects.all()
     serializer_class = FilterSerializer
     lookup_field = 'id'
+
+
+class FeedbackViewSet(viewsets.ModelViewSet):
+    """Feedback ViewSet"""
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = FeedbackFilter
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def list(self, request, *args, **kwargs):
+        """List the objects of the queryset."""
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a single object instance."""
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        """ Create a new object instance."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(tep_user=self.request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update method is disabled."""
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        """ Partial update method is disabled."""
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def destroy(self, request, *args, **kwargs):
+        """ Destroy method is disabled."""
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

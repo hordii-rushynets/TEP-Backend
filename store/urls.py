@@ -3,7 +3,7 @@ from .views import (
     ProductsImport,
     CategoryViewSet, ProductViewSet, SizeViewSet,
     ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet,
-    FilterViewSet, FavoriteProductViewset
+    FilterViewSet, FavoriteProductViewset, FeedbackViewSet
 )
 from rest_framework.routers import DefaultRouter
 
@@ -18,6 +18,7 @@ router.register(r'materials', MaterialViewSet, basename='materials')
 router.register(r'variants', ProductVariantViewSet, basename='variants')
 router.register(r'variant-info', ProductVariantInfoViewSet, basename='variant-info')
 router.register(r'filters', FilterViewSet, basename='filters')
+router.register(r'feedback', FeedbackViewSet, basename='feedback')
 
 urlpatterns = [
     path('', include(router.urls)),

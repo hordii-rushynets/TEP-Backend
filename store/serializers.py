@@ -8,7 +8,11 @@ from tep_user.services import IPControlService
 
 from .models import (Category, Color, Filter, FilterField, Material, Product,
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
-                     Size, FavoriteProduct)
+                     Size, FavoriteProduct, Feedback)
+
+from tep_user.serializers import UserProfileSerializer, TEPUser
+
+
 
 
 class FilterFieldSerializer(serializers.ModelSerializer):
@@ -171,3 +175,16 @@ class SetFavoriteProductSerializer(serializers.Serializer):
         )
 
         return validated_data
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    """Feedback Serializer"""
+    tep_user = UserProfileSerializer(read_only=True)
+
+    product = ProductSerializer(read_only=True)
+    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
+
+    class Meta:
+        model = Feedback
+        fields = ['id', 'tep_user', 'product', 'product_id', 'text']
+
