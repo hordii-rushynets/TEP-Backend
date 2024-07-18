@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from common.models import TitleSlug
+from tep_user.models import TEPUser
 
 
 class Filter(models.Model):
@@ -38,6 +39,15 @@ class Product(TitleSlug):
 
     def __str__(self):
         return str(self.pk)
+
+
+class FavoriteProduct(models.Model):
+    user = models.ForeignKey(TEPUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    favorite = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return f'{self.user.email} - {self.product.title} - favorite: {self.favorite}.'
 
 
 class Size(TitleSlug):

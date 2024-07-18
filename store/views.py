@@ -3,19 +3,23 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter
+from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter, FavoriteProduct
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
-    ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer
+    ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
+    SetFavoriteProductSerializer
 )
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
+from django.db.models import QuerySet
 
 
 def generate_latin_slug(string):
@@ -53,6 +57,22 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
+    queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+    def get_serializer_class(self):
+        serializers = {
+            'create': SetFavoriteProductSerializer,
+            'list': ProductSerializer
+        }
+        return serializers[self.action]
+
+    def get_queryset(self) -> QuerySet:
+        """Return products that marked as favorite."""
+        product_ids = FavoriteProduct.objects.filter(favorite=True, user=self.request.user).values_list('product__id', flat=True)
+        return Product.objects.filter(id__in=product_ids)
 
 
 class SizeViewSet(viewsets.ModelViewSet):

@@ -57,6 +57,14 @@ class IPControlService:
         expire_seconds = int(datetime.timedelta(days=7).total_seconds())
 
         return self._check_ip_access(key, 1, expire_seconds)
+    
+    def check_product_set_favorite_ip_access(self, product_slug: str) -> bool:
+        ip_address = self._get_ip_address()
+        key = f"{ip_address}_product_{product_slug}_set_favorite"
+
+        expire_seconds = int(datetime.timedelta(minutes=1).total_seconds())
+
+        return self._check_ip_access(key, user_const.MAX_SET_FAVORITE_PRODUCT_BY_USER, expire_seconds)
 
 
 class INotificationService:
