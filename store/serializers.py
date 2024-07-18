@@ -1,14 +1,14 @@
 from typing import OrderedDict
+
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 from backend.settings import RedisDatabases
 from tep_user.services import IPControlService
 
 from .models import (Category, Color, Filter, FilterField, Material, Product,
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
-                     Size)
-from rest_framework.status import HTTP_400_BAD_REQUEST
+                     Size, FavoriteProduct)
 
 
 class FilterFieldSerializer(serializers.ModelSerializer):
@@ -79,10 +79,20 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     product_variants = ProductVariantSerializer(many=True, read_only=True)
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_is_favorite(self, product: Product) -> bool:
+        """Get is_favorite flag for specific product."""
+        request = self.context.get('request')
+
+        try:
+            return FavoriteProduct.objects.get(user=request.user, product=product).favorite
+        except FavoriteProduct.DoesNotExist:
+            return False
 
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):
@@ -99,7 +109,7 @@ class IncreaseNumberOfViewsSerializer(serializers.Serializer):
         :param validated_data: validated data.
 
         :raises NotFound: raise http 404 error if product does not exists.
-        :raises ValidationError: raise http 400 error if user try to increase number of views more that one time in week.
+        :raises PermissionDenied: raise http 403 error if user try to increase number of views more that one time in week.
 
         :return: validated data.
         """
@@ -111,9 +121,50 @@ class IncreaseNumberOfViewsSerializer(serializers.Serializer):
         ip_control_service = IPControlService(request=self.context.get('request'),  database=RedisDatabases.IP_CONTROL)
 
         if not ip_control_service.check_product_number_of_views_ip_access(instance.slug):
-            raise ValidationError(code=HTTP_400_BAD_REQUEST)
+            raise PermissionDenied()
 
         instance.number_of_views +=1
         instance.save()
         
+        return validated_data
+
+
+class SetFavoriteProductSerializer(serializers.Serializer):
+    """Serializer to mark product as favorite by user."""
+    id = serializers.IntegerField(required=True)
+    favorite = serializers.BooleanField(required=True)
+
+    class Meta:
+        fields = ['id', 'favorite']
+
+    def create(self, validated_data: OrderedDict) -> OrderedDict:
+        """
+        Override create method to favorite product.
+
+        :param validated_data: validated data.
+
+        :raises NotFound: raise http 404 error if product does not exists.
+        :raises PermissionDenied: raise http 403 error if user try to mark product as favorite more that 6 times in minute.
+
+        :return: validated data.
+        """
+        try:
+            instance = Product.objects.get(id=validated_data.get('id'))
+        except FavoriteProduct.DoesNotExist:
+            raise NotFound()
+
+        ip_control_service = IPControlService(request=self.context.get('request'),  database=RedisDatabases.IP_CONTROL)
+
+        if not ip_control_service.check_product_set_favorite_ip_access(instance.slug):
+            raise PermissionDenied()
+        
+        favorite = self.validated_data.get('favorite')
+        request = self.context.get('request')
+
+        FavoriteProduct.objects.update_or_create(
+            product=instance,
+            user=request.user,
+            defaults={'favorite': favorite}
+        )
+
         return validated_data

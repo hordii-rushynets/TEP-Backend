@@ -3,13 +3,14 @@ from .views import (
     ProductsImport,
     CategoryViewSet, ProductViewSet, SizeViewSet,
     ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet,
-    FilterViewSet
+    FilterViewSet, FavoriteProductViewset
 )
 from rest_framework.routers import DefaultRouter
 
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='categories')
+router.register(r'products/favorite', FavoriteProductViewset, basename='favorite-products')
 router.register(r'products', ProductViewSet, basename='products')
 router.register(r'sizes', SizeViewSet, basename='sizes')
 router.register(r'colors', ColorViewSet, basename='colors')

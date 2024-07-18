@@ -17,3 +17,5 @@ USER_REGISTER_IP_ERROR = (
     'You have reached the maximum number of registrations from one IP address. '
     'Please contact the administrator or try again later.'
 )
+
+MAX_SET_FAVORITE_PRODUCT_BY_USER = 6
