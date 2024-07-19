@@ -89,9 +89,6 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         """Remove all products from favorites."""
         num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
 
-        if num_deleted == 0:
-            return Response({'detail': 'No favorite products found.'}, status=status.HTTP_404_NOT_FOUND)
-
         return Response({'detail': f'{num_deleted} favorite products removed.'}, status=status.HTTP_204_NO_CONTENT)
 
 
