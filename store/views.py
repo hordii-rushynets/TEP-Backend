@@ -86,17 +86,13 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         return Product.objects.filter(id__in=product_ids)
 
     def destroy(self, request, *args, **kwargs):
-        """Remove a product from favorites."""
-        product_id = kwargs.get('pk')
-        if not product_id:
-            return Response({'detail': 'Product ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        """Remove all products from favorites."""
+        num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
 
-        try:
-            favorite_product = FavoriteProduct.objects.get(product_id=product_id, user=request.user)
-            favorite_product.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except FavoriteProduct.DoesNotExist:
-            raise NotFound(detail='Favorite product not found.')
+        if num_deleted == 0:
+            return Response({'detail': 'No favorite products found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'detail': f'{num_deleted} favorite products removed.'}, status=status.HTTP_204_NO_CONTENT)
 
 
 class SizeViewSet(viewsets.ModelViewSet):
