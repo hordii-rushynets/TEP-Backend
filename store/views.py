@@ -89,7 +89,7 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         """Remove all products from favorites."""
         num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
 
-        return Response({'detail': f'{num_deleted} favorite products removed.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SizeViewSet(viewsets.ModelViewSet):
