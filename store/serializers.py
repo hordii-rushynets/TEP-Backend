@@ -184,7 +184,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
 
+    like_number = serializers.IntegerField(read_only=True)
+    dislike_number = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Feedback
-        fields = ['id', 'tep_user', 'product', 'product_id', 'text']
+        fields = ['id', 'tep_user', 'product', 'product_id', 'text', 'like_number', 'dislike_number']
 

@@ -14,7 +14,7 @@ from .serializers import (
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
     SetFavoriteProductSerializer, FeedbackSerializer
 )
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter
 from rest_framework.decorators import action
@@ -114,7 +114,10 @@ class FilterViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
 
 
-class FeedbackViewSet(viewsets.ModelViewSet):
+class FeedbackViewSet(ListModelMixin,
+                      CreateModelMixin,
+                      RetrieveModelMixin,
+                      viewsets.GenericViewSet):
     """Feedback ViewSet"""
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
@@ -144,18 +147,6 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(tep_user=self.request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def update(self, request, *args, **kwargs):
-        """Update method is disabled."""
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
-        """ Partial update method is disabled."""
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def destroy(self, request, *args, **kwargs):
-        """ Destroy method is disabled."""
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

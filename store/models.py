@@ -131,7 +131,14 @@ class Feedback(models.Model):
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='feed_back')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='feed_back')
     text = models.TextField()
+    like_number = models.PositiveIntegerField(default=0)
+    dislike_number = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return str(self.tep_user.email)
 
+
+class FeedbackImage(models.Model):
+    """Feedback image Model"""
+    image = models.ImageField(upload_to='feedback/images/', blank=True)
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='feedback_images')
