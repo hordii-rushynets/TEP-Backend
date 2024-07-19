@@ -21,7 +21,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from django.db.models import QuerySet, Count
 from rest_framework.filters import OrderingFilter
-
+from rest_framework.exceptions import NotFound
 
 
 def generate_latin_slug(string):
@@ -72,6 +72,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     permission_classes = [IsAuthenticated]
+
     def get_serializer_class(self):
         serializers = {
             'create': SetFavoriteProductSerializer,
@@ -83,6 +84,19 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         """Return products that marked as favorite."""
         product_ids = FavoriteProduct.objects.filter(favorite=True, user=self.request.user).values_list('product__id', flat=True)
         return Product.objects.filter(id__in=product_ids)
+
+    def destroy(self, request, *args, **kwargs):
+        """Remove a product from favorites."""
+        product_id = kwargs.get('pk')
+        if not product_id:
+            return Response({'detail': 'Product ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            favorite_product = FavoriteProduct.objects.get(product_id=product_id, user=request.user)
+            favorite_product.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except FavoriteProduct.DoesNotExist:
+            raise NotFound(detail='Favorite product not found.')
 
 
 class SizeViewSet(viewsets.ModelViewSet):
