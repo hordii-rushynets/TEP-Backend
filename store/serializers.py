@@ -66,7 +66,7 @@ class ProductVariantImageSerializer(serializers.ModelSerializer):
 class DimensionalGridSizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = DimensionalGridSize
-        fields = ['id', 'title', 'size']
+        fields = ['title_uk', 'title_en', 'size_uk', 'size_en']
 
 
 class DimensionalGridSerializer(serializers.ModelSerializer):
@@ -74,7 +74,7 @@ class DimensionalGridSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DimensionalGrid
-        fields = ['id', 'title', 'sizes']
+        fields = ['id', 'title_uk', 'title_en', 'sizes']
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):
