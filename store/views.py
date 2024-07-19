@@ -23,7 +23,6 @@ from django.db.models import QuerySet, Count
 from rest_framework.filters import OrderingFilter
 
 
-
 def generate_latin_slug(string):
     latin_string = translit(string, 'uk', reversed=True)
     clean_string = ''.join(e for e in latin_string if e.isalnum() or e == ' ')
@@ -72,6 +71,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     permission_classes = [IsAuthenticated]
+
     def get_serializer_class(self):
         serializers = {
             'create': SetFavoriteProductSerializer,
@@ -83,6 +83,12 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         """Return products that marked as favorite."""
         product_ids = FavoriteProduct.objects.filter(favorite=True, user=self.request.user).values_list('product__id', flat=True)
         return Product.objects.filter(id__in=product_ids)
+
+    def destroy(self, request, *args, **kwargs):
+        """Remove all products from favorites."""
+        num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SizeViewSet(viewsets.ModelViewSet):
