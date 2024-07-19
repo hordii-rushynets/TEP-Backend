@@ -19,7 +19,9 @@ from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Count
+from rest_framework.filters import OrderingFilter
+
 
 
 def generate_latin_slug(string):
@@ -41,8 +43,16 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
     filterset_class = ProductFilter
+    ordering_fields = ['number_of_views', 'number_of_add_to_cart']
+    ordering = ['-number_of_views', '-number_of_add_to_cart']
+
+    def get_queryset(self):
+        """Counts how many times an item has been added to the cart."""
+        return Product.objects.annotate(
+            number_of_add_to_cart=Count('product_variants__cart_item')
+        )
 
     @action(methods=['post'], detail=False)
     def increase_number_of_view(self, request: Request) -> Response:
