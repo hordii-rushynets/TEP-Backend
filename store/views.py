@@ -87,7 +87,6 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
     def destroy(self, request, *args, **kwargs):
         """Remove all products from favorites."""
         num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
-
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

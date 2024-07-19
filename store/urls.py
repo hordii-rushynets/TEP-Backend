@@ -22,4 +22,5 @@ router.register(r'filters', FilterViewSet, basename='filters')
 urlpatterns = [
     path('', include(router.urls)),
     path('products/import/', ProductsImport.as_view()),
+    path('products/favorite/remove/', FavoriteProductViewset.as_view({'delete': 'destroy'}), name='remove-all-favorites'),
 ]
