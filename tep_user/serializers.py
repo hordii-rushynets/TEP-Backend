@@ -175,7 +175,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TEPUser
         fields = [
-            'id', 'first_name', 'last_name', 'email', 'phone_number', 'profile_picture', 'privacy_policy_accepted'
+            'id', 'first_name', 'last_name', 'phone_number', 'profile_picture', 'privacy_policy_accepted'
         ]
 
 
@@ -229,3 +229,44 @@ class UserForgetPasswordSerializer(serializers.ModelSerializer):
         self.instance = user
         send_email_code(user.email, user.full_name)
         return attrs
+
+
+class UserEmailUpdateRequestSerializer(serializers.Serializer):
+    new_email = serializers.EmailField(required=True)
+
+    def validate_new_email(self, email: str) -> str:
+        if TEPUser.objects.filter(email=email).exists():
+            raise ValidationError('The user with this new email already exists.')
+        return email
+
+    @transaction.atomic
+    def save(self, **kwargs):
+        user = self.context['user']
+        new_email = self.validated_data['new_email']
+        send_email_code(new_email, user.full_name)
+        return user
+
+
+class UserEmailUpdateConfirmSerializer(serializers.Serializer):
+    new_email = serializers.EmailField(required=True)
+    code = serializers.CharField(required=True)
+
+    def validate_new_email(self, email: str) -> str:
+        if TEPUser.objects.filter(email=email).exists():
+            raise ValidationError('The user with this new email already exists.')
+        return email
+
+    def validate_code(self, code: str) -> str:
+        data = self.initial_data
+        confirmation_code = UserService.get_code(email=data.get('new_email'))
+        if not confirmation_code or str(code) != str(confirmation_code):
+            raise ValidationError('The verification code is incorrect.')
+        return code
+
+    @transaction.atomic
+    def save(self, **kwargs):
+        user = self.context['user']
+        new_email = self.validated_data['new_email']
+        user.email = new_email
+        user.save()
+        return user

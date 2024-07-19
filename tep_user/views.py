@@ -15,7 +15,9 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserLoginSerializer, UserProfileSerializer,
                                   UserRegistrationSerializer,
                                   UserResentCodeSerializer,
-                                  UserResetPasswordSerializer)
+                                  UserResetPasswordSerializer,
+                                  UserEmailUpdateRequestSerializer,
+                                  UserEmailUpdateConfirmSerializer)
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -80,6 +82,28 @@ class ForgetPasswordViewSet(CreateModelMixin, viewsets.GenericViewSet):
     @action(methods=['post'], detail=False)
     def confirm(self, request: Request) -> Response:
         serializer = ForgetPasswordConfirmCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class UserEmailUpdateViewSet(viewsets.GenericViewSet):
+    """ViewSet to change the user's email."""
+    queryset = TEPUser.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['post'], detail=False, url_path='request-update')
+    def request_update_email(self, request):
+        user = request.user
+        serializer = UserEmailUpdateRequestSerializer(data=request.data, context={'user': user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False, url_path='confirm-update')
+    def confirm_update_email(self, request):
+        user = request.user
+        serializer = UserEmailUpdateConfirmSerializer(data=request.data, context={'user': user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
