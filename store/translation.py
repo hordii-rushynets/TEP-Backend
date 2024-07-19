@@ -1,6 +1,6 @@
 from modeltranslation.translator import translator, TranslationOptions
 from .models import (Category, Product, Size, Color, ProductVariant, ProductVariantInfo,
-                     Material, Filter, FilterField)
+                     Material, Filter, FilterField, DimensionalGrid, DimensionalGridSize)
 
 
 class CategoryTranslationOptions(TranslationOptions):
@@ -9,6 +9,14 @@ class CategoryTranslationOptions(TranslationOptions):
 
 class ProductTranslationOptions(TranslationOptions):
     fields = ('title', 'description')
+
+
+class DimensionalGridTranslationOptions(TranslationOptions):
+    fields = ('title',)
+
+
+class DimensionalGridSizeTranslationOptions(TranslationOptions):
+    fields = ('title', 'size')
 
 
 class ProductVariantTranslationOptions(TranslationOptions):
@@ -41,6 +49,8 @@ class FilterFieldTranslationOptions(TranslationOptions):
 
 translator.register(Category, CategoryTranslationOptions)
 translator.register(Product, ProductTranslationOptions)
+translator.register(DimensionalGrid, DimensionalGridTranslationOptions)
+translator.register(DimensionalGridSize, DimensionalGridSizeTranslationOptions)
 translator.register(Size, SizeTranslationOptions)
 translator.register(Color, ColorTranslationOptions)
 translator.register(Material, MaterialTranslationOptions)
