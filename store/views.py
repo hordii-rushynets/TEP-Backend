@@ -21,7 +21,6 @@ from rest_framework import status
 from rest_framework.request import Request
 from django.db.models import QuerySet, Count
 from rest_framework.filters import OrderingFilter
-from rest_framework.exceptions import NotFound
 
 
 def generate_latin_slug(string):
