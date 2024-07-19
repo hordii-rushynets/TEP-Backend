@@ -1,9 +1,9 @@
 from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
-                     Category, PromoCode, Filter, FilterField, Order, Feedback)
+                     Category, PromoCode, Filter, FilterField, Order, Feedback, DimensionalGrid, DimensionalGridSize)
 from django.forms import Textarea
 from django.db import models
-from modeltranslation.admin import TranslationAdmin
+from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
 
 JS = (
     'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
@@ -68,8 +68,17 @@ class СustomFilterFieldAdmin(TranslationAdmin):
         css = CSS
 
 
+class DimensionalGridSizeInline(TranslationTabularInline):
+    model = DimensionalGridSize
+
+
+class DimensionalGridAdmin(TranslationAdmin):
+    inlines = [DimensionalGridSizeInline]
+
+
 admin.site.register(Order)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(DimensionalGrid, DimensionalGridAdmin)
 admin.site.register(Product)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(Size, SizeAdmin)
