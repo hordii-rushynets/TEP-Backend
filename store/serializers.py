@@ -6,7 +6,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from backend.settings import RedisDatabases
 from tep_user.services import IPControlService
 
-from .models import (Category, Color, Filter, FilterField, Material, Product,
+from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filter, FilterField, Material, Product,
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
                      Size, FavoriteProduct)
 
@@ -63,6 +63,20 @@ class ProductVariantImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DimensionalGridSizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DimensionalGridSize
+        fields = ['title_uk', 'title_en', 'size_uk', 'size_en']
+
+
+class DimensionalGridSerializer(serializers.ModelSerializer):
+    sizes = DimensionalGridSizeSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = DimensionalGrid
+        fields = ['id', 'title_uk', 'title_en', 'sizes']
+
+
 class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
     colors = ColorSerializer(many=True)
@@ -80,6 +94,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     product_variants = ProductVariantSerializer(many=True, read_only=True)
+    dimensional_grid = DimensionalGridSerializer(many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
     class Meta:
