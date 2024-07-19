@@ -50,6 +50,24 @@ class FavoriteProduct(models.Model):
         return f'{self.user.email} - {self.product.title} - favorite: {self.favorite}.'
 
 
+class DimensionalGrid(models.Model):
+    title = models.CharField(max_length=255)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='dimensional_grid')
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class DimensionalGridSize(models.Model):
+    title = models.CharField(max_length=255)
+    size = models.CharField(max_length=255)
+
+    dimensional_grid = models.ForeignKey(DimensionalGrid, on_delete=models.CASCADE, related_name='sizes')
+
+    def __str__(self) -> str:
+        return f'{self.title} - {self.size}'
+
+
 class Size(TitleSlug):
     def __str__(self):
         return self.title
