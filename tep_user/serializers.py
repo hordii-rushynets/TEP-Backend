@@ -172,10 +172,13 @@ class ForgetPasswordConfirmCodeSerializer(UserConfirmCodeSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer to get or update profile."""
+    email = serializers.EmailField(read_only=True)
+
     class Meta:
         model = TEPUser
         fields = [
-            'id', 'first_name', 'last_name', 'phone_number', 'profile_picture', 'privacy_policy_accepted'
+            'id', 'first_name', 'last_name', 'email', 'phone_number', 'birth_date', 'profile_picture',
+            'privacy_policy_accepted'
         ]
 
 
