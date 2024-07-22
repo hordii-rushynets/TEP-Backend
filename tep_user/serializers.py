@@ -172,10 +172,13 @@ class ForgetPasswordConfirmCodeSerializer(UserConfirmCodeSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer to get or update profile."""
+    email = serializers.EmailField(read_only=True)
+
     class Meta:
         model = TEPUser
         fields = [
-            'id', 'first_name', 'last_name', 'email', 'phone_number', 'profile_picture', 'privacy_policy_accepted'
+            'id', 'first_name', 'last_name', 'email', 'phone_number', 'birth_date', 'profile_picture',
+            'privacy_policy_accepted'
         ]
 
 
@@ -199,20 +202,6 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         return data
 
 
-class UserResetPasswordSerializer(serializers.ModelSerializer):
-    """Serializer to reset password."""
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = TEPUser
-        fields = ['password']
-
-    def save(self) -> None:
-        """Save new user password."""
-        self.instance.set_password(self.validated_data['password'])
-        self.instance.save()
-
-
 class UserForgetPasswordSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
 
@@ -229,3 +218,67 @@ class UserForgetPasswordSerializer(serializers.ModelSerializer):
         self.instance = user
         send_email_code(user.email, user.full_name)
         return attrs
+
+
+class UserEmailUpdateRequestSerializer(serializers.Serializer):
+    new_email = serializers.EmailField(required=True)
+
+    def validate_new_email(self, email: str) -> str:
+        if TEPUser.objects.filter(email=email).exists():
+            raise ValidationError('The user with this new email already exists.')
+        return email
+
+    @transaction.atomic
+    def save(self, **kwargs):
+        user = self.context['user']
+        new_email = self.validated_data['new_email']
+        send_email_code(new_email, user.full_name)
+        return user
+
+
+class UserEmailUpdateConfirmSerializer(serializers.Serializer):
+    new_email = serializers.EmailField(required=True)
+    code = serializers.CharField(required=True)
+
+    def validate_new_email(self, email: str) -> str:
+        if TEPUser.objects.filter(email=email).exists():
+            raise ValidationError('The user with this new email already exists.')
+        return email
+
+    def validate_code(self, code: str) -> str:
+        data = self.initial_data
+        confirmation_code = UserService.get_code(email=data.get('new_email'))
+        if not confirmation_code or str(code) != str(confirmation_code):
+            raise ValidationError('The verification code is incorrect.')
+        return code
+
+    @transaction.atomic
+    def save(self, **kwargs):
+        user = self.context['user']
+        new_email = self.validated_data['new_email']
+        user.email = new_email
+        user.save()
+        return user
+
+
+class UserPasswordUpdateRequestSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
+
+    def validate_old_password(self, value):
+        user = self.context['user']
+        if not user.check_password(value):
+            raise serializers.ValidationError("The old password is incorrect.")
+        return value
+
+    def validate_new_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("The new password must be at least 8 characters long.")
+        return value
+
+    def save(self, **kwargs):
+        user = self.context['user']
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
+        return user

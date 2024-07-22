@@ -54,6 +54,7 @@ class TEPUser(AbstractUser):
     subscribed_to_updates = models.BooleanField(default=False)
     interested_in_wholesale = models.BooleanField(default=False)
     username = models.CharField(max_length=150, default='default_username')
+    birth_date = models.DateField(null=True, blank=True)
 
     objects = TEPUserManager()
 
