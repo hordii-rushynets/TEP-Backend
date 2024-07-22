@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from common.models import TitleSlug
@@ -151,9 +151,10 @@ class Feedback(models.Model):
     text = models.TextField()
     like_number = models.PositiveIntegerField(default=0)
     dislike_number = models.PositiveIntegerField(default=0)
+    evaluation = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(5),])
 
     def __str__(self):
-        return str(self.tep_user.email)
+        return f"{self.tep_user.email} + {self.product.name}"
 
 
 class FeedbackImage(models.Model):

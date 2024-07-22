@@ -8,7 +8,7 @@ from tep_user.services import IPControlService
 
 from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filter, FilterField, Material, Product,
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
-                     Size, FavoriteProduct, Feedback)
+                     Size, FavoriteProduct, Feedback, FeedbackImage)
 
 from tep_user.serializers import UserProfileSerializer, TEPUser
 
@@ -193,17 +193,22 @@ class SetFavoriteProductSerializer(serializers.Serializer):
         return validated_data
 
 
+class FeedbackImageSerializer(serializers.ModelSerializer):
+    """Feedback Image Serializer"""
+    class Meta:
+        model = FeedbackImage
+        fields = ['id', 'image']
+
+
 class FeedbackSerializer(serializers.ModelSerializer):
     """Feedback Serializer"""
     tep_user = UserProfileSerializer(read_only=True)
-
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
-
-    like_number = serializers.IntegerField(read_only=True)
-    dislike_number = serializers.IntegerField(read_only=True)
+    feedback_images = FeedbackImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Feedback
-        fields = ['id', 'tep_user', 'product', 'product_id', 'text', 'like_number', 'dislike_number']
+        fields = ['id', 'tep_user', 'product', 'product_id', 'text', 'like_number', 'dislike_number', 'evaluation',
+                  'feedback_images']
 

@@ -3,11 +3,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
-                     ProductVariantInfo, Filter, FavoriteProduct, Feedback)
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackImage)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
@@ -137,7 +137,7 @@ class FeedbackViewSet(ListModelMixin,
     """Feedback ViewSet"""
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'id'
     filter_backends = (DjangoFilterBackend,)
     filterset_class = FeedbackFilter
@@ -158,11 +158,52 @@ class FeedbackViewSet(ListModelMixin,
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        """ Create a new object instance."""
+        """Create a new object instance."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(tep_user=self.request.user)
+        feedback = serializer.save(tep_user=self.request.user)
+
+        # Handle feedback_images if they are sent in the request
+        images = request.FILES.getlist('feedback_images')
+        for image in images:
+            FeedbackImage.objects.create(feedback=feedback, image=image)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def like_dislike(self, request, *args, **kwargs):
+        """Handle like and dislike functionality."""
+        feedback = self.get_object()
+        user = request.user
+
+        existing_feedback = Feedback.objects.filter(
+            tep_user=user,
+            product=feedback.product
+        ).first()
+
+        if existing_feedback:
+            if existing_feedback.like_number > 0:
+                existing_feedback.like_number -= 1
+                existing_feedback.save()
+            elif existing_feedback.dislike_number > 0:
+                existing_feedback.dislike_number -= 1
+                existing_feedback.save()
+
+        action_type = request.data.get('action')
+
+        if action_type == 'like':
+            feedback.like_number += 1
+        elif action_type == 'dislike':
+            feedback.dislike_number += 1
+        else:
+            return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+
+        feedback.save()
+
+        return Response({
+            'like_number': feedback.like_number,
+            'dislike_number': feedback.dislike_number
+        })
 
 
 @method_decorator(csrf_exempt, name='dispatch')
