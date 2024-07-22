@@ -1,34 +1,23 @@
 from .models import Vacancy
 import django_filters
-from store.filters import MultipleStringValuesFilter
+from store.filters import MultipleStringValuesFilter, BaseFilter
 
 
-class VacancyFilter(django_filters.FilterSet):
+class VacancyFilter(BaseFilter):
     """Vacancy filter"""
-    title_en = django_filters.CharFilter(field_name="title_en", lookup_expr='icontains')
-    title_uk = django_filters.CharFilter(field_name="title_uk", lookup_expr='icontains')
+    title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
+    city = django_filters.CharFilter(field_name='city', lookup_expr='icontains')
+    region = django_filters.CharFilter(field_name='region', lookup_expr='icontains')
 
-    address_en = django_filters.CharFilter(field_name="address_en", lookup_expr='icontains')
-    address_uk = django_filters.CharFilter(field_name="address_uk", lookup_expr='icontains')
+    description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
+    about_company = django_filters.CharFilter(field_name='about_company', lookup_expr='icontains')
 
-    employment_type_en = django_filters.CharFilter(field_name="employment_type_en", lookup_expr='icontains')
-    employment_type_uk = django_filters.CharFilter(field_name="employment_type_uk", lookup_expr='icontains')
-
-    description_en = django_filters.CharFilter(field_name="description_en", lookup_expr='icontains')
-    description_uk = django_filters.CharFilter(field_name="description_uk", lookup_expr='icontains')
-
-    about_company_en = django_filters.CharFilter(field_name="about_company_en", lookup_expr='icontains')
-    about_company_uk = django_filters.CharFilter(field_name="about_company_uk", lookup_expr='icontains')
-    duties_en = MultipleStringValuesFilter("duties__value_en")
-    duties_uk = MultipleStringValuesFilter("duties__value_uk")
+    scope_of_work = MultipleStringValuesFilter(field_name='scope_of_work__name', lookup_expr='icontains')
+    type_of_work = MultipleStringValuesFilter(field_name='type_of_work__name', lookup_expr='icontains')
+    type_of_employment = MultipleStringValuesFilter(field_name='type_of_employment__name', lookup_expr='icontains')
+    tag = MultipleStringValuesFilter(field_name='tag__name', lookup_expr='icontains')
 
     class Meta:
         model = Vacancy
-        fields = ['title_en', 'title_uk', 'address_en', 'address_uk', 'employment_type_en', 'employment_type_uk',
-                  'description_en', 'employment_type_uk', 'about_company_en', 'about_company_uk', 'duties_en',
-                  'duties_uk']
-
-    @property
-    def qs(self):
-        parent = super().qs
-        return parent.distinct()
+        fields = ['title', 'city', 'region', 'description', 'about_company', 'scope_of_work', 'type_of_work',
+                  'type_of_employment', 'tag']
