@@ -46,7 +46,7 @@ class UserLoginAPIView(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
 
-class ProfileView(generics.RetrieveUpdateAPIView):
+class ProfileView(generics.RetrieveUpdateDestroyAPIView):
     """User profile view."""
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
