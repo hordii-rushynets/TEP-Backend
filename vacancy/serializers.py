@@ -6,35 +6,35 @@ class ScopeOfWorkSerializer(serializers.ModelSerializer):
     """ScopeOfWork Serializer"""
     class Meta:
         model = ScopeOfWork
-        fields = ['name']
+        fields = '__all__'
 
 
 class TypeOfWorkSerializer(serializers.ModelSerializer):
     """TypeOfWork Serializer"""
     class Meta:
         model = TypeOfWork
-        fields = ['name']
+        fields = '__all__'
 
 
 class TypeOfEmploymentSerializer(serializers.ModelSerializer):
     """TypeOfEmployment Serializer"""
     class Meta:
         model = TypeOfEmployment
-        fields = ['name']
+        fields = '__all__'
 
 
 class TagSerializer(serializers.ModelSerializer):
     """Tag Serializer"""
     class Meta:
         model = Tag
-        fields = ['name']
+        fields = '__all__'
 
 
 class AddressSerializer(serializers.ModelSerializer):
     """Address Serializer"""
     class Meta:
         model = Address
-        fields = ['city', 'region']
+        fields = '__all__'
 
 
 class VacancySerializer(serializers.ModelSerializer):
