@@ -15,7 +15,9 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserLoginSerializer, UserProfileSerializer,
                                   UserRegistrationSerializer,
                                   UserResentCodeSerializer,
-                                  UserResetPasswordSerializer)
+                                  UserEmailUpdateRequestSerializer,
+                                  UserEmailUpdateConfirmSerializer,
+                                  UserPasswordUpdateRequestSerializer)
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -44,7 +46,7 @@ class UserLoginAPIView(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
 
-class ProfileView(generics.RetrieveUpdateAPIView):
+class ProfileView(generics.RetrieveUpdateDestroyAPIView):
     """User profile view."""
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
@@ -62,10 +64,10 @@ class ResetPasswordView(APIView):
         Set a new user password using the http POST method.
 
         :param request: http request.
-        
+
         :return: http response.
         """
-        serializer = UserResetPasswordSerializer(self.request.user, data=request.data)
+        serializer = UserPasswordUpdateRequestSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -83,3 +85,27 @@ class ForgetPasswordViewSet(CreateModelMixin, viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class UserEmailUpdateViewSet(viewsets.GenericViewSet):
+    """ViewSet to change the user's email."""
+    queryset = TEPUser.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['post'], detail=False, url_path='request')
+    def request_update_email(self, request):
+        user = request.user
+        serializer = UserEmailUpdateRequestSerializer(data=request.data, context={'user': user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False, url_path='confirm')
+    def confirm_update_email(self, request):
+        user = request.user
+        serializer = UserEmailUpdateConfirmSerializer(data=request.data, context={'user': user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+

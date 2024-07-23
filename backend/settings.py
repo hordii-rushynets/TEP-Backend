@@ -214,6 +214,7 @@ CELERY_BROKER_URL = REDIS_CONNECTION_STRING % int(RedisDatabases.CELERY)
 LANGUAGES = (
     ('uk', 'Ukrainian'),
     ('en', 'English'),
+    ('ru', 'Russian')
 )
 
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
