@@ -175,7 +175,7 @@ class FeedbackFilter(BaseFilter):
     user_id = django_filters.NumberFilter(field_name='tep_user__id')
     user_email = django_filters.CharFilter(field_name='tep_user__email', lookup_expr='icontains')
 
-    product = django_filters.NumberFilter(field_name='product__slug', lookup_expr='icontains')
+    product = django_filters.CharFilter(field_name='product__slug', lookup_expr='icontains')
     category = django_filters.CharFilter(field_name='product__category__slug', lookup_expr='icontains')
 
     text = django_filters.CharFilter(field_name='text', lookup_expr='icontains')

@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
-                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackImage)
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
@@ -142,68 +142,66 @@ class FeedbackViewSet(ListModelMixin,
     filter_backends = (DjangoFilterBackend,)
     filterset_class = FeedbackFilter
 
-    def get_queryset(self):
-        return super().get_queryset()
-
-    def list(self, request, *args, **kwargs):
-        """List the objects of the queryset."""
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve a single object instance."""
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
     def create(self, request, *args, **kwargs):
         """Create a new object instance."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         feedback = serializer.save(tep_user=self.request.user)
-
-        # Handle feedback_images if they are sent in the request
-        images = request.FILES.getlist('feedback_images')
-        for image in images:
-            FeedbackImage.objects.create(feedback=feedback, image=image)
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
-    def like_dislike(self, request, *args, **kwargs):
-        """Handle like and dislike functionality."""
+    def like(self, request, *args, **kwargs):
+        """Like functionality."""
         feedback = self.get_object()
         user = request.user
+        vote, created = FeedbackVote.objects.get_or_create(tep_user=user, feedback=feedback)
 
-        existing_feedback = Feedback.objects.filter(
-            tep_user=user,
-            product=feedback.product
-        ).first()
+        if vote.is_like == True:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        if existing_feedback:
-            if existing_feedback.like_number > 0:
-                existing_feedback.like_number -= 1
-                existing_feedback.save()
-            elif existing_feedback.dislike_number > 0:
-                existing_feedback.dislike_number -= 1
-                existing_feedback.save()
-
-        action_type = request.data.get('action')
-
-        if action_type == 'like':
+        if vote.is_like == False:
+            vote.is_like = True
+            vote.save()
+            feedback.dislike_number -= 1
             feedback.like_number += 1
-        elif action_type == 'dislike':
-            feedback.dislike_number += 1
-        else:
-            return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+        elif created or vote.is_like is None:
+            vote.is_like = True
+            vote.save()
+            feedback.like_number += 1
 
         feedback.save()
 
         return Response({
             'like_number': feedback.like_number,
             'dislike_number': feedback.dislike_number
-        })
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def dislike(self, request, *args, **kwargs):
+        """Dislike functionality."""
+        feedback = self.get_object()
+        user = request.user
+        vote, created = FeedbackVote.objects.get_or_create(tep_user=user, feedback=feedback)
+
+        if vote.is_like == False:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if vote.is_like == True:
+            vote.is_like = False
+            vote.save()
+            feedback.like_number -= 1
+            feedback.dislike_number += 1
+        elif created or vote.is_like is None:
+            vote.is_like = False
+            vote.save()
+            feedback.dislike_number += 1
+
+        feedback.save()
+
+        return Response({
+            'like_number': feedback.like_number,
+            'dislike_number': feedback.dislike_number
+        }, status=status.HTTP_200_OK)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

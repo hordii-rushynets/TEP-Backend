@@ -210,5 +210,14 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ['id', 'tep_user', 'product', 'product_id', 'text', 'like_number', 'dislike_number', 'evaluation',
-                  'feedback_images']
+                  'feedback_images', 'creation_time']
+
+    def create(self, validated_data):
+        images = validated_data.pop('feedback_images', [])
+        feedback = Feedback.objects.create(**validated_data)
+
+        for image in images:
+            FeedbackImage.objects.create(feedback=feedback, image=image)
+
+        return feedback
 

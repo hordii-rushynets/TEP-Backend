@@ -4,6 +4,7 @@ from django.db import models
 
 from common.models import TitleSlug
 from tep_user.models import TEPUser
+from django.utils import timezone
 
 
 class Filter(models.Model):
@@ -152,12 +153,25 @@ class Feedback(models.Model):
     like_number = models.PositiveIntegerField(default=0)
     dislike_number = models.PositiveIntegerField(default=0)
     evaluation = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(5),])
+    creation_time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.tep_user.email} + {self.product.name}"
+        return f"{self.tep_user.email} + {self.product.slug}"
 
 
 class FeedbackImage(models.Model):
     """Feedback image Model"""
     image = models.ImageField(upload_to='feedback/images/', blank=True)
     feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='feedback_images')
+
+
+class FeedbackVote(models.Model):
+    tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE)
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='votes')
+    is_like = models.BooleanField(null=True)
+
+    class Meta:
+        unique_together = ('tep_user', 'feedback')
+
+    def __str__(self):
+        return f"{self.tep_user.email} {self.feedback.product.slug} {self.is_like}"
