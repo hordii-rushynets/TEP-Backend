@@ -3,19 +3,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from transliterate import translit
 from .tasks import import_data_task
-from .models import Category, Product, Size, Color, Material, ProductVariant, ProductVariantInfo, Filter, FavoriteProduct
+from .models import (Category, Product, Size, Color, Material, ProductVariant,
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer
 )
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter, ProductVariantFilter
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
@@ -127,6 +128,85 @@ class FilterViewSet(viewsets.ModelViewSet):
     queryset = Filter.objects.all()
     serializer_class = FilterSerializer
     lookup_field = 'id'
+
+
+class FeedbackViewSet(ListModelMixin,
+                      CreateModelMixin,
+                      RetrieveModelMixin,
+                      viewsets.GenericViewSet):
+    """Feedback ViewSet"""
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = 'id'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = FeedbackFilter
+
+    def create(self, request, *args, **kwargs):
+        """Create a new object instance."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        feedback = serializer.save(tep_user=self.request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def like(self, request, *args, **kwargs):
+        """Like functionality."""
+        feedback = self.get_object()
+        user = request.user
+        vote, created = FeedbackVote.objects.get_or_create(tep_user=user, feedback=feedback)
+
+        if vote.is_like == True:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if vote.is_like == False:
+            vote.is_like = True
+            vote.save()
+            feedback.dislike_number -= 1
+            feedback.like_number += 1
+        elif created or vote.is_like is None:
+            vote.is_like = True
+            vote.save()
+            feedback.like_number += 1
+
+        feedback.save()
+
+        return Response({
+            'like_number': feedback.like_number,
+            'dislike_number': feedback.dislike_number
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def dislike(self, request, *args, **kwargs):
+        """Dislike functionality."""
+        feedback = self.get_object()
+        user = request.user
+        vote, created = FeedbackVote.objects.get_or_create(tep_user=user, feedback=feedback)
+
+        if vote.is_like == False:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if vote.is_like == True:
+            vote.is_like = False
+            vote.save()
+            feedback.like_number -= 1
+            feedback.dislike_number += 1
+        elif created or vote.is_like is None:
+            vote.is_like = False
+            vote.save()
+            feedback.dislike_number += 1
+
+        feedback.save()
+
+        return Response({
+            'like_number': feedback.like_number,
+            'dislike_number': feedback.dislike_number
+        }, status=status.HTTP_200_OK)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 @method_decorator(csrf_exempt, name='dispatch')

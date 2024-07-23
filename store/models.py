@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from common.models import TitleSlug
 from tep_user.models import TEPUser
+from django.utils import timezone
 
 
 class Filter(models.Model):
@@ -142,3 +143,45 @@ class PromoCode(models.Model):
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, default='percent')
     active = models.BooleanField(default=False)
     products = models.ManyToManyField(ProductVariant)
+
+
+class Feedback(models.Model):
+    """Feedback Model"""
+    tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='feed_back')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='feed_back')
+    text = models.TextField()
+    like_number = models.PositiveIntegerField(default=0)
+    dislike_number = models.PositiveIntegerField(default=0)
+    evaluation = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(5),])
+    creation_time = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.tep_user.email} + {self.product.slug}"
+
+    def get_user_vote(self, user):
+        if not user.is_authenticated:
+            return None
+
+        try:
+            vote = self.votes.get(tep_user=user)
+            return vote.is_like
+        except FeedbackVote.DoesNotExist:
+            return None
+
+
+class FeedbackImage(models.Model):
+    """Feedback image Model"""
+    image = models.ImageField(upload_to='feedback/images/', blank=True)
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='feedback_images')
+
+
+class FeedbackVote(models.Model):
+    tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE)
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='votes')
+    is_like = models.BooleanField(null=True)
+
+    class Meta:
+        unique_together = ('tep_user', 'feedback')
+
+    def __str__(self):
+        return f"{self.tep_user.email} {self.feedback.product.slug} {self.is_like}"

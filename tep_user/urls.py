@@ -9,11 +9,14 @@ from .views import (
     UserLoginAPIView,
     UserRegistrationViewSet,
     ForgetPasswordViewSet,
+    UserEmailUpdateViewSet
 )
 
 router = DefaultRouter()
 router.register('register', UserRegistrationViewSet, basename='register')
 router.register('password/forget', ForgetPasswordViewSet, basename='forget_password')
+router.register('update/email', UserEmailUpdateViewSet, basename='update_email')
+
 
 urlpatterns = router.urls + [
     path('login/', UserLoginAPIView.as_view(), name='login'),

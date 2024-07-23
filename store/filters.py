@@ -1,4 +1,4 @@
-from .models import Product, Category, ProductVariant
+from .models import Product, Category, ProductVariant, Feedback
 from typing import List, Optional
 import django_filters
 from django.db.models import Q, QuerySet
@@ -168,3 +168,26 @@ class ProductVariantFilter(BaseFilter):
 
     def filter_promo_price_max(self, queryset, name, value):
         return queryset.filter(promotion=True, promo_price__lte=value)
+
+
+class FeedbackFilter(BaseFilter):
+    """Feedback Filter"""
+    user_id = django_filters.NumberFilter(field_name='tep_user__id')
+    user_email = django_filters.CharFilter(field_name='tep_user__email', lookup_expr='icontains')
+
+    product = django_filters.CharFilter(field_name='product__slug', lookup_expr='icontains')
+    category = django_filters.CharFilter(field_name='product__category__slug', lookup_expr='icontains')
+
+    text = django_filters.CharFilter(field_name='text', lookup_expr='icontains')
+    like_number_min = django_filters.NumberFilter(field_name='like_number', lookup_expr='gte')
+    like_number_max = django_filters.NumberFilter(field_name='like_number', lookup_expr='lte')
+
+    dislike_number_min = django_filters.NumberFilter(field_name='dislike_number', lookup_expr='gte')
+    dislike_number_max = django_filters.NumberFilter(field_name='dislike_number', lookup_expr='lte')
+
+    evaluation = MultipleNumberValuesFilter(field_name='evaluation')
+
+    class Meta:
+        model = Feedback
+        fields = ['user_id', 'user_email', 'product', 'category', 'text', 'like_number_min', 'like_number_max',
+                  'dislike_number_min', 'dislike_number_max', 'evaluation']
