@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address
 
 
 class ScopeOfWorkSerializer(serializers.ModelSerializer):
@@ -30,14 +30,21 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
+class AddressSerializer(serializers.ModelSerializer):
+    """Address Serializer"""
+    class Meta:
+        model = Address
+        fields = ['city', 'region']
+
+
 class VacancySerializer(serializers.ModelSerializer):
     """Vacancy Serializer"""
     scope_of_work = ScopeOfWorkSerializer(read_only=True, many=True)
     type_of_work = TypeOfWorkSerializer(read_only=True, many=True)
     type_of_employment = TypeOfEmploymentSerializer(read_only=True, many=True)
     tag = TagSerializer(read_only=True, many=True)
+    address = AddressSerializer(read_only=True)
 
     class Meta:
         model = Vacancy
-        fields = ['id', 'image', 'title', 'city', 'region', 'description', 'about_company',
-                  'scope_of_work', 'type_of_work', 'type_of_employment', 'tag']
+        fields = '__all__'

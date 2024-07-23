@@ -1,36 +1,40 @@
 from django.db import models
+from django.utils import timezone
 
 
-class ScopeOfWork(models.Model):
+class Name(models.Model):
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return str(self.name)
+
+
+class ScopeOfWork(Name):
     """ScopeOfWork Model"""
-    name = models.CharField()
-
-    def __str__(self):
-        return str(self.name)
 
 
-class TypeOfWork(models.Model):
+class TypeOfWork(Name):
     """TypeOfWork Model"""
-    name = models.CharField()
-
-    def __str__(self):
-        return str(self.name)
 
 
-class TypeOfEmployment(models.Model):
+class TypeOfEmployment(Name):
     """TypeOfEmployment Model"""
-    name = models.CharField()
-
-    def __str__(self):
-        return str(self.name)
 
 
-class Tag(models.Model):
+class Tag(Name):
     """Tag Model"""
-    name = models.CharField()
+
+
+class Address(models.Model):
+    """Address Model"""
+    city = models.CharField(max_length=128, default=None)
+    region = models.CharField(max_length=128, default=None)
 
     def __str__(self):
-        return str(self.name)
+        return f'{self.region} {self.city}'
 
 
 class Vacancy(models.Model):
@@ -38,8 +42,7 @@ class Vacancy(models.Model):
     image = models.ImageField(upload_to='vacancy/images/', blank=True)
 
     title = models.CharField(max_length=128)
-    city = models.CharField(max_length=128, default=None)
-    region = models.CharField(max_length=128, default=None)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, related_name='vacancy')
 
     description = models.TextField()
     about_company = models.TextField()
@@ -48,6 +51,8 @@ class Vacancy(models.Model):
     type_of_work = models.ManyToManyField(TypeOfWork)
     type_of_employment = models.ManyToManyField(TypeOfEmployment)
     tag = models.ManyToManyField(Tag)
+
+    creation_time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return str(self.title)

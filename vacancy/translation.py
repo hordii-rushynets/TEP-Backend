@@ -1,9 +1,9 @@
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Vacancy, Tag, TypeOfWork, TypeOfEmployment, ScopeOfWork
+from .models import Vacancy, Tag, TypeOfWork, TypeOfEmployment, ScopeOfWork, Address
 
 
 class VacancyTranslationOptions(TranslationOptions):
-    fields = ('title', 'city', 'region', 'description', 'about_company')
+    fields = ('title', 'description', 'about_company')
 
 
 class TagTranslationOptions(TranslationOptions):
@@ -22,8 +22,13 @@ class ScopeOfWorkTranslationOptions(TranslationOptions):
     fields = ('name',)
 
 
+class AddressTranslationOptions(TranslationOptions):
+    fields = ('region', 'city')
+
+
 translator.register(Vacancy, VacancyTranslationOptions)
 translator.register(Tag, TagTranslationOptions)
 translator.register(TypeOfWork, TypeOfWorkTranslationOptions)
 translator.register(TypeOfEmployment, TypeOfEmploymentTranslationOptions)
 translator.register(ScopeOfWork, ScopeOfWorkTranslationOptions)
+translator.register(Address, AddressTranslationOptions)
