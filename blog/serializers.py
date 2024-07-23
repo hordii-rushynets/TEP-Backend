@@ -16,13 +16,14 @@ class TagSerializer(serializers.ModelSerializer):
 class TagTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ['title_uk', 'title_en']
+        fields = ['title_uk', 'title_en', 'title_ru']
 
 
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
-        fields = ('types', 'title_uk', 'title_en', 'description_uk', 'description_en', 'additional_description_uk', 'additional_description_en', 'image')
+        fields = ('id', 'title_uk', 'title_en', 'title_ru', 'meta_description_uk', 'meta_description_en',
+                  'meta_description_ru', 'slug', 'image', 'created_at', 'author', 'section', 'tags')
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -32,7 +33,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'title_uk', 'title_en', 'meta_description_uk', 'meta_description_en', 'slug', 'image', 'created_at', 'author', 'section', 'tags')
+        fields = ('id', 'title_uk', 'title_en', 'title_ru', 'meta_description_uk', 'meta_description_en',
+                  'meta_description_ru', 'slug', 'image', 'created_at', 'author', 'section', 'tags')
 
     def get_author(self, post: Post) -> dict:
         """Method to retrieve an infromation about social networks of post author."""
