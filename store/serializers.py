@@ -213,7 +213,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
     product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
     feedback_images = FeedbackImageSerializer(many=True, read_only=True)
     user_vote = serializers.SerializerMethodField()
-    images = serializers.PrimaryKeyRelatedField(queryset=FeedbackImage.objects.all(), many=True, write_only=True)
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True
+    )
 
     class Meta:
         model = Feedback
@@ -227,7 +230,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         images_data = validated_data.pop('images', [])
         feedback = super().create(validated_data)
-        feedback.images.set(images_data)
+
+        for image_data in images_data:
+            FeedbackImage.objects.create(feedback=feedback, image=image_data)
+
         return feedback
 
 
