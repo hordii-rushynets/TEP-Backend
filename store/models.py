@@ -158,6 +158,16 @@ class Feedback(models.Model):
     def __str__(self):
         return f"{self.tep_user.email} + {self.product.slug}"
 
+    def get_user_vote(self, user):
+        if not user.is_authenticated:
+            return None
+
+        try:
+            vote = self.votes.get(tep_user=user)
+            return vote.is_like
+        except FeedbackVote.DoesNotExist:
+            return None
+
 
 class FeedbackImage(models.Model):
     """Feedback image Model"""

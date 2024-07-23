@@ -203,6 +203,11 @@ class FeedbackViewSet(ListModelMixin,
             'dislike_number': feedback.dislike_number
         }, status=status.HTTP_200_OK)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ProductsImport(APIView):
