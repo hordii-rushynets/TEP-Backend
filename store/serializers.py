@@ -211,7 +211,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
     tep_user = UserProfileSerializer(read_only=True)
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
-    feedback_images = FeedbackImageSerializer(many=True)
+    feedback_images = FeedbackImageSerializer(many=True, read_only=True)
     user_vote = serializers.SerializerMethodField()
     images = serializers.PrimaryKeyRelatedField(queryset=FeedbackImage.objects.all(), many=True, write_only=True)
 
@@ -230,9 +230,4 @@ class FeedbackSerializer(serializers.ModelSerializer):
         feedback.images.set(images_data)
         return feedback
 
-    def update(self, instance, validated_data):
-        images_data = validated_data.pop('images', [])
-        instance = super().update(instance, validated_data)
-        instance.images.set(images_data)
-        return instance
 

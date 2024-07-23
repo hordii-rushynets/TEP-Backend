@@ -142,6 +142,9 @@ class FeedbackViewSet(ListModelMixin,
     filter_backends = (DjangoFilterBackend,)
     filterset_class = FeedbackFilter
 
+    def perform_create(self, serializer):
+        serializer.save(tep_user=self.request.user)
+
     @action(detail=True, methods=['post'])
     def like(self, request, *args, **kwargs):
         """Like functionality."""
