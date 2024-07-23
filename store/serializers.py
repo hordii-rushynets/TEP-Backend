@@ -215,7 +215,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
     user_vote = serializers.SerializerMethodField()
     images = serializers.ListField(
         child=serializers.ImageField(),
-        write_only=True
+        write_only=True, required=False
     )
 
     class Meta:
