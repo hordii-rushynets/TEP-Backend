@@ -149,7 +149,7 @@ class Feedback(models.Model):
     """Feedback Model"""
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='feed_back')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='feed_back')
-    text = models.TextField()
+    text = models.TextField(blank=True, null=True)
     like_number = models.PositiveIntegerField(default=0)
     dislike_number = models.PositiveIntegerField(default=0)
     evaluation = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(5),])
@@ -172,7 +172,7 @@ class Feedback(models.Model):
 class FeedbackImage(models.Model):
     """Feedback image Model"""
     image = models.ImageField(upload_to='feedback/images/', blank=True)
-    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='feedback_images')
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='feedback_images', null=True)
 
 
 class FeedbackVote(models.Model):

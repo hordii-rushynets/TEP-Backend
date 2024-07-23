@@ -211,24 +211,28 @@ class FeedbackSerializer(serializers.ModelSerializer):
     tep_user = UserProfileSerializer(read_only=True)
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
-    feedback_images = FeedbackImageSerializer(many=True, read_only=True)
+    feedback_images = FeedbackImageSerializer(many=True)
     user_vote = serializers.SerializerMethodField()
+    images = serializers.PrimaryKeyRelatedField(queryset=FeedbackImage.objects.all(), many=True, write_only=True)
 
     class Meta:
         model = Feedback
         fields = ['id', 'tep_user', 'product', 'product_id', 'text', 'like_number', 'dislike_number', 'evaluation',
-                  'feedback_images', 'creation_time', 'user_vote']
+                  'feedback_images', 'creation_time', 'user_vote', 'images']
 
     def get_user_vote(self, obj):
         user = self.context['request'].user
         return obj.get_user_vote(user)
 
     def create(self, validated_data):
-        images = validated_data.pop('feedback_images', [])
-        feedback = Feedback.objects.create(**validated_data)
-
-        for image in images:
-            FeedbackImage.objects.create(feedback=feedback, image=image)
-
+        images_data = validated_data.pop('images', [])
+        feedback = super().create(validated_data)
+        feedback.images.set(images_data)
         return feedback
+
+    def update(self, instance, validated_data):
+        images_data = validated_data.pop('images', [])
+        instance = super().update(instance, validated_data)
+        instance.images.set(images_data)
+        return instance
 
