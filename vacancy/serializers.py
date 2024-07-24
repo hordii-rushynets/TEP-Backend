@@ -48,3 +48,15 @@ class VacancySerializer(serializers.ModelSerializer):
     class Meta:
         model = Vacancy
         fields = '__all__'
+
+
+class FullDataSerializer(serializers.Serializer):
+    scope_of_work = ScopeOfWorkSerializer(read_only=True, many=True)
+    type_of_work = TypeOfWorkSerializer(read_only=True, many=True)
+    type_of_employment = TypeOfEmploymentSerializer(read_only=True, many=True)
+    tag = TagSerializer(read_only=True, many=True)
+    address = AddressSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Vacancy
+        fields = ['scope_of_work', 'type_of_work', 'type_of_employment', 'tag', 'address']

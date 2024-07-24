@@ -1,10 +1,12 @@
 from rest_framework import viewsets
 from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address
 from .serializers import (VacancySerializer, ScopeOfWorkSerializer, TypeOfWorkSerializer, TypeOfEmploymentSerializer,
-                          TagSerializer, AddressSerializer)
+                          TagSerializer, AddressSerializer, FullDataSerializer)
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import VacancyFilter
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class AbstractReadOnlyModelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -62,3 +64,25 @@ class AddressViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AddressSerializer
     permission_classes = [AllowAny]
     lookup_field = 'id'
+
+
+class FullDataViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        scope_of_work = ScopeOfWork.objects.all()
+        type_of_work = TypeOfWork.objects.all()
+        type_of_employment = TypeOfEmployment.objects.all()
+        tags = Tag.objects.all()
+        addresses = Address.objects.all()
+
+        data = {
+            'scope_of_work': scope_of_work,
+            'type_of_work': type_of_work,
+            'type_of_employment': type_of_employment,
+            'tag': tags,
+            'address': addresses
+        }
+
+        serializer = FullDataSerializer(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
