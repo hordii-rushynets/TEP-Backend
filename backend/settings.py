@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'store',
     'blog',
     'tep_user',
-    'cart'
+    'cart',
+    'vacancy',
 ]
 
 DEFAULT_RENDERER_CLASSES = (
