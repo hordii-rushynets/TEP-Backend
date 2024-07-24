@@ -245,3 +245,4 @@ MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
+NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')

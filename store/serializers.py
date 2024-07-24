@@ -10,9 +10,7 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
                      Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote)
 
-from tep_user.serializers import UserProfileSerializer, TEPUser
-
-
+from tep_user.serializers import UserProfileSerializer
 
 
 class FilterFieldSerializer(serializers.ModelSerializer):
