@@ -3,7 +3,7 @@ from .views import (VacancyViewSet, ScopeOfWorkViewSet, TypeOfWorkViewSet, TypeO
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'', VacancyViewSet, basename='vacancy')
+router.register(r'vacancies', VacancyViewSet, basename='vacancy')
 router.register(r'scope-of-work', ScopeOfWorkViewSet, basename='scope_of_work')
 router.register(r'type-of-work', TypeOfWorkViewSet, basename='type_of_work')
 router.register(r'type-of-employment', TypeOfEmploymentViewSet, basename='type_of_employment')

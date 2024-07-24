@@ -24,31 +24,41 @@ class VacancyViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = VacancyFilter
 
 
-class ScopeOfWorkViewSet(AbstractReadOnlyModelViewSet):
+class ScopeOfWorkViewSet(viewsets.ReadOnlyModelViewSet):
     """ScopeOfWork ViewSet"""
     queryset = ScopeOfWork.objects.all()
     serializer_class = ScopeOfWorkSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
 
 
-class TypeOfWorkViewSet(AbstractReadOnlyModelViewSet):
+class TypeOfWorkViewSet(viewsets.ReadOnlyModelViewSet):
     """TypeOfWork ViewSet"""
     queryset = TypeOfWork.objects.all()
     serializer_class = TypeOfWorkSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
 
 
-class TypeOfEmploymentViewSet(AbstractReadOnlyModelViewSet):
+class TypeOfEmploymentViewSet(viewsets.ReadOnlyModelViewSet):
     """TypeOfEmployment ViewSet"""
     queryset = TypeOfEmployment.objects.all()
     serializer_class = TypeOfEmploymentSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
 
 
-class TagViewSet(AbstractReadOnlyModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Tag ViewSet"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
 
 
-class AddressViewSet(AbstractReadOnlyModelViewSet):
+class AddressViewSet(viewsets.ReadOnlyModelViewSet):
     """Address ViewSet"""
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'

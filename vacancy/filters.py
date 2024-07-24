@@ -9,49 +9,21 @@ class VacancyFilter(BaseFilter):
     title_uk = django_filters.CharFilter(field_name='title_uk', lookup_expr='icontains')
     title_ru = django_filters.CharFilter(field_name='title_ru', lookup_expr='icontains')
 
-    city_en = django_filters.CharFilter(field_name='address__city_en', lookup_expr='icontains')
-    region_en = django_filters.CharFilter(field_name='address__region_en', lookup_expr='icontains')
+    city = django_filters.CharFilter(field_name='address__city', lookup_expr='icontains')
+    region = django_filters.CharFilter(field_name='address__region', lookup_expr='icontains')
 
-    city_uk = django_filters.CharFilter(field_name='address__city_uk', lookup_expr='icontains')
-    region_uk = django_filters.CharFilter(field_name='address__region_uk', lookup_expr='icontains')
+    description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
+    about_company = django_filters.CharFilter(field_name='about_company', lookup_expr='icontains')
 
-    city_ru = django_filters.CharFilter(field_name='address__city_ru', lookup_expr='icontains')
-    region_ru = django_filters.CharFilter(field_name='address__region_ru', lookup_expr='icontains')
+    scope_of_work = MultipleStringValuesFilter(field_name='scope_of_work__name')
 
-    description_en = django_filters.CharFilter(field_name='description_en', lookup_expr='icontains')
-    about_company_en = django_filters.CharFilter(field_name='about_company_en', lookup_expr='icontains')
+    type_of_work = MultipleStringValuesFilter(field_name='type_of_work__name')
 
-    description_uk = django_filters.CharFilter(field_name='description_uk', lookup_expr='icontains')
-    about_company_uk = django_filters.CharFilter(field_name='about_company_uk', lookup_expr='icontains')
+    type_of_employment = MultipleStringValuesFilter(field_name='type_of_employment__name')
 
-    description_ru = django_filters.CharFilter(field_name='description_ru', lookup_expr='icontains')
-    about_company_ru = django_filters.CharFilter(field_name='about_company_ru', lookup_expr='icontains')
-
-    scope_of_work_en = MultipleStringValuesFilter(field_name='scope_of_work__name_en')
-    scope_of_work_uk = MultipleStringValuesFilter(field_name='scope_of_work__name_uk')
-    scope_of_work_ru = MultipleStringValuesFilter(field_name='scope_of_work__name_ru')
-
-    type_of_work_en = MultipleStringValuesFilter(field_name='type_of_work__name_en')
-    type_of_work_uk = MultipleStringValuesFilter(field_name='type_of_work__name_uk')
-    type_of_work_ru = MultipleStringValuesFilter(field_name='type_of_work__name_ru')
-
-    type_of_employment_en = MultipleStringValuesFilter(field_name='type_of_employment__name_en')
-    type_of_employment_uk = MultipleStringValuesFilter(field_name='type_of_employment__name_en')
-    type_of_employment_ry = MultipleStringValuesFilter(field_name='type_of_employment__name_en')
-
-    tag_en = MultipleStringValuesFilter(field_name='tag__name_en')
-    tag_uk = MultipleStringValuesFilter(field_name='tag__name_uk')
-    tag_ru = MultipleStringValuesFilter(field_name='tag__name_ru')
+    tag = MultipleStringValuesFilter(field_name='tag__name')
 
     class Meta:
         model = Vacancy
-        fields = [
-            'title_en', 'title_uk', 'title_ru',
-            'city_en', 'region_en', 'city_uk', 'region_uk',
-            'city_ru', 'region_ru', 'description_en', 'about_company_en',
-            'description_uk', 'about_company_uk', 'description_ru', 'about_company_ru',
-            'scope_of_work_en', 'scope_of_work_uk', 'scope_of_work_ru',
-            'type_of_work_en', 'type_of_work_uk', 'type_of_work_ru',
-            'type_of_employment_en', 'type_of_employment_uk', 'type_of_employment_ru',
-            'tag_en', 'tag_uk', 'tag_ru'
-        ]
+        fields = ['title_en', 'title_uk', 'title_ru', 'city', 'region', 'description', 'about_company',
+                  'scope_of_work', 'type_of_work', 'type_of_employment', 'tag']

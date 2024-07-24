@@ -6,7 +6,7 @@ class ScopeOfWorkSerializer(serializers.ModelSerializer):
     """ScopeOfWork Serializer"""
     class Meta:
         model = ScopeOfWork
-        fields = '__all__'
+        fields = ['id', 'name', "name_uk", "name_en", "name_ru"]
 
 
 class TypeOfWorkSerializer(serializers.ModelSerializer):
