@@ -45,5 +45,13 @@ class VacancyFilter(BaseFilter):
 
     class Meta:
         model = Vacancy
-        fields = ['title', 'city', 'region', 'description', 'about_company', 'scope_of_work', 'type_of_work',
-                  'type_of_employment', 'tag']
+        fields = [
+            'title_en', 'title_uk', 'title_ru',
+            'city_en', 'region_en', 'city_uk', 'region_uk',
+            'city_ru', 'region_ru', 'description_en', 'about_company_en',
+            'description_uk', 'about_company_uk', 'description_ru', 'about_company_ru',
+            'scope_of_work_en', 'scope_of_work_uk', 'scope_of_work_ru',
+            'type_of_work_en', 'type_of_work_uk', 'type_of_work_ru',
+            'type_of_employment_en', 'type_of_employment_uk', 'type_of_employment_ru',
+            'tag_en', 'tag_uk', 'tag_ru'
+        ]
