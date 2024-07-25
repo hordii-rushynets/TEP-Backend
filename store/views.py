@@ -22,6 +22,8 @@ from rest_framework import status
 from rest_framework.request import Request
 from django.db.models import QuerySet, Count
 from rest_framework.filters import OrderingFilter
+from cart.models import CartItem, Cart
+from django.shortcuts import get_object_or_404
 
 
 def generate_latin_slug(string):
@@ -229,3 +231,28 @@ class FullDataViewSet(viewsets.ViewSet):
 
         serializer = FullDataSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RecommendationView(APIView):
+    def post(self, request):
+        product_slug = request.data.get('product_slug')
+
+        if product_slug:
+            product = get_object_or_404(Product, slug=product_slug)
+            category = product.category
+            similar_products = Product.objects.filter(category=category).exclude(slug=product.slug)
+        else:
+            try:
+                cart = Cart.objects.get(tep_user=request.user)
+                cart_items = CartItem.objects.filter(cart=cart)
+                if not cart_items.exists():
+                    return Response(status=status.HTTP_404_NOT_FOUND)
+
+                cart_categories = [item.product_variants.product.category for item in cart_items]
+                similar_products = Product.objects.filter(category__in=cart_categories)
+            except Cart.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ProductSerializer(similar_products, many=True, context={'request': request})
+        return Response(serializer.data)
+
