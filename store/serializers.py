@@ -132,26 +132,6 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_average_rating(self, obj):
         return obj.get_average_rating()
 
-    def create(self, validated_data):
-        images_data = validated_data.pop('image_list', [])
-        product = super().create(validated_data)
-
-        for image_data in images_data:
-            ProductImage.objects.create(product=product, image=image_data)
-
-        return product
-
-    def update(self, instance, validated_data):
-        images_data = validated_data.pop('image_list', [])
-        instance = super().update(instance, validated_data)
-
-        if images_data:
-            instance.images.all().delete()
-            for image_data in images_data:
-                ProductImage.objects.create(product=instance, image=image_data)
-
-        return instance
-
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):
     """Serializer to increase product number of views."""
