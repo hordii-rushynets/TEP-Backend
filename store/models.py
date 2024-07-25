@@ -41,11 +41,17 @@ class Product(TitleSlug):
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
 
     def __str__(self):
-        return str(self.pk)
+        return str(self.slug)
 
     def get_average_rating(self):
         average_rating = self.feed_back.aggregate(average=Avg('evaluation'))['average']
         return average_rating if average_rating is not None else 0
+
+
+class ProductImage(models.Model):
+    """Product image Model"""
+    image = models.ImageField(upload_to='product/images/', blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images', null=True)
 
 
 class FavoriteProduct(models.Model):
