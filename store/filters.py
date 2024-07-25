@@ -80,7 +80,10 @@ class BaseFilter(django_filters.FilterSet):
 
 class ProductFilter(BaseFilter):
     slug = django_filters.CharFilter(field_name='slug', lookup_expr='icontains')
-    title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
+    title_en = django_filters.CharFilter(field_name='title_en', lookup_expr='icontains')
+    title_uk = django_filters.CharFilter(field_name='title_uk', lookup_expr='icontains')
+    title_ru = django_filters.CharFilter(field_name='title_ru', lookup_expr='icontains')
+
     description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
 
     price_min = django_filters.NumberFilter(field_name='product_variants__default_price', lookup_expr='gte')

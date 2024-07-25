@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'store',
     'blog',
     'tep_user',
-    'cart'
+    'cart',
+    'vacancy',
 ]
 
 DEFAULT_RENDERER_CLASSES = (
@@ -62,7 +63,7 @@ DEFAULT_RENDERER_CLASSES = (
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'backend.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

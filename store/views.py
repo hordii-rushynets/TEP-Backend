@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
@@ -12,7 +12,7 @@ from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer, FeedbackSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -211,3 +211,21 @@ class ProductsImport(APIView):
         data = request.data
         import_data_task.delay(data)
         return Response({'status': 'success'})
+
+
+class FullDataViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        size = Size.objects.all()
+        color = Color.objects.all()
+        material = Material.objects.all()
+
+        data = {
+            'size': size,
+            'color': color,
+            'material': material
+        }
+
+        serializer = FullDataSerializer(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
