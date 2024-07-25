@@ -66,7 +66,7 @@ class FullDataSerializer(serializers.Serializer):
 class CooperationOfferSerializer(serializers.ModelSerializer):
     """Response To a Vacancy Serializer"""
     files = serializers.ListField(
-        child=serializers.FileField(),  # Change to handle any file type
+        child=serializers.FileField(),
         write_only=True, required=False
     )
 
