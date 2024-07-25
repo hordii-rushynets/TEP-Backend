@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from tep_user.models import TEPUser
+
 
 class Name(models.Model):
     name = models.CharField(max_length=128)
@@ -56,3 +58,22 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+
+class CooperationOffer(models.Model):
+    """Cooperation Offer Model"""
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='response_to_a_vacancy', null=True)
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50)
+    message = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class CooperationOfferFile(models.Model):
+    """Cooperation Offer file Model"""
+    file = models.FileField(upload_to='cooperation_offer/files/', blank=True)
+    cooperation_offer = models.ForeignKey(CooperationOffer, on_delete=models.CASCADE,
+                                          related_name='cooperation_offer_files', null=True)
