@@ -87,8 +87,6 @@ class FeedbackAdmin(admin.ModelAdmin):
     inlines = [FeedbackImageInline]
 
 
-admin.site.register(Feedback, FeedbackAdmin)
-admin.site.register(FeedbackImage)
 admin.site.register(Order)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(DimensionalGrid, DimensionalGridAdmin)
@@ -100,3 +98,5 @@ admin.site.register(Material, MaterialAdmin)
 admin.site.register(PromoCode)
 admin.site.register(Filter, СustomFilterAdmin)
 admin.site.register(FilterField, СustomFilterFieldAdmin)
+admin.site.register(Feedback, FeedbackAdmin)
+admin.site.register(FeedbackImage)

@@ -245,4 +245,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
-

@@ -142,12 +142,8 @@ class FeedbackViewSet(ListModelMixin,
     filter_backends = (DjangoFilterBackend,)
     filterset_class = FeedbackFilter
 
-    def create(self, request, *args, **kwargs):
-        """Create a new object instance."""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        feedback = serializer.save(tep_user=self.request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        serializer.save(tep_user=self.request.user)
 
     @action(detail=True, methods=['post'])
     def like(self, request, *args, **kwargs):
