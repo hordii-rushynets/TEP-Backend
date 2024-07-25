@@ -8,7 +8,7 @@ from tep_user.services import IPControlService
 
 from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filter, FilterField, Material, Product,
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
-                     Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote)
+                     Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
 
 from tep_user.serializers import UserProfileSerializer, TEPUser
 
@@ -101,6 +101,10 @@ class ProductSerializer(serializers.ModelSerializer):
     dimensional_grid = DimensionalGridSerializer(many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True, required=False
+    )
 
     class Meta:
         model = Product
@@ -120,6 +124,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
+
+    def create(self, validated_data):
+        images_data = validated_data.pop('images', [])
+        product = super().create(validated_data)
+
+        for image_data in images_data:
+            Product.objects.create(product=product, image=image_data)
+
+        return product
 
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):
