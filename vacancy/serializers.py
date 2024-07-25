@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer
+from .models import (Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer,
+                     CooperationOfferFile)
 
 
 class ScopeOfWorkSerializer(serializers.ModelSerializer):
@@ -64,10 +65,14 @@ class FullDataSerializer(serializers.Serializer):
 
 class CooperationOfferSerializer(serializers.ModelSerializer):
     """Response To a Vacancy Serializer"""
+    files = serializers.ListField(
+        child=serializers.FileField(),  # Change to handle any file type
+        write_only=True, required=False
+    )
 
     class Meta:
         model = CooperationOffer
-        fields = ['name', 'email', 'phone', 'message', 'vacancy']
+        fields = ['name', 'email', 'phone', 'message', 'vacancy', 'files']
         extra_kwargs = {
             'vacancy': {'required': False}
         }
@@ -80,3 +85,12 @@ class CooperationOfferSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You have already applied for this vacancy.")
 
         return data
+
+    def create(self, validated_data):
+        files_data = validated_data.pop('files', [])
+        cooperation_offer = super().create(validated_data)
+
+        for file_data in files_data:
+            CooperationOfferFile.objects.create(cooperation_offer=cooperation_offer, file=file_data)
+
+        return cooperation_offer

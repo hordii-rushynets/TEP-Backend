@@ -95,3 +95,8 @@ class CooperationOfferViewSet(mixins.CreateModelMixin,
     serializer_class = CooperationOfferSerializer
     permission_classes = [AllowAny]
     lookup_field = 'id'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
