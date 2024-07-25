@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer
 
 
 class ScopeOfWorkSerializer(serializers.ModelSerializer):
@@ -62,13 +62,21 @@ class FullDataSerializer(serializers.Serializer):
         fields = ['scope_of_work', 'type_of_work', 'type_of_employment', 'tag', 'address']
 
 
-class ResponseToVacancySerializer(serializers.ModelSerializer):
+class CooperationOfferSerializer(serializers.ModelSerializer):
     """Response To a Vacancy Serializer"""
 
-    vacancy = VacancySerializer(read_only=True)
-    vacancy_id = serializers.PrimaryKeyRelatedField(
-        queryset=Vacancy.objects.all(), source='vacancy', write_only=True)
-
     class Meta:
-        model = ResponseToVacancy
-        fields = ['name', 'email', 'phone', 'message', 'vacancy', 'vacancy_id']
+        model = CooperationOffer
+        fields = ['name', 'email', 'phone', 'message', 'vacancy']
+        extra_kwargs = {
+            'vacancy': {'required': False}
+        }
+
+    def validate(self, data):
+        vacancy = data.get('vacancy')
+        email = data.get('email')
+
+        if vacancy and CooperationOffer.objects.filter(vacancy=vacancy, email=email).exists():
+            raise serializers.ValidationError("You have already applied for this vacancy.")
+
+        return data

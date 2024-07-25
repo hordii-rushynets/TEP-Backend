@@ -1,7 +1,7 @@
 from rest_framework import viewsets, mixins
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer
 from .serializers import (VacancySerializer, ScopeOfWorkSerializer, TypeOfWorkSerializer, TypeOfEmploymentSerializer,
-                          TagSerializer, AddressSerializer, FullDataSerializer, ResponseToVacancySerializer)
+                          TagSerializer, AddressSerializer, FullDataSerializer, CooperationOfferSerializer)
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import VacancyFilter
@@ -88,10 +88,10 @@ class FullDataViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ResponseToVacancyViewSet(mixins.CreateModelMixin,
-                               viewsets.GenericViewSet):
+class CooperationOfferViewSet(mixins.CreateModelMixin,
+                              viewsets.GenericViewSet):
     """Response To a Vacancy ViewSet"""
-    queryset = ResponseToVacancy.objects.all()
-    serializer_class = ResponseToVacancySerializer
+    queryset = CooperationOffer.objects.all()
+    serializer_class = CooperationOfferSerializer
     permission_classes = [AllowAny]
     lookup_field = 'id'

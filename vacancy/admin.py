@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer
 from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
 from store.admin import JS, CSS
 
@@ -40,9 +40,9 @@ class AddressAdmin(TranslationAdmin):
         css = CSS
 
 
-class ResponseToVacancyAdmin(admin.ModelAdmin):
+class CooperationOfferAdmin(admin.ModelAdmin):
     list_display = ('vacancy', 'name', 'email', 'phone')
-    search_fields = ('vacancy__title',)
+    search_fields = ('vacancy__title_uk', 'vacancy__title_en', 'vacancy__title_ru')
 
     def has_add_permission(self, request):
         return False
@@ -57,6 +57,6 @@ admin.site.register(TypeOfEmployment, TypeOfEmploymentAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Vacancy, VacancyAdmin)
-admin.site.register(ResponseToVacancy, ResponseToVacancyAdmin)
+admin.site.register(CooperationOffer, CooperationOfferAdmin)
 
 
