@@ -7,6 +7,9 @@ class Cart(models.Model):
     """ Model Cart """
     tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user')
 
+    def __str__(self):
+        return f"{self.tep_user.email}"
+
 
 class CartItem(models.Model):
     """Model for ordering a specific product variant"""
@@ -18,5 +21,8 @@ class CartItem(models.Model):
     size = models.OneToOneField(Size, on_delete=models.SET_NULL, related_name='size', blank=True, null=True)
     filter_field = models.ManyToManyField(FilterField, related_name='cart_items', blank=True)
     quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.cart.tep_user.email}, {self.product_variants.title}"
 
 
