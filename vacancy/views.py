@@ -90,7 +90,7 @@ class FullDataViewSet(viewsets.ViewSet):
 
 class CooperationOfferViewSet(mixins.CreateModelMixin,
                               viewsets.GenericViewSet):
-    """Response To a Vacancy ViewSet"""
+    """Cooperation Offer ViewSet"""
     queryset = CooperationOffer.objects.all()
     serializer_class = CooperationOfferSerializer
     permission_classes = [AllowAny]

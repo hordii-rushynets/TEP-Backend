@@ -61,7 +61,7 @@ class Vacancy(models.Model):
 
 
 class CooperationOffer(models.Model):
-    """Response To a Vacancy Model"""
+    """Cooperation Offer Model"""
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='response_to_a_vacancy', null=True)
     name = models.CharField(max_length=200)
     email = models.EmailField()
@@ -73,7 +73,7 @@ class CooperationOffer(models.Model):
 
 
 class CooperationOfferFile(models.Model):
-    """Feedback file Model"""
+    """Cooperation Offer file Model"""
     file = models.FileField(upload_to='cooperation_offer/files/', blank=True)
     cooperation_offer = models.ForeignKey(CooperationOffer, on_delete=models.CASCADE,
                                           related_name='cooperation_offer_files', null=True)
