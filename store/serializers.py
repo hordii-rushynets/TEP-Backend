@@ -100,6 +100,7 @@ class ProductSerializer(serializers.ModelSerializer):
     product_variants = ProductVariantSerializer(many=True, read_only=True)
     dimensional_grid = DimensionalGridSerializer(many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -116,6 +117,9 @@ class ProductSerializer(serializers.ModelSerializer):
             return FavoriteProduct.objects.get(user=request.user, product=product).favorite
         except FavoriteProduct.DoesNotExist:
             return False
+
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
 
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):
@@ -232,3 +236,11 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
         return feedback
 
+
+class FullDataSerializer(serializers.Serializer):
+    size = SizeSerializer(read_only=True, many=True)
+    color = ColorSerializer(read_only=True, many=True)
+    material = MaterialSerializer(read_only=True, many=True)
+
+    class Meta:
+        fields = ['size', 'color', 'material']

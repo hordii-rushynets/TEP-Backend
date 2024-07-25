@@ -6,6 +6,8 @@ from common.models import TitleSlug
 from tep_user.models import TEPUser
 from django.utils import timezone
 
+from django.db.models import Avg
+
 
 class Filter(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -40,6 +42,10 @@ class Product(TitleSlug):
 
     def __str__(self):
         return str(self.pk)
+
+    def get_average_rating(self):
+        average_rating = self.feed_back.aggregate(average=Avg('evaluation'))['average']
+        return average_rating if average_rating is not None else 0
 
 
 class FavoriteProduct(models.Model):
