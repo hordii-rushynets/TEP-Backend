@@ -51,7 +51,7 @@ class Product(TitleSlug):
 class ProductImage(models.Model):
     """Product image Model"""
     image = models.ImageField(upload_to='product/images/', blank=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product', null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images', null=True)
 
 
 class FavoriteProduct(models.Model):

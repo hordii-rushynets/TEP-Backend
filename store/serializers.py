@@ -95,13 +95,20 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     product_variants = ProductVariantSerializer(many=True, read_only=True)
     dimensional_grid = DimensionalGridSerializer(many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
-    images = serializers.ListField(
+    images = ProductImageSerializer(many=True, read_only=True)
+    image_list = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True, required=False
     )
@@ -126,13 +133,24 @@ class ProductSerializer(serializers.ModelSerializer):
         return obj.get_average_rating()
 
     def create(self, validated_data):
-        images_data = validated_data.pop('images', [])
+        images_data = validated_data.pop('image_list', [])
         product = super().create(validated_data)
 
         for image_data in images_data:
-            Product.objects.create(product=product, image=image_data)
+            ProductImage.objects.create(product=product, image=image_data)
 
         return product
+
+    def update(self, instance, validated_data):
+        images_data = validated_data.pop('image_list', [])
+        instance = super().update(instance, validated_data)
+
+        if images_data:
+            instance.images.all().delete()
+            for image_data in images_data:
+                ProductImage.objects.create(product=instance, image=image_data)
+
+        return instance
 
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):
