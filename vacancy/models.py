@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from tep_user.models import TEPUser
+
 
 class Name(models.Model):
     name = models.CharField(max_length=128)
@@ -56,3 +58,15 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+
+class ResponseToVacancy(models.Model):
+    """Response To a Vacancy Model"""
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='response_to_a_vacancy')
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50)
+    message = models.TextField()
+
+    def __str__(self):
+        return f'{self.name} responded to the {self.vacancy.title}'

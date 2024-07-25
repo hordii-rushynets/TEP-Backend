@@ -1,5 +1,5 @@
 from .views import (VacancyViewSet, ScopeOfWorkViewSet, TypeOfWorkViewSet, TypeOfEmploymentViewSet,
-                    TagViewSet, AddressViewSet, FullDataViewSet)
+                    TagViewSet, AddressViewSet, FullDataViewSet, ResponseToVacancyViewSet)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -10,6 +10,7 @@ router.register(r'type-of-employment', TypeOfEmploymentViewSet, basename='type_o
 router.register(r'tag', TagViewSet, basename='tag')
 router.register(r'address', AddressViewSet, basename='address')
 router.register(r'full-data', FullDataViewSet, basename='full_data')
+router.register(r'response-to-vacancy', ResponseToVacancyViewSet, basename='response_to_vacancy')
 
 
 urlpatterns = router.urls + []

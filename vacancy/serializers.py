@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy
 
 
 class ScopeOfWorkSerializer(serializers.ModelSerializer):
@@ -60,3 +60,13 @@ class FullDataSerializer(serializers.Serializer):
     class Meta:
         model = Vacancy
         fields = ['scope_of_work', 'type_of_work', 'type_of_employment', 'tag', 'address']
+
+
+class ResponseToVacancySerializer(serializers.ModelSerializer):
+    vacancy = VacancySerializer(read_only=True)
+    vacancy_id = serializers.PrimaryKeyRelatedField(
+        queryset=Vacancy.objects.all(), source='vacancy', write_only=True)
+
+    class Meta:
+        model = ResponseToVacancy
+        fields = ['name', 'email', 'phone', 'message', 'vacancy', 'vacancy_id']

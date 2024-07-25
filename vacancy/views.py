@@ -1,7 +1,7 @@
-from rest_framework import viewsets
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address
+from rest_framework import viewsets, mixins
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy
 from .serializers import (VacancySerializer, ScopeOfWorkSerializer, TypeOfWorkSerializer, TypeOfEmploymentSerializer,
-                          TagSerializer, AddressSerializer, FullDataSerializer)
+                          TagSerializer, AddressSerializer, FullDataSerializer, ResponseToVacancySerializer)
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import VacancyFilter
@@ -86,3 +86,11 @@ class FullDataViewSet(viewsets.ViewSet):
 
         serializer = FullDataSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResponseToVacancyViewSet(mixins.CreateModelMixin,
+                               viewsets.GenericViewSet):
+    queryset = ResponseToVacancy.objects.all()
+    serializer_class = ResponseToVacancySerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
