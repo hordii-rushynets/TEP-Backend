@@ -232,3 +232,11 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
         return feedback
 
+
+class FullDataSerializer(serializers.Serializer):
+    size = SizeSerializer(read_only=True, many=True)
+    color = ColorSerializer(read_only=True, many=True)
+    material = MaterialSerializer(read_only=True, many=True)
+
+    class Meta:
+        fields = ['size', 'color', 'material']
