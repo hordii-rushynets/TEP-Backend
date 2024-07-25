@@ -90,6 +90,7 @@ class FullDataViewSet(viewsets.ViewSet):
 
 class ResponseToVacancyViewSet(mixins.CreateModelMixin,
                                viewsets.GenericViewSet):
+    """Response To a Vacancy ViewSet"""
     queryset = ResponseToVacancy.objects.all()
     serializer_class = ResponseToVacancySerializer
     permission_classes = [AllowAny]

@@ -63,6 +63,8 @@ class FullDataSerializer(serializers.Serializer):
 
 
 class ResponseToVacancySerializer(serializers.ModelSerializer):
+    """Response To a Vacancy Serializer"""
+
     vacancy = VacancySerializer(read_only=True)
     vacancy_id = serializers.PrimaryKeyRelatedField(
         queryset=Vacancy.objects.all(), source='vacancy', write_only=True)
