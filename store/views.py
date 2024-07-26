@@ -75,7 +75,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         serializers = {
