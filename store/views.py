@@ -16,7 +16,7 @@ from .serializers import (
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProduct
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
@@ -229,3 +229,11 @@ class FullDataViewSet(viewsets.ViewSet):
 
         serializer = FullDataSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CompareProduct
