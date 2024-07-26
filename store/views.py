@@ -27,7 +27,6 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 
 
-
 def generate_latin_slug(string):
     latin_string = translit(string, 'uk', reversed=True)
     clean_string = ''.join(e for e in latin_string if e.isalnum() or e == ' ')
@@ -236,9 +235,9 @@ class FullDataViewSet(viewsets.ViewSet):
 
 
 class RecommendationView(APIView):
-    def get_similar_products_by_slug(self, request):
-        product_slug = request.data.get('product_slug')
-        if product_slug:
+
+    def get_similar_products_by_slug(self, product_slug=None):
+        if product_slug is not None:
             try:
                 product = get_object_or_404(Product, slug=product_slug)
                 category = product.category
@@ -249,7 +248,7 @@ class RecommendationView(APIView):
             similar_products = Product.objects.all()
         return similar_products
 
-    def post(self, request):
+    def get(self, request, product_slug=None):
         try:
             cart = Cart.objects.get(tep_user=request.user.id)
             cart_items = CartItem.objects.filter(cart=cart)
@@ -258,13 +257,14 @@ class RecommendationView(APIView):
             similar_products = Product.objects.filter(
                 product_variants__in=cart_product_variants
             ).distinct()
-            similar_products = similar_products.exclude(title__in=[item.product_variants.title for item in cart_items])
+            similar_products = similar_products.exclude(
+                title__in=[item.product_variants.product.title for item in cart_items])
 
             if not similar_products.exists():
-                similar_products = self.get_similar_products_by_slug(request)
+                similar_products = self.get_similar_products_by_slug(product_slug)
 
         except Cart.DoesNotExist:
-            similar_products = self.get_similar_products_by_slug(request)
+            similar_products = self.get_similar_products_by_slug(product_slug)
 
         serializer = ProductSerializer(similar_products, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
