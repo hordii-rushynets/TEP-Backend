@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-
+from .pagination import PostPagination
 from .models import Tag, Post
 from .serializers import TagSerializer, PostSerializer
 
@@ -14,4 +14,4 @@ class BlogPostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     lookup_field = 'slug'
-
+    pagination_class = PostPagination
