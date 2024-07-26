@@ -16,7 +16,7 @@ from .serializers import (
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProduct
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
@@ -236,4 +236,4 @@ class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = CompareProduct
+    filterset_class = CompareProductFilter

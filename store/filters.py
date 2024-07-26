@@ -196,9 +196,9 @@ class FeedbackFilter(BaseFilter):
                   'dislike_number_min', 'dislike_number_max', 'evaluation']
 
 
-class CompareProduct(BaseFilter):
-    slugs = MultipleNumberValuesFilter(field_name="slug")
+class CompareProductFilter(BaseFilter):
+    ids = MultipleNumberValuesFilter(field_name="id")
 
     class Meta:
         model = Product
-        fields = ['slugs']
+        fields = ['ids']
