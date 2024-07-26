@@ -8,7 +8,7 @@ from tep_user.services import IPControlService
 
 from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filter, FilterField, Material, Product,
                      ProductVariant, ProductVariantImage, ProductVariantInfo,
-                     Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote)
+                     Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
 
 from tep_user.serializers import UserProfileSerializer, TEPUser
 
@@ -95,12 +95,23 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     product_variants = ProductVariantSerializer(many=True, read_only=True)
     dimensional_grid = DimensionalGridSerializer(many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
+    images = ProductImageSerializer(many=True, read_only=True)
+    image_list = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True, required=False
+    )
 
     class Meta:
         model = Product
