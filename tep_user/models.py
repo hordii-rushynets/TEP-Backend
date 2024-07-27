@@ -56,6 +56,11 @@ class TEPUser(AbstractUser):
     username = models.CharField(max_length=150, default='default_username')
     birth_date = models.DateField(null=True, blank=True)
 
+    address = models.CharField(max_length=128, null=True, blank=True)
+    city = models.CharField(max_length=128, null=True, blank=True)
+    region = models.CharField(max_length=128, null=True, blank=True)
+    index = models.PositiveIntegerField(null=True, blank=True)
+
     objects = TEPUserManager()
 
     def __str__(self):
