@@ -22,6 +22,9 @@ from rest_framework import status
 from rest_framework.request import Request
 from django.db.models import QuerySet, Count
 from rest_framework.filters import OrderingFilter
+from cart.models import CartItem, Cart
+from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 
 def generate_latin_slug(string):
@@ -71,7 +74,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         serializers = {
@@ -229,3 +232,41 @@ class FullDataViewSet(viewsets.ViewSet):
 
         serializer = FullDataSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RecommendationView(APIView):
+
+    def get_similar_products_by_slug(self, product_slug=None):
+        if product_slug is not None:
+            try:
+                product = get_object_or_404(Product, slug=product_slug)
+                category = product.category
+                similar_products = Product.objects.filter(category=category).exclude(slug=product.slug)
+            except Http404:
+                similar_products = Product.objects.all()
+        else:
+            similar_products = Product.objects.all()
+        return similar_products
+
+    def get(self, request, product_slug=None):
+        try:
+            cart = Cart.objects.get(tep_user=request.user.id)
+            cart_items = CartItem.objects.filter(cart=cart)
+            cart_product_variants = cart_items.values_list('product_variants', flat=True)
+
+            similar_products = Product.objects.filter(
+                product_variants__in=cart_product_variants
+            ).distinct()
+            similar_products = similar_products.exclude(
+                title__in=[item.product_variants.product.title for item in cart_items])
+
+            if not similar_products.exists():
+                similar_products = self.get_similar_products_by_slug(product_slug)
+
+        except Cart.DoesNotExist:
+            similar_products = self.get_similar_products_by_slug(product_slug)
+
+        serializer = ProductSerializer(similar_products, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
