@@ -93,7 +93,8 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views']
+    list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views',
+                    'svg_image']
     inlines = [ProductImageInline]
 
 

@@ -114,6 +114,7 @@ class ProductSerializer(serializers.ModelSerializer):
         child=serializers.ImageField(),
         write_only=True, required=False
     )
+    svg_image = serializers.FileField()
     in_cart = serializers.SerializerMethodField()
 
     class Meta:
