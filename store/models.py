@@ -201,3 +201,10 @@ class FeedbackVote(models.Model):
 
     def __str__(self):
         return f"{self.tep_user.email} {self.feedback.product.slug} {self.is_like}"
+
+
+class InspirationImage(models.Model):
+    image = models.ImageField(upload_to='inspiration/images/')
+
+    def __str__(self) -> str:
+        return str(self.image.name)
