@@ -12,6 +12,8 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
 
 from tep_user.serializers import UserProfileSerializer, TEPUser
 
+from cart.models import CartItem, Cart
+
 
 
 
@@ -113,6 +115,7 @@ class ProductSerializer(serializers.ModelSerializer):
         write_only=True, required=False
     )
     svg_image = serializers.FileField()
+    in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -132,6 +135,22 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
+
+    def get_in_cart(self, product: Product) -> bool:
+        """Check if the product is in the cart for the current user."""
+        request = self.context.get('request')
+
+        if not request.user.is_authenticated:
+            return False
+
+        try:
+            cart = Cart.objects.get(tep_user=request.user)
+            return CartItem.objects.filter(
+                cart=cart,
+                product_variants__product=product
+            ).exists()
+        except Cart.DoesNotExist:
+            return False
 
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):
