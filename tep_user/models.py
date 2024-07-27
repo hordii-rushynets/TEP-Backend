@@ -61,6 +61,9 @@ class TEPUser(AbstractUser):
     region = models.CharField(max_length=128, null=True, blank=True)
     index = models.PositiveIntegerField(null=True, blank=True)
 
+    phone_communication = models.BooleanField(default=False)
+    email_communication = models.BooleanField(default=False)
+
     objects = TEPUserManager()
 
     def __str__(self):

@@ -76,6 +76,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=3),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 APPEND_SLASH=False
 
