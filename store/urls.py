@@ -3,7 +3,7 @@ from .views import (
     ProductsImport,
     CategoryViewSet, ProductViewSet, SizeViewSet,
     ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet,
-    FilterViewSet, FavoriteProductViewset, FeedbackViewSet, FullDataViewSet, CompareProductViewSet
+    FilterViewSet, FavoriteProductViewset, FeedbackViewSet, FullDataViewSet, CompareProductViewSet, RecommendationView
 )
 from rest_framework.routers import DefaultRouter
 
@@ -25,4 +25,6 @@ router.register(r'compare', CompareProductViewSet, basename='compare')
 urlpatterns = [
     path('', include(router.urls)),
     path('products/import/', ProductsImport.as_view()),
+    path('recommendation/', RecommendationView.as_view(), name='recommendation'),
+    path('recommendation/<slug:product_slug>/', RecommendationView.as_view(), name='recommendations_with_slug'),
 ]
