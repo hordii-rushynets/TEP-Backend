@@ -17,8 +17,8 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserResentCodeSerializer,
                                   UserEmailUpdateRequestSerializer,
                                   UserEmailUpdateConfirmSerializer,
-                                  UserPasswordUpdateRequestSerializer,
-                                  UserAddressSerializer)
+                                  UserPasswordUpdateRequestSerializer
+                                  )
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -50,15 +50,6 @@ class UserLoginAPIView(TokenObtainPairView):
 class ProfileView(generics.RetrieveUpdateDestroyAPIView):
     """User profile view."""
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
-
-class UserAddressView(generics.RetrieveUpdateDestroyAPIView):
-    """User address view."""
-    serializer_class = UserAddressSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
