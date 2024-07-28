@@ -7,10 +7,10 @@ from backend.settings import RedisDatabases
 from tep_user.services import IPControlService
 
 from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filter, FilterField, Material, Product,
-                     ProductVariant, ProductVariantImage, ProductVariantInfo,
+                     ProductVariant, ProductVariantImage, ProductVariantInfo, InspirationImage,
                      Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
 
-from tep_user.serializers import UserProfileSerializer, TEPUser
+from tep_user.serializers import UserProfileSerializer
 
 from cart.models import CartItem, Cart
 
@@ -279,3 +279,9 @@ class FullDataSerializer(serializers.Serializer):
 
     class Meta:
         fields = ['size', 'color', 'material']
+
+
+class InspirationImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InspirationImage
+        fields = ['image']

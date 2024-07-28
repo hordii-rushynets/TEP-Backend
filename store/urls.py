@@ -2,7 +2,7 @@ from django.urls import path, include
 from .views import (
     ProductsImport,
     CategoryViewSet, ProductViewSet, SizeViewSet,
-    ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet,
+    ColorViewSet, MaterialViewSet, ProductVariantViewSet, ProductVariantInfoViewSet, InspirationImageViewSet, 
     FilterViewSet, FavoriteProductViewset, FeedbackViewSet, FullDataViewSet, CompareProductViewSet, RecommendationView
 )
 from rest_framework.routers import DefaultRouter
@@ -20,6 +20,7 @@ router.register(r'variant-info', ProductVariantInfoViewSet, basename='variant-in
 router.register(r'filters', FilterViewSet, basename='filters')
 router.register(r'feedback', FeedbackViewSet, basename='feedback')
 router.register(r'full-data', FullDataViewSet, basename='full_data_product')
+router.register(r'inspiration-image', InspirationImageViewSet, basename='inspiration_image')
 router.register(r'compare', CompareProductViewSet, basename='compare')
 
 urlpatterns = [

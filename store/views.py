@@ -3,16 +3,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
-                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote)
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote, InspirationImage)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -278,3 +278,10 @@ class RecommendationView(APIView):
 
         serializer = ProductSerializer(similar_products, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = InspirationImage.objects.all()
+    serializer_class = InspirationImageSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
