@@ -21,7 +21,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
-        Create a new CartItem for the authenticated user's cart.
+        Create or update a CartItem for the authenticated user's cart.
         If the cart does not exist, it will be created.
         """
         user = request.user
@@ -29,7 +29,52 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(cart=cart)
+        validated_data = serializer.validated_data
+
+        product_variant = validated_data.get('product_variants')
+        color = validated_data.get('color')
+        material = validated_data.get('material')
+        size = validated_data.get('size')
+        filter_fields = validated_data.get('filter_field', [])
+        quantity = validated_data.get('quantity', 1)
+
+        existing_items = CartItem.objects.filter(
+            cart=cart,
+            product_variants=product_variant,
+            color=color,
+            material=material,
+            size=size
+        ).prefetch_related('filter_field')
+
+        cart_item = None
+        for item in existing_items:
+            existing_filter_fields = set(item.filter_field.all())
+            incoming_filter_fields = set(filter_fields)
+
+            if existing_filter_fields == incoming_filter_fields:
+                cart_item = item
+                break
+
+        if cart_item:
+            cart_item.quantity += quantity
+            cart_item.save()
+            serializer = self.get_serializer(cart_item)
+            return Response({
+                'message': 'Item already exists in the cart. Quantity updated.',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+
+        cart_item = CartItem.objects.create(
+            cart=cart,
+            product_variants=product_variant,
+            color=color,
+            material=material,
+            size=size,
+            quantity=quantity
+        )
+        cart_item.filter_field.set(filter_fields)
+        cart_item.save()
+        serializer = self.get_serializer(cart_item)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self) -> QuerySet:
