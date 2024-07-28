@@ -62,7 +62,7 @@ class TEPUser(AbstractUser):
     index = models.PositiveIntegerField(null=True, blank=True)
 
     phone_communication = models.BooleanField(default=False)
-    email_communication = models.BooleanField(default=False)
+    email_communication = models.BooleanField(default=True)
 
     objects = TEPUserManager()
 
