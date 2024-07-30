@@ -26,7 +26,7 @@ urlpatterns = [
     path('api/blog/', include('blog.urls')),
     path('api/account/', include('tep_user.urls')),
     path('api/cart/', include('cart.urls')),
-    path('api/post', include('post.urls'))
+    path('api/post/', include('post.urls'))
 ]
 
 

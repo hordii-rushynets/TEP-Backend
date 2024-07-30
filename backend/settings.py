@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'store',
     'blog',
     'tep_user',
-    'cart'
+    'cart',
+    'post'
 ]
 
 DEFAULT_RENDERER_CLASSES = (
@@ -246,3 +247,5 @@ MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
 NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')
+URK_POST_API_KEY = os.getenv('UKR_POST_API_KEY')
+
