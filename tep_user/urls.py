@@ -10,7 +10,9 @@ from .views import (
     UserRegistrationViewSet,
     ForgetPasswordViewSet,
     UserEmailUpdateViewSet,
-    UserAddressView
+    UserAddressView,
+    GoogleLoginAPIView,
+    GoogleCallbackAPIView
 )
 
 router = DefaultRouter()
@@ -25,6 +27,6 @@ urlpatterns = router.urls + [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', ProfileView.as_view(), name='update_profile'),
     path('address/', UserAddressView.as_view(), name='user_address'),
-    path('auth/', include('allauth.urls')),
-    path('auth/social/', include('allauth.socialaccount.urls')),
+    path('auth/google/', GoogleLoginAPIView.as_view(), name='google_login'),
+    path('auth/complete/google/', GoogleCallbackAPIView.as_view(), name='google_callback'),
 ]

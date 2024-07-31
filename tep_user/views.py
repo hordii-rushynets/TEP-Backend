@@ -20,6 +20,12 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserPasswordUpdateRequestSerializer,
                                   UserAddressSerializer)
 
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from rest_framework_simplejwt.tokens import RefreshToken
+from social_django.utils import psa
+
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
     """Registration viewset."""
@@ -117,5 +123,27 @@ class UserEmailUpdateViewSet(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class GoogleLoginAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        redirect_uri = request.build_absolute_uri('/auth/complete/google/')
+        return redirect(
+            f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY}&redirect_uri={redirect_uri}&scope=email profile"
+        )
+
+
+class GoogleCallbackAPIView(APIView):
+    @psa('social:complete')
+    def get(self, request, *args, **kwargs):
+        backend = request.backend
+        user = request.backend.do_auth(request.GET.get('code'))
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return JsonResponse({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        return JsonResponse({'error': 'Authentication failed'}, status=status.HTTP_400_BAD_REQUEST)
 
 
