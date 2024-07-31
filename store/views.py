@@ -3,20 +3,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
-                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote)
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote, InspirationImage)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
@@ -235,6 +235,15 @@ class FullDataViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CompareProductFilter
+
+    
 class RecommendationView(APIView):
 
     def get_similar_products_by_slug(self, product_slug=None):
@@ -271,3 +280,8 @@ class RecommendationView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = InspirationImage.objects.all()
+    serializer_class = InspirationImageSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'

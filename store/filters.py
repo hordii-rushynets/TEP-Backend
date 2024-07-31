@@ -194,3 +194,11 @@ class FeedbackFilter(BaseFilter):
         model = Feedback
         fields = ['user_id', 'user_email', 'product', 'category', 'text', 'like_number_min', 'like_number_max',
                   'dislike_number_min', 'dislike_number_max', 'evaluation']
+
+
+class CompareProductFilter(BaseFilter):
+    ids = MultipleNumberValuesFilter(field_name="id")
+
+    class Meta:
+        model = Product
+        fields = ['ids']
