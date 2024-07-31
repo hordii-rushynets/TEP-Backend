@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenBlacklistView
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -24,5 +24,7 @@ urlpatterns = router.urls + [
     path('password/reset/', ResetPasswordView.as_view(), name='reset_password'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', ProfileView.as_view(), name='update_profile'),
-    path('address/', UserAddressView.as_view(), name='user_address')
+    path('address/', UserAddressView.as_view(), name='user_address'),
+    path('auth/', include('allauth.urls')),
+    path('auth/social/', include('allauth.socialaccount.urls')),
 ]

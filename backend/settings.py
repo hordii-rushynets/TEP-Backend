@@ -42,6 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'dj_rest_auth',
+
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
@@ -148,8 +155,11 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     'tep_user.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.google.GoogleOpenIdConnect',
+    'social_core.backends.google.GoogleOAuth2',
 ]
 
+SITE_ID = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -245,3 +255,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
