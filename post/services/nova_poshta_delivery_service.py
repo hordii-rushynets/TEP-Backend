@@ -16,7 +16,7 @@ class NovaPoshtaService:
                 "FindByString": city_name
             }
         }
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
+        response = requests.post(NovaPoshtaService.api_url, json=payload, timeout=10)
         data = response.json()
         if data['success'] and data['data']:
             return data['data'][0]['Ref']
@@ -105,7 +105,8 @@ class NovaPoshtaService:
 
     @staticmethod
     def get_warehouses(city_name):
-        city_ref = NovaPoshtaService.get_city_ref(city_name)
+        a = NovaPoshtaService()
+        city_ref = a.get_city_ref(city_name)
         if not city_ref:
             return None
 
@@ -117,7 +118,7 @@ class NovaPoshtaService:
                 "CityRef": city_ref
             }
         }
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
+        response = requests.post(NovaPoshtaService.api_url, json=payload, timeout=10)
         return response.json()
 
     @staticmethod
