@@ -14,3 +14,7 @@ class AbstractDeliveryService(ABC):
     @abstractmethod
     def track_parcel(self, tracking_number):
         pass
+
+    @abstractmethod
+    def calculate_delivery_cost(self, data):
+        pass

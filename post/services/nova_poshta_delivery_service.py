@@ -156,3 +156,25 @@ class NovaPoshtaService:
             return data['data'][0]['Ref']
         return None
 
+    @staticmethod
+    def calculate_delivery_cost(data):
+        city_sender_ref = NovaPoshtaService.get_city_ref(data['city_sender'])
+        city_recipient_ref = NovaPoshtaService.get_city_ref(data['city_recipient'])
+
+        payload = {
+            "apiKey": NovaPoshtaService.api_key,
+            "modelName": "InternetDocument",
+            "calledMethod": "getDocumentPrice",
+            "methodProperties": {
+                "CitySender": city_sender_ref,
+                "CityRecipient": city_recipient_ref,
+                "Weight": data['weight'],
+                "ServiceType": data['service_type'],
+                "Cost": data['cost'],
+                "CargoType": data['cargo_type'],
+                "SeatsAmount": data['seats_amount'],
+                "PayerType": data['payer_type']
+            }
+        }
+        response = requests.post(NovaPoshtaService.api_url, json=payload)
+        return response.json()

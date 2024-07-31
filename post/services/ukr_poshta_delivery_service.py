@@ -22,13 +22,11 @@ class UkrPostDeliveryService(AbstractDeliveryService):
             "sender": {
                 "name": data['sender_name'],
                 "phone": data['sender_phone'],
-                "email": data['sender_email'],
                 "address": data['sender_address']
             },
             "recipient": {
                 "name": data['recipient_name'],
                 "phone": data['recipient_phone'],
-                "email": data['recipient_email'],
                 "address": data['recipient_address']
             },
             "weight": data['weight'],
@@ -48,8 +46,9 @@ class UkrPostDeliveryService(AbstractDeliveryService):
             response.raise_for_status()
 
     def get_warehouses(self, city):
-        url = f'{self.BASE_URL}/warehouses?cityRef={city}'
+        url = f"{self.BASE_URL}offices?city={city}"
         response = requests.get(url, headers=self.headers)
+
         if response.status_code == 200:
             return response.json()
         else:
@@ -58,6 +57,23 @@ class UkrPostDeliveryService(AbstractDeliveryService):
     def track_parcel(self, tracking_number):
         url = f'{self.BASE_URL}/track/{tracking_number}'
         response = requests.get(url, headers=self.headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
+
+    def calculate_delivery_cost(self, data):
+        url = f"{self.BASE_URL}calculate"
+        payload = {
+            "senderCity": data['sender_city'],
+            "recipientCity": data['recipient_city'],
+            "weight": data['weight'],
+            "length": data["length"],
+            "width": data["width"],
+            "height": data["height"]
+        }
+        response = requests.post(url, json=payload, headers=self.headers)
+
         if response.status_code == 200:
             return response.json()
         else:
