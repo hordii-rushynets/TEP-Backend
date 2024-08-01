@@ -1,36 +1,38 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views import View
 from .services.factory import get_delivery_service
+from rest_framework import status, viewsets, mixins
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 
-class CreateParcelView(View):
+class CreateParcelView(APIView):
     def post(self, request, service_type):
         data = request.POST
         service = get_delivery_service(service_type)
         response = service.create_parcel(data)
-        return JsonResponse(response)
+        return Response(response)
 
 
-class GetWarehousesView(View):
-    def get(self, request, service_type):
-        city = request.GET.get('city')
+class GetWarehousesView(APIView):
+    def get(self, request, service_type, city):
         service = get_delivery_service(service_type)
-        response = service.get_warehouses(city)
-        return JsonResponse(response, safe=False)
+        try:
+            response = service.get_warehouses(city)
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TrackParcelView(View):
+class TrackParcelView(APIView):
     def get(self, request, service_type):
         tracking_number = request.GET.get('tracking_number')
         service = get_delivery_service(service_type)
         response = service.track_parcel(tracking_number)
-        return JsonResponse(response)
+        return Response(response)
 
 
-class CalculateDeliveryCostView(View):
+class CalculateDeliveryCostView(APIView):
     def post(self, request, service_type):
         data = request.POST
         service = get_delivery_service(service_type)
         response = service.calculate_delivery_cost(data)
-        return JsonResponse(response)
+        return Response(response)
