@@ -23,16 +23,21 @@ class GetWarehousesView(APIView):
 
 
 class TrackParcelView(APIView):
-    def get(self, request, service_type):
-        tracking_number = request.GET.get('tracking_number')
+    def get(self, request, service_type, tracking_number):
         service = get_delivery_service(service_type)
-        response = service.track_parcel(tracking_number)
-        return Response(response)
+        try:
+            response = service.track_parcel(tracking_number)
+            return Response(response)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CalculateDeliveryCostView(APIView):
     def post(self, request, service_type):
-        data = request.POST
+        data = request.data
+        if not all(key in data for key in ('city_recipient', 'weight', 'cost')):
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+        print(data)
         service = get_delivery_service(service_type)
         response = service.calculate_delivery_cost(data)
         return Response(response)

@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from requests.exceptions import SSLError
 
 
 class NovaPoshtaService:
@@ -159,23 +160,37 @@ class NovaPoshtaService:
 
     @staticmethod
     def calculate_delivery_cost(data):
-        city_sender_ref = NovaPoshtaService.get_city_ref(data['city_sender'])
-        city_recipient_ref = NovaPoshtaService.get_city_ref(data['city_recipient'])
+        try:
+            a = NovaPoshtaService()
+            city_recipient_ref = a.get_city_ref(data['city_recipient'])
+            if not city_recipient_ref:
+                return {"error": "City recipient reference not found"}
 
-        payload = {
-            "apiKey": NovaPoshtaService.api_key,
-            "modelName": "InternetDocument",
-            "calledMethod": "getDocumentPrice",
-            "methodProperties": {
-                "CitySender": city_sender_ref,
-                "CityRecipient": city_recipient_ref,
-                "Weight": data['weight'],
-                "ServiceType": data['service_type'],
-                "Cost": data['cost'],
-                "CargoType": data['cargo_type'],
-                "SeatsAmount": data['seats_amount'],
-                "PayerType": data['payer_type']
+            payload = {
+                "apiKey": NovaPoshtaService.api_key,
+                "modelName": "InternetDocument",
+                "calledMethod": "getDocumentPrice",
+                "methodProperties": {
+                    "CitySender": settings.REF_CITY_SENDER,
+                    "CityRecipient": city_recipient_ref,
+                    "Weight": data['weight'],
+                    "ServiceType": 'WarehouseWarehouse',
+                    "Cost": data['cost'],
+                    "CargoType": 'Parcel',
+                    "SeatsAmount": '1',
+                }
             }
-        }
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
-        return response.json()
+            response = requests.post(NovaPoshtaService.api_url, json=payload)
+            response_data = response.json()
+
+            data = {
+                "cost": response_data["data"][0]["Cost"]
+            }
+            return data
+
+        except SSLError as e:
+            return {"error": f"SSL error occurred: {str(e)}"}
+        except requests.exceptions.RequestException as e:
+            return {"error": f"Request exception occurred: {str(e)}"}
+        except Exception as e:
+            return {"error": f"An unexpected error occurred: {str(e)}"}
