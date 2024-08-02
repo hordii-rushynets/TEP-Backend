@@ -20,10 +20,9 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserPasswordUpdateRequestSerializer
                                   )
 
-from django.conf import settings
-from django.shortcuts import redirect
 from rest_framework_simplejwt.tokens import RefreshToken
-from social_django.utils import psa
+from dj_rest_auth.registration.views import SocialLoginView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -115,3 +114,20 @@ class UserEmailUpdateViewSet(viewsets.GenericViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+
+    def get_response(self):
+        response = super().get_response()
+        user = self.user
+        refresh = RefreshToken.for_user(user)
+
+        response.data['refresh'] = str(refresh)
+        response.data['access'] = str(refresh.access_token)
+        response.data['user'] = {
+            'id': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name
+        }
+        return response
