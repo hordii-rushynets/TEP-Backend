@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from requests.exceptions import SSLError
+import os
 
 
 class NovaPoshtaService:
@@ -8,7 +8,7 @@ class NovaPoshtaService:
     api_key = settings.NOVA_POST_API_KEY
 
     @staticmethod
-    def get_city_ref(city_name):
+    def get_city_ref(city_name: str) -> str | None:
         payload = {
             "apiKey": NovaPoshtaService.api_key,
             "modelName": "Address",
@@ -24,88 +24,76 @@ class NovaPoshtaService:
         return None
 
     @staticmethod
-    def get_counterparty_ref(name):
+    def get_contact_sender(sender_ref: str) -> dict:
         payload = {
-            "apiKey": NovaPoshtaService.api_key,
-            "modelName": "Counterparty",
-            "calledMethod": "getCounterparties",
-            "methodProperties": {
-                "CounterpartyProperty": "Sender",
-                "FindByString": name
-            }
-        }
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
-        data = response.json()
-        if data['success'] and data['data']:
-            return data['data'][0]['Ref']
-        return None
-
-    @staticmethod
-    def get_counterparty_addresses(counterparty_ref):
-        payload = {
-            "apiKey": NovaPoshtaService.api_key,
+            "apiKey": "00e3c70569ef56571b32626d9a8d3a9f",
             "modelName": "CounterpartyGeneral",
-            "calledMethod": "getCounterpartyAddresses",
+            "calledMethod": "getCounterpartyContactPersons",
             "methodProperties": {
-                "Ref": counterparty_ref,
-                "CounterpartyProperty": "Sender"
+                "Ref": f"{sender_ref}",
+                "Page": "1"
             }
         }
+
         response = requests.post(NovaPoshtaService.api_url, json=payload)
-        data = response.json()
-        if data['success'] and data['data']:
-            return data['data']
-        return None
+
+        data = {
+            "ref": response.json()['data'][2]['Ref'],
+            "phones": response.json()['data'][2]['Phones']
+        }
+        return data
 
     @staticmethod
-    def get_warehouse_ref(city_name, warehouse_number):
-        city_ref = NovaPoshtaService.get_city_ref(city_name)
-        if not city_ref:
-            return None
+    def create_parcel(data: dict) -> dict:
+        sender_contact = NovaPoshtaService.get_contact_sender("19b4de7e-c0d6-11e4-a77a-005056887b8d")
 
-        warehouses = NovaPoshtaService.get_warehouses(city_name)
-        if warehouses['success']:
-            for warehouse in warehouses['data']:
-                if warehouse['Number'] == warehouse_number:
-                    return warehouse['Ref']
-        return None
-
-    @staticmethod
-    def create_parcel(data):
-        city_sender_ref = NovaPoshtaService.get_city_ref(data['city_sender'])
-        city_recipient_ref = NovaPoshtaService.get_city_ref(data['city_recipient'])
-        sender_ref = NovaPoshtaService.get_counterparty_ref(data['sender_name'])
-        recipient_warehouse_ref = NovaPoshtaService.get_warehouse_ref(data['city_recipient'],
-                                                                      data['recipient_warehouse_number'])
-        sender_address_ref = NovaPoshtaService.get_address_ref(data['sender_address'], data['city_sender'])
+        print(data)
 
         payload = {
             "apiKey": NovaPoshtaService.api_key,
-            "modelName": "InternetDocument",
+            "modelName": "InternetDocumentGeneral",
             "calledMethod": "save",
             "methodProperties": {
-                "PayerType": data['payer_type'],
-                "PaymentMethod": data['payment_method'],
-                "CargoType": data['cargo_type'],
-                "Weight": data['weight'],
-                "ServiceType": data['service_type'],
-                "SeatsAmount": data['seats_amount'],
+                "CitySender": os.getenv('REF_CITY_SENDER'),
+                "SenderAddress": os.getenv('REF_ADDRESS_SENDER'),
+                "Sender": os.getenv('REF_SENDER'),
+                "ContactSender": sender_contact['ref'],
+                "SendersPhone": sender_contact['phones'],
+
+                "RecipientsPhone": data["recipients_phone"],
+                "RecipientCityName": data["city_recipient"],
+                "RecipientArea": "",
+                "RecipientAreaRegions": "",
+                "RecipientAddressName": data['recipient_address'],
+                "RecipientHouse": "",
+                "RecipientFlat": "",
+                "RecipientName": data["recipient_name"],
+                "RecipientType": "PrivatePerson",
+                "SettlementType": data['settlemen_type'],
+
+                "CargoType": "Parcel",
+                "SeatsAmount": "1",
+                "ServiceType": "WarehouseWarehouse",
+
+                "PayerType": "Recipient",
+                "PaymentMethod": "Cash",
                 "Description": data['description'],
-                "CitySender": city_sender_ref,
-                "Sender": sender_ref,
-                "SenderAddress": sender_address_ref,
-                "ContactSender": data['contact_sender'],
-                "SendersPhone": data['senders_phone'],
-                "CityRecipient": city_recipient_ref,
-                "RecipientWarehouse": recipient_warehouse_ref,
-                "RecipientsPhone": data['recipient_phone']
+                "Cost": data['cost'],
+                "NewAddress": "1",
+                "Weight": data['weight']
             }
         }
+
         response = requests.post(NovaPoshtaService.api_url, json=payload)
-        return response.json()
+        data = {
+            "status": response.json()['success'],
+            "number": response.json()['data'][0]['IntDocNumber'],
+            "prise": response.json()['data'][0]['CostOnSite']
+        }
+        return data
 
     @staticmethod
-    def get_warehouses(city_name):
+    def get_warehouses(city_name: str) -> list[dict] | None:
         a = NovaPoshtaService()
         city_ref = a.get_city_ref(city_name)
         if not city_ref:
@@ -120,10 +108,21 @@ class NovaPoshtaService:
             }
         }
         response = requests.post(NovaPoshtaService.api_url, json=payload, timeout=10)
-        return response.json()
+
+        data = []
+
+        for i in response.json()['data']:
+            data.append({
+                "description_uk": i['Description'],
+                "description_ru": i['DescriptionRu'],
+                "description_en": i['Description'],
+                "number": i['Number']
+            })
+
+        return data
 
     @staticmethod
-    def track_parcel(tracking_number):
+    def track_parcel(tracking_number: str) -> list[dict]:
         payload = {
             "apiKey": NovaPoshtaService.api_key,
             "modelName": "TrackingDocument",
@@ -135,62 +134,45 @@ class NovaPoshtaService:
             }
         }
         response = requests.post(NovaPoshtaService.api_url, json=payload)
-        return response.json()
+        data = [
+            {
+                "message_uk": "Замовлення створено",
+                "message_en": "Order created",
+                "message_ru": "Заказ создан",
+                "date_created": response.json()['data'][0]['DateCreated']
+            },
+            {
+                "status": response.json()['data'][0]['Status'],
+                "update_date": response.json()['data'][0]['TrackingUpdateDate'],
+            }
+        ]
+        return data
 
     @staticmethod
-    def get_address_ref(address, city_name):
-        city_ref = NovaPoshtaService.get_city_ref(city_name)
-        if not city_ref:
-            return None
+    def calculate_delivery_cost(data: dict) -> dict:
+        a = NovaPoshtaService()
+        city_recipient_ref = a.get_city_ref(data['city_recipient'])
+        if not city_recipient_ref:
+            return {"error": "City recipient reference not found"}
 
         payload = {
             "apiKey": NovaPoshtaService.api_key,
-            "modelName": "Address",
-            "calledMethod": "getStreet",
+            "modelName": "InternetDocument",
+            "calledMethod": "getDocumentPrice",
             "methodProperties": {
-                "CityRef": city_ref,
-                "FindByString": address
+                "CitySender": settings.REF_CITY_SENDER,
+                "CityRecipient": city_recipient_ref,
+                "Weight": data['weight'],
+                "ServiceType": 'WarehouseWarehouse',
+                "Cost": data['cost'],
+                "CargoType": 'Parcel',
+                "SeatsAmount": '1',
             }
         }
         response = requests.post(NovaPoshtaService.api_url, json=payload)
-        data = response.json()
-        if data['success'] and data['data']:
-            return data['data'][0]['Ref']
-        return None
+        response_data = response.json()
 
-    @staticmethod
-    def calculate_delivery_cost(data):
-        try:
-            a = NovaPoshtaService()
-            city_recipient_ref = a.get_city_ref(data['city_recipient'])
-            if not city_recipient_ref:
-                return {"error": "City recipient reference not found"}
-
-            payload = {
-                "apiKey": NovaPoshtaService.api_key,
-                "modelName": "InternetDocument",
-                "calledMethod": "getDocumentPrice",
-                "methodProperties": {
-                    "CitySender": settings.REF_CITY_SENDER,
-                    "CityRecipient": city_recipient_ref,
-                    "Weight": data['weight'],
-                    "ServiceType": 'WarehouseWarehouse',
-                    "Cost": data['cost'],
-                    "CargoType": 'Parcel',
-                    "SeatsAmount": '1',
-                }
-            }
-            response = requests.post(NovaPoshtaService.api_url, json=payload)
-            response_data = response.json()
-
-            data = {
-                "cost": response_data["data"][0]["Cost"]
-            }
-            return data
-
-        except SSLError as e:
-            return {"error": f"SSL error occurred: {str(e)}"}
-        except requests.exceptions.RequestException as e:
-            return {"error": f"Request exception occurred: {str(e)}"}
-        except Exception as e:
-            return {"error": f"An unexpected error occurred: {str(e)}"}
+        data = {
+            "cost": response_data["data"][0]["Cost"]
+        }
+        return data
