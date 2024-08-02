@@ -156,8 +156,6 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     'tep_user.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
-    'social_core.backends.google.GoogleOpenIdConnect',
-    'social_core.backends.google.GoogleOAuth2',
 ]
 
 SITE_ID = 1
