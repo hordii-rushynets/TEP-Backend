@@ -1,6 +1,7 @@
 import requests
 from django.conf import settings
 import os
+from .Post_Error import nova_post_error_rename
 
 
 class NovaPoshtaService:
@@ -47,8 +48,6 @@ class NovaPoshtaService:
     def create_parcel(data: dict) -> dict:
         sender_contact = NovaPoshtaService.get_contact_sender(os.getenv('REF_SENDER'))
 
-        print(data)
-
         payload = {
             "apiKey": NovaPoshtaService.api_key,
             "modelName": "InternetDocumentGeneral",
@@ -93,9 +92,15 @@ class NovaPoshtaService:
                 "priсe": response.json()['data'][0]['CostOnSite']
             }
         else:
-            data = {
-                "errors": response.json()['errors']
-            }
+            data = []
+            print(response.json()['errors'])
+            for i in response.json()['errors']:
+                error_name = i.split(' ')[0]
+                print(error_name)
+                rename_error = nova_post_error_rename.get(error_name, None)
+                if rename_error is not None:
+                    data.append(rename_error)
+
         return data
 
     @staticmethod
