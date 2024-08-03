@@ -2,6 +2,11 @@ import requests
 from django.conf import settings
 import os
 from .Post_Error import nova_post_error_rename
+from django.contrib.auth import get_user_model
+from ..models import OrderNumber
+from rest_framework.exceptions import ValidationError
+
+User = get_user_model()
 
 
 class NovaPoshtaService:
@@ -61,11 +66,11 @@ class NovaPoshtaService:
 
                 "RecipientsPhone": data.get("recipients_phone", ""),
                 "RecipientCityName": data.get('city_recipient', ""),
-                "RecipientArea":  data.get('area_recipient', ""),
+                "RecipientArea": data.get('area_recipient', ""),
                 "RecipientAreaRegions": data.get('area_regions_recipient', ""),
                 "RecipientAddressName": data.get('recipient_address', ""),
                 "RecipientHouse": data.get('recipient_house', ""),
-                "RecipientFlat": data.get('recipient_float', ""),
+                "RecipientFlat": data.get('recipient_flat', ""),
                 "RecipientName": data.get('recipient_name', ""),
                 "RecipientType": "PrivatePerson",
                 "SettlementType": data.get('settlemen_type', ""),
@@ -73,7 +78,7 @@ class NovaPoshtaService:
 
                 "CargoType": "Parcel",
                 "SeatsAmount": "1",
-                "ServiceType":  data.get("service_type", ""),
+                "ServiceType": data.get("service_type", ""),
 
                 "PayerType": "Recipient",
                 "PaymentMethod": "Cash",
@@ -86,17 +91,26 @@ class NovaPoshtaService:
 
         response = requests.post(NovaPoshtaService.api_url, json=payload)
         if response.json()['success']:
+            try:
+                tep_user = User.objects.get(id=data['tep_user'])
+            except User.DoesNotExist:
+                raise ValidationError({"error": "TEPUser does not exist"})
+
+            order_number = OrderNumber.objects.create(
+                number=response.json()['data'][0]['IntDocNumber'],
+                tep_user=tep_user,
+                post_type="NovaPost"
+            )
+
             data = {
                 "status": response.json()['success'],
-                "number": response.json()['data'][0]['IntDocNumber'],
-                "priсe": response.json()['data'][0]['CostOnSite']
+                "number": order_number.number,
+                "price": response.json()['data'][0]['CostOnSite'],
             }
         else:
             data = []
-            print(response.json()['errors'])
             for i in response.json()['errors']:
                 error_name = i.split(' ')[0]
-                print(error_name)
                 rename_error = nova_post_error_rename.get(error_name, None)
                 if rename_error is not None:
                     data.append(rename_error)
