@@ -45,7 +45,7 @@ class NovaPoshtaService:
 
     @staticmethod
     def create_parcel(data: dict) -> dict:
-        sender_contact = NovaPoshtaService.get_contact_sender("19b4de7e-c0d6-11e4-a77a-005056887b8d")
+        sender_contact = NovaPoshtaService.get_contact_sender(os.getenv('REF_SENDER'))
 
         print(data)
 
