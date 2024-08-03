@@ -31,8 +31,8 @@ class TrackParcelView(APIView):
             service = get_delivery_service(service_type)
             response = service.track_parcel(tracking_number)
             return Response(response)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class CalculateDeliveryCostView(APIView):

@@ -60,20 +60,21 @@ class NovaPoshtaService:
                 "ContactSender": sender_contact['ref'],
                 "SendersPhone": sender_contact['phones'],
 
-                "RecipientsPhone": data["recipients_phone"],
-                "RecipientCityName": data["city_recipient"],
-                "RecipientArea": "",
-                "RecipientAreaRegions": "",
-                "RecipientAddressName": data['recipient_address'],
-                "RecipientHouse": "",
-                "RecipientFlat": "",
-                "RecipientName": data["recipient_name"],
+                "RecipientsPhone": data.get("recipients_phone", ""),
+                "RecipientCityName": data.get('city_recipient', ""),
+                "RecipientArea":  data.get('area_recipient', ""),
+                "RecipientAreaRegions": data.get('area_regions_recipient', ""),
+                "RecipientAddressName": data.get('recipient_address', ""),
+                "RecipientHouse": data.get('recipient_house', ""),
+                "RecipientFlat": data.get('recipient_float', ""),
+                "RecipientName": data.get('recipient_name', ""),
                 "RecipientType": "PrivatePerson",
-                "SettlementType": data['settlemen_type'],
+                "SettlementType": data.get('settlemen_type', ""),
+                "RecipientAddressNote": data.get("recipient_address_note", ""),
 
                 "CargoType": "Parcel",
                 "SeatsAmount": "1",
-                "ServiceType": "WarehouseWarehouse",
+                "ServiceType":  data.get("service_type", ""),
 
                 "PayerType": "Recipient",
                 "PaymentMethod": "Cash",
@@ -85,11 +86,16 @@ class NovaPoshtaService:
         }
 
         response = requests.post(NovaPoshtaService.api_url, json=payload)
-        data = {
-            "status": response.json()['success'],
-            "number": response.json()['data'][0]['IntDocNumber'],
-            "prise": response.json()['data'][0]['CostOnSite']
-        }
+        if response.json()['success']:
+            data = {
+                "status": response.json()['success'],
+                "number": response.json()['data'][0]['IntDocNumber'],
+                "priсe": response.json()['data'][0]['CostOnSite']
+            }
+        else:
+            data = {
+                "errors": response.json()['errors']
+            }
         return data
 
     @staticmethod
@@ -112,12 +118,13 @@ class NovaPoshtaService:
         data = []
 
         for i in response.json()['data']:
-            data.append({
-                "description_uk": i['Description'],
-                "description_ru": i['DescriptionRu'],
-                "description_en": i['Description'],
-                "number": i['Number']
-            })
+            if i['CategoryOfWarehouse'] == "Branch":
+                data.append({
+                    "description_uk": i['Description'],
+                    "description_ru": i['DescriptionRu'],
+                    "description_en": i['Description'],
+                    "number": i['Number']
+                })
 
         return data
 
@@ -136,13 +143,15 @@ class NovaPoshtaService:
         response = requests.post(NovaPoshtaService.api_url, json=payload)
         data = [
             {
-                "message_uk": "Замовлення створено",
-                "message_en": "Order created",
-                "message_ru": "Заказ создан",
-                "date_created": response.json()['data'][0]['DateCreated']
+                "status_uk": "Замовлення створено",
+                "status_en": "Order created",
+                "status_ru": "Заказ создан",
+                "update_date": response.json()['data'][0]['DateCreated']
             },
             {
-                "status": response.json()['data'][0]['Status'],
+                "status_uk": response.json()['data'][0]['Status'],
+                "status_en": response.json()['data'][0]['Status'],
+                "status_ru": response.json()['data'][0]['Status'],
                 "update_date": response.json()['data'][0]['TrackingUpdateDate'],
             }
         ]
