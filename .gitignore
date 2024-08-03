@@ -75,3 +75,4 @@ blog/migrations
 cart/migrations
 store/migrations
 tep_user/migrations
+post/migrations
