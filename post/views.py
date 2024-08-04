@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import OrderNumber
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 class CreateParcelView(APIView):
@@ -21,7 +21,7 @@ class CreateParcelView(APIView):
 
 
 class GetWarehousesView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, service_type, city):
         try:
@@ -33,11 +33,11 @@ class GetWarehousesView(APIView):
 
 
 class TrackParcelView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, service_type, tracking_number):
-        #if not OrderNumber.objects.filter(number=tracking_number).exists():
-        #    return Response(status=status.HTTP_400_BAD_REQUEST)
+        if not OrderNumber.objects.filter(number=tracking_number).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
             service = get_delivery_service(service_type)
@@ -48,7 +48,7 @@ class TrackParcelView(APIView):
 
 
 class CalculateDeliveryCostView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request, service_type):
         try:
