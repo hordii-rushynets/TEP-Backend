@@ -22,7 +22,7 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
-import requests
+from google.auth.transport import requests
 from django.conf import settings
 
 
@@ -119,12 +119,12 @@ class GoogleLoginView(APIView):
     def post(self, request):
         token = request.data.get('token')
         try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY)
+            id_info = id_token.verify_oauth2_token(token, requests.Request(), settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY)
 
-            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
                 raise ValueError('Wrong issuer.')
 
-            user, _ = TEPUser.objects.get_or_create(email=idinfo['email'], defaults={'username': idinfo['email']})
+            user, _ = TEPUser.objects.get_or_create(email=id_info['email'], defaults={'username': id_info['email']})
             refresh = RefreshToken.for_user(user)
             data = {
                 'email': user.email,
