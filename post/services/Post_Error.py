@@ -39,6 +39,13 @@ nova_post_error_rename = {
         'uk': "загальний обсяг неправильний",
         'en': "volume general is incorrect",
         'ru': "общий объем неправильный"
+    },
+
+    "Recipient": {
+        'error': "person_error",
+        'uk': "неможливо створити отримувача",
+        'en': "сannot create a recipient",
+        'ru': "Невозможно создать получателя"
     }
 
 }
