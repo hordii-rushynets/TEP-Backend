@@ -21,8 +21,9 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   )
 
 from rest_framework_simplejwt.tokens import RefreshToken
-from dj_rest_auth.registration.views import SocialLoginView
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from google.oauth2 import id_token
+import requests
+from django.conf import settings
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -114,20 +115,23 @@ class UserEmailUpdateViewSet(viewsets.GenericViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
+class GoogleLoginView(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+        try:
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY)
 
-    def get_response(self):
-        response = super().get_response()
-        user = self.user
-        refresh = RefreshToken.for_user(user)
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer.')
 
-        response.data['refresh'] = str(refresh)
-        response.data['access'] = str(refresh.access_token)
-        response.data['user'] = {
-            'id': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name
-        }
-        return response
+            user, _ = TEPUser.objects.get_or_create(email=idinfo['email'], defaults={'username': idinfo['email']})
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'email': user.email,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }
+            return Response(data, status=status.HTTP_200_OK)
+
+        except ValueError:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
