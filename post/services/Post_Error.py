@@ -1,21 +1,44 @@
 nova_post_error_rename = {
-    "RecipientCityName": {'uk': "місто одержувача є недійсним",
-                          'en': "recipient city is invalid",
-                          'ru': "город получателя недействителен"},
+    "RecipientCityName": {
+        'error': "city_error",
+        'uk': "місто одержувача є недійсним",
+        'en': "recipient city is invalid",
+        'ru': "город получателя недействителен"
+    },
 
-    "Weight": {'uk': "вага є недійсним",
-               'en': "weight is invalid",
-               'ru': "вес недействителен"},
+    "Weight": {
+        'error': "weight_error",
+        'uk': "вага недійсна",
+        'en': "weight is invalid",
+        'ru': "вес недействителен"
+    },
 
-    "RecipientAddressName": {'uk': "відділення або вулиця одержувача є недійсним",
-                             'en': "the recipient's branch or street address is invalid",
-                             'ru': "отделение или улица получателя является недействительным"},
+    "RecipientAddressName": {
+        'error': "recipient_branch_or_street_error",
+        'uk': "відділення або вулиця одержувача є недійсним",
+        'en': "the recipient's branch or street address is invalid",
+        'ru': "отделение или улица получателя является недействительным"
+    },
 
-    "ServiceType":  {'uk': "тип доставки або порожній або недійсним",
-                     'en': "delivery type is empty or incorrect",
-                     'ru': "тип доставки пустой или неправильный"},
+    "ServiceType":  {
+        'error': "delivery_type_error",
+        'uk': "тип доставки або порожній або недійсним",
+        'en': "delivery type is empty or incorrect",
+        'ru': "тип доставки пустой или неправильный"
+    },
 
-    "RecipientsPhone": {'uk': "номер телефону порожній або недійсним",
-                        'en': "phone number is empty or invalid",
-                        'ru': "номер телефона пуст или неправильный"},
+    "RecipientsPhone": {
+        'error': "phone_number_error",
+        'uk': "номер телефону порожній або недійсним",
+        'en': "phone number is empty or invalid",
+        'ru': "номер телефона пуст или неправильный"
+    },
+
+    "VolumeGeneral": {
+        'error': "volume_general_error",
+        'uk': "загальний обсяг неправильний",
+        'en': "volume general is incorrect",
+        'ru': "общий объем неправильный"
+    }
+
 }

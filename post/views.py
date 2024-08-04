@@ -33,11 +33,11 @@ class GetWarehousesView(APIView):
 
 
 class TrackParcelView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     def get(self, request, service_type, tracking_number):
-        if not OrderNumber.objects.filter(number=tracking_number).exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        #if not OrderNumber.objects.filter(number=tracking_number).exists():
+        #    return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
             service = get_delivery_service(service_type)
@@ -48,7 +48,7 @@ class TrackParcelView(APIView):
 
 
 class CalculateDeliveryCostView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     def post(self, request, service_type):
         try:

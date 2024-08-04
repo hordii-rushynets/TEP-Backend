@@ -13,26 +13,32 @@ class NovaPoshtaService:
     api_url = "https://api.novaposhta.ua/v2.0/json/"
     api_key = settings.NOVA_POST_API_KEY
 
-    @staticmethod
-    def get_city_ref(city_name: str) -> str | None:
+    def get_city_ref(self, city_name: str) -> str | None:
         payload = {
-            "apiKey": NovaPoshtaService.api_key,
+            "apiKey": self.api_key,
             "modelName": "Address",
             "calledMethod": "getCities",
             "methodProperties": {
                 "FindByString": city_name
             }
         }
-        response = requests.post(NovaPoshtaService.api_url, json=payload, timeout=10)
+        response = requests.post(self.api_url, json=payload, timeout=10)
         data = response.json()
         if data['success'] and data['data']:
             return data['data'][0]['Ref']
         return None
 
-    @staticmethod
-    def get_contact_sender(sender_ref: str) -> dict:
+    def error_rename(self, errors: list, data: list) -> list:
+        for i in errors:
+            error_name = i.split(' ')[0]
+            rename_error = nova_post_error_rename.get(error_name, None)
+            if rename_error is not None:
+                data.append(rename_error)
+        return data
+
+    def get_contact_sender(self, sender_ref: str) -> dict:
         payload = {
-            "apiKey": "00e3c70569ef56571b32626d9a8d3a9f",
+            "apiKey": self.api_key,
             "modelName": "CounterpartyGeneral",
             "calledMethod": "getCounterpartyContactPersons",
             "methodProperties": {
@@ -49,12 +55,11 @@ class NovaPoshtaService:
         }
         return data
 
-    @staticmethod
-    def create_parcel(data: dict) -> dict:
-        sender_contact = NovaPoshtaService.get_contact_sender(os.getenv('REF_SENDER'))
+    def create_parcel(self, data: dict) -> dict:
+        sender_contact = self.get_contact_sender(os.getenv('REF_SENDER'))
 
         payload = {
-            "apiKey": NovaPoshtaService.api_key,
+            "apiKey": self.api_key,
             "modelName": "InternetDocumentGeneral",
             "calledMethod": "save",
             "methodProperties": {
@@ -89,7 +94,7 @@ class NovaPoshtaService:
             }
         }
 
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
+        response = requests.post(self.api_url, json=payload)
         if response.json()['success']:
             try:
                 tep_user = User.objects.get(id=data['tep_user'])
@@ -109,30 +114,26 @@ class NovaPoshtaService:
             }
         else:
             data = []
-            for i in response.json()['errors']:
-                error_name = i.split(' ')[0]
-                rename_error = nova_post_error_rename.get(error_name, None)
-                if rename_error is not None:
-                    data.append(rename_error)
+            errors_list = response.json()['errors']
+            self.error_rename(errors_list, data)
 
         return data
 
-    @staticmethod
-    def get_warehouses(city_name: str) -> list[dict] | None:
+    def get_warehouses(self, city_name: str) -> list[dict] | None:
         a = NovaPoshtaService()
         city_ref = a.get_city_ref(city_name)
         if not city_ref:
             return None
 
         payload = {
-            "apiKey": NovaPoshtaService.api_key,
+            "apiKey": self.api_key,
             "modelName": "AddressGeneral",
             "calledMethod": "getWarehouses",
             "methodProperties": {
                 "CityRef": city_ref
             }
         }
-        response = requests.post(NovaPoshtaService.api_url, json=payload, timeout=10)
+        response = requests.post(self.api_url, json=payload, timeout=10)
 
         data = []
 
@@ -147,10 +148,9 @@ class NovaPoshtaService:
 
         return data
 
-    @staticmethod
-    def track_parcel(tracking_number: str) -> list[dict]:
+    def track_parcel(self, tracking_number: str) -> list[dict]:
         payload = {
-            "apiKey": NovaPoshtaService.api_key,
+            "apiKey": self.api_key,
             "modelName": "TrackingDocument",
             "calledMethod": "getStatusDocuments",
             "methodProperties": {
@@ -176,15 +176,13 @@ class NovaPoshtaService:
         ]
         return data
 
-    @staticmethod
-    def calculate_delivery_cost(data: dict) -> dict:
-        a = NovaPoshtaService()
-        city_recipient_ref = a.get_city_ref(data['city_recipient'])
+    def calculate_delivery_cost(self, data: dict) -> dict:
+        city_recipient_ref = self.get_city_ref(data['city_recipient'])
         if not city_recipient_ref:
             return {"error": "City recipient reference not found"}
 
         payload = {
-            "apiKey": NovaPoshtaService.api_key,
+            "apiKey": self.api_key,
             "modelName": "InternetDocument",
             "calledMethod": "getDocumentPrice",
             "methodProperties": {
@@ -197,10 +195,15 @@ class NovaPoshtaService:
                 "SeatsAmount": '1',
             }
         }
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
+        response = requests.post(self.api_url, json=payload)
         response_data = response.json()
 
-        data = {
-            "cost": response_data["data"][0]["Cost"]
-        }
+        if response.json()['success']:
+            data = {
+                "cost": response_data["data"][0]["Cost"]
+            }
+        else:
+            data = []
+            errors_list = response.json()['errors']
+            self.error_rename(errors_list, data)
         return data
