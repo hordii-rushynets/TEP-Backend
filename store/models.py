@@ -103,6 +103,7 @@ class ProductVariant(models.Model):
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
     filter_field = models.ManyToManyField(FilterField, related_name='product_variants')
+    weight = models.PositiveIntegerField(blank=True, default=0)
 
     def __str__(self):
         return str(self.sku)
