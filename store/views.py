@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
@@ -31,7 +31,8 @@ def generate_latin_slug(string):
     return slug
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -39,7 +40,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filterset_class = CategoryFilter
 
 
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
@@ -92,25 +94,29 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SizeViewSet(viewsets.ModelViewSet):
+class SizeViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Size.objects.all()
     serializer_class = SizeSerializer
     lookup_field = 'slug'
 
 
-class ColorViewSet(viewsets.ModelViewSet):
+class ColorViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Color.objects.all()
     serializer_class = ColorSerializer
     lookup_field = 'slug'
 
 
-class MaterialViewSet(viewsets.ModelViewSet):
+class MaterialViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
     lookup_field = 'slug'
 
 
-class ProductVariantViewSet(viewsets.ModelViewSet):
+class ProductVariantViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
     lookup_field = 'slug'
@@ -118,13 +124,15 @@ class ProductVariantViewSet(viewsets.ModelViewSet):
     filterset_class = ProductVariantFilter
 
 
-class ProductVariantInfoViewSet(viewsets.ModelViewSet):
+class ProductVariantInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = ProductVariantInfo.objects.all()
     serializer_class = ProductVariantInfoSerializer
     lookup_field = 'slug'
 
 
-class FilterViewSet(viewsets.ModelViewSet):
+class FilterViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Filter.objects.all()
     serializer_class = FilterSerializer
     lookup_field = 'id'
