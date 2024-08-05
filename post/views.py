@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 class CreateParcelView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     def post(self, request, service_type):
         try:
@@ -15,7 +15,12 @@ class CreateParcelView(APIView):
             data['tep_user'] = request.user.id
             service = get_delivery_service(service_type)
             response = service.create_parcel(data)
-            return Response(response)
+            check = response[0].get('status', None)
+            if check is False:
+                response.pop(0)
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            elif check is None:
+                return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

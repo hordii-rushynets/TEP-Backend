@@ -114,6 +114,7 @@ class NovaPoshtaService:
             }
         else:
             data = []
+            data.append({'status': response.json()['success']})
             errors_list = response.json()['errors']
             self.error_rename(errors_list, data)
 
