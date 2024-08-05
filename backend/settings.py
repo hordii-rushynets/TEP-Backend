@@ -42,8 +42,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'social_django',
+
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
     'storages',
@@ -77,6 +88,8 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),
     'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': True,
+    'UPDATE_LAST_LOGIN': False,
 }
 APPEND_SLASH=False
 
@@ -89,6 +102,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -147,10 +161,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
     'tep_user.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+SITE_ID = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -246,3 +262,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+REST_USE_JWT = True
