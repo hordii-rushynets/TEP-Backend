@@ -107,11 +107,11 @@ class NovaPoshtaService:
                 post_type="NovaPost"
             )
 
-            data = {
+            data = [{
                 "status": response.json()['success'],
                 "number": order_number.number,
                 "price": response.json()['data'][0]['CostOnSite'],
-            }
+            }]
         else:
             data = []
             data.append({'status': response.json()['success']})
