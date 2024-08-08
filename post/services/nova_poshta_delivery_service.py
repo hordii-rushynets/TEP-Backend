@@ -3,8 +3,9 @@ from django.conf import settings
 import os
 from .Post_Error import nova_post_error_rename
 from django.contrib.auth import get_user_model
-from ..models import OrderNumber
+from ..models import Order
 from rest_framework.exceptions import ValidationError
+from deep_translator import GoogleTranslator
 
 User = get_user_model()
 
@@ -14,6 +15,9 @@ class NovaPoshtaService:
     api_key = settings.NOVA_POST_API_KEY
 
     def get_city_ref(self, city_name: str) -> str | None:
+        if city_name == "" or city_name is None:
+            raise ValidationError('city name is invalid')
+
         payload = {
             "apiKey": self.api_key,
             "modelName": "Address",
@@ -24,9 +28,11 @@ class NovaPoshtaService:
         }
         response = requests.post(self.api_url, json=payload, timeout=10)
         data = response.json()
+        print(data)
         if data['success'] and data['data']:
             return data['data'][0]['Ref']
-        return None
+        elif len(data['data']) == 0:
+            raise ValidationError('city name is invalid')
 
     def error_rename(self, errors: list, data: list) -> list:
         for i in errors:
@@ -101,28 +107,25 @@ class NovaPoshtaService:
             except User.DoesNotExist:
                 raise ValidationError({"error": "TEPUser does not exist"})
 
-            order_number = OrderNumber.objects.create(
+            order = Order.objects.create(
                 number=response.json()['data'][0]['IntDocNumber'],
                 tep_user=tep_user,
                 post_type="NovaPost"
             )
 
-            data = [{
-                "status": response.json()['success'],
-                "number": order_number.number,
-                "price": response.json()['data'][0]['CostOnSite'],
-            }]
-        else:
+            product_variants = data.get('product_variants', [])
+            order.product_variant.add(*product_variants)
+
+            return {"number": order.number,
+                    "price": response.json()['data'][0]['CostOnSite'],}
+        elif response.json()['success'] is False:
             data = []
-            data.append({'status': response.json()['success']})
             errors_list = response.json()['errors']
-            self.error_rename(errors_list, data)
+            raise ValidationError(self.error_rename(errors_list, data))
 
-        return data
-
-    def get_warehouses(self, city_name: str) -> list[dict] | None:
+    def get_warehouses(self, data: dict) -> list[dict] | None:
         a = NovaPoshtaService()
-        city_ref = a.get_city_ref(city_name)
+        city_ref = a.get_city_ref(data.get('city_name'))
         if not city_ref:
             return None
 
@@ -135,19 +138,20 @@ class NovaPoshtaService:
             }
         }
         response = requests.post(self.api_url, json=payload, timeout=10)
-
-        data = []
-
-        for i in response.json()['data']:
-            if i['CategoryOfWarehouse'] == "Branch":
-                data.append({
-                    "description_uk": i['Description'],
-                    "description_ru": i['DescriptionRu'],
-                    "description_en": i['Description'],
-                    "number": i['Number']
-                })
-
-        return data
+        print(response.json()['success'])
+        if response.json()['success']:
+            data = []
+            for i in response.json()['data']:
+                if i['CategoryOfWarehouse'] == "Branch":
+                    data.append({
+                        "description_uk": i['Description'],
+                        "description_ru": i['DescriptionRu'],
+                        "description_en": GoogleTranslator(source='uk', target='en').translate(i['Description']),
+                        "number": i['Number']
+                    })
+            return data
+        else:
+            raise ValidationError(response.json()['errors'])
 
     def track_parcel(self, tracking_number: str) -> list[dict]:
         payload = {
@@ -161,26 +165,29 @@ class NovaPoshtaService:
             }
         }
         response = requests.post(NovaPoshtaService.api_url, json=payload)
-        data = [
-            {
-                "status_uk": "Замовлення створено",
-                "status_en": "Order created",
-                "status_ru": "Заказ создан",
-                "update_date": response.json()['data'][0]['DateCreated']
-            },
-            {
-                "status_uk": response.json()['data'][0]['Status'],
-                "status_en": response.json()['data'][0]['Status'],
-                "status_ru": response.json()['data'][0]['Status'],
-                "update_date": response.json()['data'][0]['TrackingUpdateDate'],
-            }
-        ]
-        return data
+
+        if response.json()['success']:
+            return [
+                {
+                    "status_uk": "Замовлення створено",
+                    "status_en": "Order created",
+                    "status_ru": "Заказ создан",
+                    "update_date": response.json()['data'][0].get('DateCreated')
+                },
+                {
+                    "status_uk": response.json()['data'][0]['Status'],
+                    "status_en": GoogleTranslator(source='uk', target='en').translate(response.json()['data'][0]['Status']),
+                    "status_ru": GoogleTranslator(source='uk', target='ru').translate(response.json()['data'][0]['Status']),
+                    "update_date": response.json()['data'][0].get('TrackingUpdateDate'),
+                }
+            ]
+        elif response.json()['success'] is False:
+            raise ValidationError('tracking number is invalid')
 
     def calculate_delivery_cost(self, data: dict) -> dict:
-        city_recipient_ref = self.get_city_ref(data['city_recipient'])
+        city_recipient_ref = self.get_city_ref(data.get('city_recipient'))
         if not city_recipient_ref:
-            return {"error": "City recipient reference not found"}
+            raise ValidationError({"error": "City recipient reference not found"})
 
         payload = {
             "apiKey": self.api_key,
@@ -200,11 +207,6 @@ class NovaPoshtaService:
         response_data = response.json()
 
         if response.json()['success']:
-            data = {
-                "cost": response_data["data"][0]["Cost"]
-            }
+            return{"cost": response_data["data"][0]["Cost"]}
         else:
-            data = []
-            errors_list = response.json()['errors']
-            self.error_rename(errors_list, data)
-        return data
+            raise ValidationError(response.json()['errors'])

@@ -1,10 +1,15 @@
 from django.urls import path
 from .views import CreateParcelView, GetWarehousesView, TrackParcelView, CalculateDeliveryCostView
+from rest_framework.routers import DefaultRouter
+from .views import OrderViewSet
 
-urlpatterns = [
+router = DefaultRouter()
+router.register(r'orders', OrderViewSet)
+
+urlpatterns = router.urls + [
     path('create-parcel/<str:service_type>/', CreateParcelView.as_view(), name='create_parcel'),
-    path('get-warehouses/<str:service_type>/<str:city>/', GetWarehousesView.as_view(), name='get_warehouses'),
-    path('track-parcel/<str:service_type>/<str:tracking_number>/', TrackParcelView.as_view(), name='track_parcel'),
+    path('get-warehouses/<str:service_type>/', GetWarehousesView.as_view(), name='get_warehouses'),
+    path('track-parcel/<str:tracking_number>/', TrackParcelView.as_view(), name='track_parcel'),
     path('calculate-delivery-cost/<str:service_type>/', CalculateDeliveryCostView.as_view(),
          name='calculate_delivery_cost'),
 ]

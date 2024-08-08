@@ -248,5 +248,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
 NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')
 REF_CITY_SENDER = os.getenv('REF_CITY_SENDER')
-
-URK_POST_API_KEY = os.getenv('UKR_POST_API_KEY')

@@ -1,9 +1,11 @@
 from rest_framework import serializers
-from .models import OrderNumber
+from .models import Order
+from store.serializers import ProductVariantSerializer
 
 
-class OrderNumberSerializers(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
+    product_variant = ProductVariantSerializer(many=True)
+
     class Meta:
-        model = OrderNumber
-        fields = ['number', 'tep_user', 'post_type']
-
+        model = Order
+        fields = ['id', 'number', 'post_type', 'product_variant']

@@ -2,65 +2,93 @@ from .services.factory import get_delivery_service
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import OrderNumber
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from cart.models import CartItem
+from rest_framework import viewsets
+from .models import Order
+from .serializers import OrderSerializer
 
 
 class CreateParcelView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, service_type):
-        try:
-            data = request.data.copy()
-            data['tep_user'] = request.user.id
-            service = get_delivery_service(service_type)
-            response = service.create_parcel(data)
-            check = response[0].get('status', None)
-            if check is False:
-                response.pop(0)
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
-            elif check:
-                return Response(response, status=status.HTTP_200_OK)
+        data = request.data.copy()
+        cart_item_ids = request.data.get('cart_item_ids', [])
+        product_variant_ids = []
+        total_price = 0
+        total_weight = 0
 
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        for item_id in cart_item_ids:
+            try:
+                cart_item = CartItem.objects.get(id=item_id)
+                product_variant = cart_item.product_variants
+                product_variant_ids.append(product_variant.id)
+
+                if product_variant.promotion:
+                    price = product_variant.promo_price
+                elif product_variant.drop_shipping_price != 0:
+                    price = product_variant.drop_shipping_price
+                elif product_variant.wholesale_price != 0:
+                    price = product_variant.wholesale_price
+                else:
+                    price = product_variant.default_price
+
+                total_price += price * cart_item.quantity
+                total_weight += product_variant.weight * cart_item.quantity
+
+            except CartItem.DoesNotExist:
+                continue
+
+        data['cost'] = total_price
+        data['weight'] = total_weight
+        data['tep_user'] = request.user.id
+        data['product_variants'] = product_variant_ids
+
+        service = get_delivery_service(service_type)
+        response = service.create_parcel(data)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class GetWarehousesView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, service_type, city):
-        try:
-            service = get_delivery_service(service_type)
-            response = service.get_warehouses(city)
-            return Response(response, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, service_type):
+        service = get_delivery_service(service_type)
+        response = service.get_warehouses(data=request.data)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class TrackParcelView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, service_type, tracking_number):
-        if not OrderNumber.objects.filter(number=tracking_number).exists():
+    def get(self, request, tracking_number):
+        try:
+            order = Order.objects.get(number=tracking_number)
+        except Order.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            service = get_delivery_service(service_type)
-            response = service.track_parcel(tracking_number)
-            return Response(response)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        service = get_delivery_service(order.post_type)
+        response = service.track_parcel(tracking_number)
+        return Response(response)
 
 
 class CalculateDeliveryCostView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, service_type):
-        try:
-            service = get_delivery_service(service_type)
-            data = request.data
-            response = service.calculate_delivery_cost(data)
-            return Response(response)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        service = get_delivery_service(service_type)
+        data = request.data
+        response = service.calculate_delivery_cost(data)
+        return Response(response)
+
+
+class OrderViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Order.objects.filter(tep_user=user)
+
