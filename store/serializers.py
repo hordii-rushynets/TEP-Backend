@@ -7,10 +7,17 @@ from backend.settings import RedisDatabases
 from tep_user.services import IPControlService
 
 from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filter, FilterField, Material, Product,
-                     ProductVariant, ProductVariantImage, ProductVariantInfo,
-                     Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote)
+                     ProductVariant, ProductVariantImage, ProductVariantInfo, InspirationImage,
+                     Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
+
+from tep_user.serializers import UserProfileSerializer, TEPUser
+
 
 from tep_user.serializers import UserProfileSerializer
+
+from cart.models import CartItem, Cart
+
+
 
 
 class FilterFieldSerializer(serializers.ModelSerializer):
@@ -93,11 +100,25 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     product_variants = ProductVariantSerializer(many=True, read_only=True)
     dimensional_grid = DimensionalGridSerializer(many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    images = ProductImageSerializer(many=True, read_only=True)
+    image_list = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True, required=False
+    )
+    svg_image = serializers.FileField()
+    in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -113,6 +134,25 @@ class ProductSerializer(serializers.ModelSerializer):
 
             return FavoriteProduct.objects.get(user=request.user, product=product).favorite
         except FavoriteProduct.DoesNotExist:
+            return False
+
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
+
+    def get_in_cart(self, product: Product) -> bool:
+        """Check if the product is in the cart for the current user."""
+        request = self.context.get('request')
+
+        if not request.user.is_authenticated:
+            return False
+
+        try:
+            cart = Cart.objects.get(tep_user=request.user)
+            return CartItem.objects.filter(
+                cart=cart,
+                product_variants__product=product
+            ).exists()
+        except Cart.DoesNotExist:
             return False
 
 
@@ -211,22 +251,40 @@ class FeedbackSerializer(serializers.ModelSerializer):
     product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, source='product')
     feedback_images = FeedbackImageSerializer(many=True, read_only=True)
     user_vote = serializers.SerializerMethodField()
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True, required=False
+    )
 
     class Meta:
         model = Feedback
         fields = ['id', 'tep_user', 'product', 'product_id', 'text', 'like_number', 'dislike_number', 'evaluation',
-                  'feedback_images', 'creation_time', 'user_vote']
+                  'feedback_images', 'creation_time', 'user_vote', 'images']
 
     def get_user_vote(self, obj):
         user = self.context['request'].user
         return obj.get_user_vote(user)
 
     def create(self, validated_data):
-        images = validated_data.pop('feedback_images', [])
-        feedback = Feedback.objects.create(**validated_data)
+        images_data = validated_data.pop('images', [])
+        feedback = super().create(validated_data)
 
-        for image in images:
-            FeedbackImage.objects.create(feedback=feedback, image=image)
+        for image_data in images_data:
+            FeedbackImage.objects.create(feedback=feedback, image=image_data)
 
         return feedback
 
+
+class FullDataSerializer(serializers.Serializer):
+    size = SizeSerializer(read_only=True, many=True)
+    color = ColorSerializer(read_only=True, many=True)
+    material = MaterialSerializer(read_only=True, many=True)
+
+    class Meta:
+        fields = ['size', 'color', 'material']
+
+
+class InspirationImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InspirationImage
+        fields = ['image']

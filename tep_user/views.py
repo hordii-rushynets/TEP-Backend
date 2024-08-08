@@ -17,7 +17,8 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserResentCodeSerializer,
                                   UserEmailUpdateRequestSerializer,
                                   UserEmailUpdateConfirmSerializer,
-                                  UserPasswordUpdateRequestSerializer)
+                                  UserPasswordUpdateRequestSerializer
+                                  )
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):

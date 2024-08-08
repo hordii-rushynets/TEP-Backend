@@ -8,7 +8,7 @@ class Cart(models.Model):
     tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user')
 
     def __str__(self):
-        return str(self.tep_user.email)
+        return f"{self.tep_user.email}"
 
 
 class CartItem(models.Model):
@@ -23,6 +23,6 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return str(self.product_variants.title)
+        return f"{self.cart.tep_user.email}, {self.product_variants.title}"
 
 

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'blog',
     'tep_user',
     'cart',
+    'vacancy',
     'post'
 ]
 
@@ -63,7 +64,7 @@ DEFAULT_RENDERER_CLASSES = (
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'backend.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -76,6 +77,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=3),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 APPEND_SLASH=False
 
@@ -242,8 +244,8 @@ DEFAULT_FILE_STORAGE = 'backend.storages.CustomS3Boto3Storage'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
 NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')

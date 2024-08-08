@@ -6,6 +6,10 @@ from common.models import TitleSlug
 from tep_user.models import TEPUser
 from django.utils import timezone
 
+from django.db.models import Avg
+from django.core.validators import FileExtensionValidator
+
+
 
 class Filter(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -37,9 +41,21 @@ class Product(TitleSlug):
     group_id = models.CharField(max_length=128)
     last_modified = models.DateTimeField(auto_now=True)
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
+    svg_image = models.FileField(upload_to='images/', validators=[FileExtensionValidator(['svg'])], blank=True, null=True)
+
 
     def __str__(self):
-        return str(self.pk)
+        return str(self.slug)
+
+    def get_average_rating(self):
+        average_rating = self.feed_back.aggregate(average=Avg('evaluation'))['average']
+        return average_rating if average_rating is not None else 0
+
+
+class ProductImage(models.Model):
+    """Product image Model"""
+    image = models.ImageField(upload_to='product/images/', blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images', null=True)
 
 
 class FavoriteProduct(models.Model):
@@ -150,7 +166,7 @@ class Feedback(models.Model):
     """Feedback Model"""
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='feed_back')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='feed_back')
-    text = models.TextField(null=True)
+    text = models.TextField(blank=True, null=True)
     like_number = models.PositiveIntegerField(default=0)
     dislike_number = models.PositiveIntegerField(default=0)
     evaluation = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(5),])
@@ -186,3 +202,10 @@ class FeedbackVote(models.Model):
 
     def __str__(self):
         return f"{self.tep_user.email} {self.feedback.product.slug} {self.is_like}"
+
+
+class InspirationImage(models.Model):
+    image = models.ImageField(upload_to='inspiration/images/')
+
+    def __str__(self) -> str:
+        return str(self.image.name)

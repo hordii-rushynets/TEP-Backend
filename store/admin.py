@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
                      Category, PromoCode, Filter, FilterField, Order, Feedback, DimensionalGrid, DimensionalGridSize,
-                     FeedbackImage)
+                     FeedbackImage, ProductImage, InspirationImage)
 from django.forms import Textarea
 from django.db import models
 from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
@@ -87,12 +87,21 @@ class FeedbackAdmin(admin.ModelAdmin):
     inlines = [FeedbackImageInline]
 
 
-admin.site.register(Feedback, FeedbackAdmin)
-admin.site.register(FeedbackImage)
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views',
+                    'svg_image']
+    inlines = [ProductImageInline]
+
+
 admin.site.register(Order)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(DimensionalGrid, DimensionalGridAdmin)
-admin.site.register(Product)
+admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant, ProductVariantAdmin)
 admin.site.register(Size, SizeAdmin)
 admin.site.register(Color, ColorAdmin)
@@ -100,3 +109,6 @@ admin.site.register(Material, MaterialAdmin)
 admin.site.register(PromoCode)
 admin.site.register(Filter, СustomFilterAdmin)
 admin.site.register(FilterField, СustomFilterFieldAdmin)
+admin.site.register(Feedback, FeedbackAdmin)
+admin.site.register(FeedbackImage)
+admin.site.register(InspirationImage)

@@ -7,21 +7,24 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
-                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote)
+                     ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote, InspirationImage)
 from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer, FeedbackSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer
 )
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter
+from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
 from django.db.models import QuerySet, Count
 from rest_framework.filters import OrderingFilter
+from cart.models import CartItem, Cart
+from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 
 def generate_latin_slug(string):
@@ -223,3 +226,73 @@ class ProductsImport(APIView):
         data = request.data
         import_data_task.delay(data)
         return Response({'status': 'success'})
+
+
+class FullDataViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        size = Size.objects.all()
+        color = Color.objects.all()
+        material = Material.objects.all()
+
+        data = {
+            'size': size,
+            'color': color,
+            'material': material
+        }
+
+        serializer = FullDataSerializer(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CompareProductFilter
+
+
+class RecommendationView(APIView):
+
+    def get_similar_products_by_slug(self, product_slug=None):
+        if product_slug is not None:
+            try:
+                product = get_object_or_404(Product, slug=product_slug)
+                category = product.category
+                similar_products = Product.objects.filter(category=category).exclude(slug=product.slug)
+            except Http404:
+                similar_products = Product.objects.all()
+        else:
+            similar_products = Product.objects.all()
+        return similar_products
+
+    def get(self, request, product_slug=None):
+        try:
+            cart = Cart.objects.get(tep_user=request.user.id)
+            cart_items = CartItem.objects.filter(cart=cart)
+            cart_product_variants = cart_items.values_list('product_variants', flat=True)
+
+            similar_products = Product.objects.filter(
+                product_variants__in=cart_product_variants
+            ).distinct()
+            similar_products = similar_products.exclude(
+                title__in=[item.product_variants.product.title for item in cart_items])
+
+            if not similar_products.exists():
+                similar_products = self.get_similar_products_by_slug(product_slug)
+
+        except Cart.DoesNotExist:
+            similar_products = self.get_similar_products_by_slug(product_slug)
+
+        serializer = ProductSerializer(similar_products, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = InspirationImage.objects.all()
+    serializer_class = InspirationImageSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
