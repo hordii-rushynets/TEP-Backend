@@ -196,9 +196,9 @@ class NovaPoshtaService:
             "methodProperties": {
                 "CitySender": settings.REF_CITY_SENDER,
                 "CityRecipient": city_recipient_ref,
-                "Weight": data['weight'],
+                "Weight": data.get('weight'),
                 "ServiceType": 'WarehouseWarehouse',
-                "Cost": data['cost'],
+                "Cost": data.get('cost'),
                 "CargoType": 'Parcel',
                 "SeatsAmount": '1',
             }

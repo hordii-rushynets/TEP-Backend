@@ -39,7 +39,7 @@ class CreateParcelView(APIView):
 
             except CartItem.DoesNotExist:
                 continue
-
+        print(total_weight)
         data['cost'] = total_price
         data['weight'] = total_weight
         data['tep_user'] = request.user.id
@@ -47,7 +47,7 @@ class CreateParcelView(APIView):
 
         service = get_delivery_service(service_type)
         response = service.create_parcel(data)
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_201_CREATED)
 
 
 class GetWarehousesView(APIView):
