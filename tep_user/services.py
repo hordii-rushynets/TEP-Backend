@@ -107,12 +107,6 @@ class EmailService(INotificationService):
         self.template_name = 'password.html'
         self.context['password'] = password
         return self
-    
-    def submit_application(self, full_name: str) -> 'EmailService':
-        self.subject = user_const.SUBMIT_APPLICATION_SUBJECT
-        self.template_name = 'submit_application.html'
-        self.context['full_name'] = full_name
-        return self
 
     def send(self) -> None:
         send_email.delay(
