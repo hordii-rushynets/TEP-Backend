@@ -42,8 +42,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'social_django',
+
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
     'storages',
@@ -78,6 +89,8 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),
     'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': True,
+    'UPDATE_LAST_LOGIN': False,
 }
 APPEND_SLASH=False
 
@@ -90,6 +103,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -148,10 +162,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
     'tep_user.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+SITE_ID = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -226,10 +242,12 @@ AUTH_USER_MODEL = 'tep_user.TEPUser'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = 587
-EMAIL_USE_SSL = False
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -248,5 +266,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
+
 NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')
 REF_CITY_SENDER = os.getenv('REF_CITY_SENDER')
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+REST_USE_JWT = True
+

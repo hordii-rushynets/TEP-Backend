@@ -20,6 +20,11 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserPasswordUpdateRequestSerializer
                                   )
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from django.conf import settings
+
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
     """Registration viewset."""
@@ -110,3 +115,33 @@ class UserEmailUpdateViewSet(viewsets.GenericViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+class GoogleLoginView(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+
+        try:
+            id_info = id_token.verify_oauth2_token(token, requests.Request())
+
+            if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer.')
+
+            user, created = TEPUser.objects.get_or_create(
+                email=id_info['email'],
+                defaults={
+                    'username': id_info['email'],
+                    'first_name': id_info.get('given_name', ''),
+                    'last_name': id_info.get('family_name', ''),
+                }
+            )
+
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'email': user.email,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)

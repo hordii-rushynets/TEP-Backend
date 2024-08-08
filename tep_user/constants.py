@@ -7,10 +7,9 @@ CONFIRMATION_REQUIRED = 'Code is required field.'
 CONFIRMATION_USER = 'User doesn`t need confirmation or not exist.'
 CONFIRMATION_WRONG_CODE = 'Wrong code.'
 
-FORGET_PASSWORD = 'User doesn`t exist.'
-FORGET_PASSWORD_SUBJECT = 'FORGET_PASSWORD_SUBJECT'
-REGISTRATION_SUBJECT = 'Ihr Verifizierungscode'
-SUBMIT_APPLICATION_SUBJECT = 'Vielen Dank für Ihre Bewerbung'
+FORGET_PASSWORD = 'Forgot password.'
+FORGET_PASSWORD_SUBJECT = 'Forgot password.'
+REGISTRATION_SUBJECT = 'Confirm registration.'
 
 MAX_REGISTER_IP_COUNT = 1000
 USER_REGISTER_IP_ERROR = (
