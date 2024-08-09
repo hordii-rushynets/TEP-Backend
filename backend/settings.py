@@ -272,8 +272,10 @@ REST_USE_JWT = True
 
 CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': 'basic',
+        'toolbar': 'full',
         'height': 300,
         'width': '100%',
     },
 }
+
+CKEDITOR_BASEPATH = f'{STATIC_URL}ckeditor/ckeditor/'
