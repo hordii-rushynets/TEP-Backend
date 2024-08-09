@@ -29,7 +29,7 @@ class CreateParcelView(APIView):
 
                 if product_variant.promotion:
                     price = product_variant.promo_price
-                elif product_variant.wholesale_price != 0:
+                elif product_variant.is_wholesale:
                     price = product_variant.wholesale_price
                 else:
                     price = product_variant.default_price

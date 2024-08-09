@@ -108,6 +108,7 @@ class ProductVariant(models.Model):
     title = models.CharField(max_length=128)
     sku = models.CharField(max_length=100, unique=True)
     default_price = models.IntegerField(default=0)
+    is_wholesale = models.BooleanField(default=False)
     wholesale_price = models.IntegerField(default=0)
     drop_shipping_price = models.IntegerField(default=0)
     sizes = models.ManyToManyField(Size, blank=True)
