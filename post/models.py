@@ -1,7 +1,19 @@
 from django.db import models
 
-from store.models import ProductVariant
 from tep_user.models import TEPUser
+
+from store.models import ProductVariant, Color, Material, Size, FilterField
+
+
+class OrderItem(models.Model):
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='order_item')
+    color = models.ForeignKey(Color, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
+    size = models.ForeignKey(Size, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.product_variant.title}"
 
 
 class Order(models.Model):
@@ -15,7 +27,7 @@ class Order(models.Model):
     number = models.CharField(max_length=100)
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='orders')
     post_type = models.CharField(max_length=100, choices=POST_TYPE_CHOICES)
-    product_variant = models.ManyToManyField(ProductVariant, related_name='orders')
+    order_item = models.ManyToManyField(OrderItem)
 
     def __str__(self):
         return f"{self.post_type}: {self.number}"

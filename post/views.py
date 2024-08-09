@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Order
+from .models import Order, OrderItem
 from .serializers import OrderSerializer
 from .services.factory import get_delivery_service
 
@@ -20,6 +20,7 @@ class CreateParcelView(APIView):
         total_price = 0
         total_weight = 0
         total_title = []
+        order_item_data = []
 
         for item_id in cart_item_ids:
             try:
@@ -38,14 +39,22 @@ class CreateParcelView(APIView):
                 total_weight += product_variant.weight * cart_item.quantity
                 total_title.append(product_variant)
 
+                order_item_data.append({
+                    'product_variant_id': product_variant.id,
+                    'color_id': cart_item.color.id if cart_item.color else None,
+                    'material_id': cart_item.material.id if cart_item.material else None,
+                    'size_id': cart_item.size.id if cart_item.size else None,
+                    'quantity': cart_item.quantity
+                })
+
             except CartItem.DoesNotExist:
                 continue
 
         data['cost'] = total_price
         data['weight'] = total_weight
         data['tep_user'] = request.user.id
-        data['product_variants'] = product_variant_ids
         data['description'] = ', '.join([str(product_variant.title) for product_variant in total_title])
+        data['order_item_data'] = order_item_data
 
         service = get_delivery_service(service_type)
         response = service.create_parcel(data)

@@ -2,12 +2,12 @@ from abc import ABC
 
 from django.contrib.auth import get_user_model
 
-from ..models import Order
+from ..models import Order, OrderItem
 
 User = get_user_model()
 
 
-def create_order(tep_user_id: int, number: int, post_type: str, product_variants_ids: list[int]):
+def create_order(tep_user_id: int, number: str, post_type: str, order_item_data: list[dict]):
     tep_user = User.objects.get(id=tep_user_id)
 
     order = Order.objects.create(
@@ -15,7 +15,20 @@ def create_order(tep_user_id: int, number: int, post_type: str, product_variants
         tep_user=tep_user,
         post_type=post_type
     )
-    order.product_variant.add(*product_variants_ids)
+
+    order_items = []
+    for item_data in order_item_data:
+        order_item = OrderItem(
+            product_variant_id=item_data['product_variant_id'],
+            color_id=item_data.get('color_id'),
+            material_id=item_data.get('material_id'),
+            size_id=item_data.get('size_id'),
+            quantity=item_data['quantity']
+        )
+        order_item.save()
+        order_items.append(order_item)
+
+    order.order_item.set(order_items)
 
 
 class AbstractDeliveryService(ABC):

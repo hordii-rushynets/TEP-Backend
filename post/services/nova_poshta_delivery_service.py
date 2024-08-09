@@ -58,8 +58,12 @@ class NovaPoshtaService(AbstractDeliveryService):
             number = parcel.get('IntDocNumber')
             price = parcel.get('CostOnSite')
 
-            create_order(parcel_details.get('tep_user'), number,
-                         "NovaPost", parcel_details.get('product_variants', []))
+            create_order(
+                tep_user_id=parcel_details.get('tep_user'),
+                number=number,
+                post_type="NovaPost",
+                order_item_data=parcel_details.get('order_item_data', [])
+            )
 
             return {"number": number,
                     "price": price}
@@ -195,6 +199,7 @@ class NovaPoshtaService(AbstractDeliveryService):
 
         response = requests.post(self.api_url, json=payload).json()
         contact_sender = response.get('data')[2]
+        print(contact_sender)
         return {
             "ref": contact_sender.get('Ref'),
             "phones": contact_sender.get('Phones')

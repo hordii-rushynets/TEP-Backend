@@ -115,8 +115,12 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
         if response.status_code == 200:
             number = parcel.get("barcode")
 
-            create_order(parcel_details.get('tep_user'), number,
-                         "UkrPost", parcel_details.get('product_variants', []))
+            create_order(
+                tep_user_id=parcel_details.get('tep_user'),
+                number=number,
+                post_type="NovaPost",
+                order_item_data=parcel_details.get('order_item_data', [])
+            )
 
             return {"number": number,
                     "price": parcel.get("rawDeliveryPrice")}
