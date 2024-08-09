@@ -1,6 +1,10 @@
 from django.contrib import admin
+from django.contrib import messages
+from django.core.exceptions import ValidationError
 
 from .models import Order, OrderItem
+
+from .services.nova_poshta_delivery_service import NovaPoshtaService
 
 
 @admin.register(Order)
@@ -14,6 +18,17 @@ class OrderAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    def delete_selected(self, request, queryset):
+        for order in queryset:
+            tracking_number = order.number
+            try:
+                result = NovaPoshtaService().delete_parcel(tracking_number)
+                messages.success(request, f"Order {order.number}: {result}")
+            except ValidationError as e:
+                messages.error(request, f"Order {order.number}: {e}")
+
+    actions = [delete_selected]
 
 
 @admin.register(OrderItem)

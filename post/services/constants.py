@@ -57,3 +57,5 @@ tracking_number_error = 'tracking number is invalid'
 region_error = 'region is invalid'
 district_error = 'district is invalid'
 recipient_error = 'recipient is invalid'
+
+ref_error = 'the ref code is incorrect or missing'

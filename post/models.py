@@ -2,8 +2,7 @@ from django.db import models
 
 from tep_user.models import TEPUser
 
-from store.models import ProductVariant, Color, Material, Size, FilterField
-from django.utils import timezone
+from store.models import ProductVariant, Color, Material, Size
 
 
 class OrderItem(models.Model):

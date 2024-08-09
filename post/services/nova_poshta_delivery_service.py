@@ -160,6 +160,52 @@ class NovaPoshtaService(AbstractDeliveryService):
         else:
             raise ValidationError(response.get('errors'))
 
+    def delete_parcel(self, tracking_number):
+        ref_number = self.__get_parcel_ref(tracking_number)
+        payload = {
+            "apiKey": self.api_key,
+            "modelName": "InternetDocument",
+            "calledMethod": "delete",
+            "methodProperties": {
+                "DocumentRefs": str(ref_number)
+            }
+        }
+
+        response = requests.post(self.api_url, json=payload)
+        data = response.json()
+
+        if 'success' in data and data['success']:
+            return "The package has been successfully deleted."
+
+    def __get_parcel_ref(self, tracking_number):
+        payload = {
+            "apiKey": self.api_key,
+            "modelName": "TrackingDocument",
+            "calledMethod": "getStatusDocuments",
+            "methodProperties": {
+                "Documents": [
+                    {
+                        "DocumentNumber": tracking_number
+                    }
+                ]
+            }
+        }
+
+        response = requests.post(self.api_url, json=payload)
+        data = response.json()
+
+        if 'data' in data and len(data['data']) > 0:
+            ref_ew = data['data'][0].get('RefEW')
+            if ref_ew:
+                if ref_ew == "00000000-0000-0000-0000-000000000000":
+                    raise ValidationError("ref_error")
+                else:
+                    return ref_ew
+            else:
+                raise ValidationError("ref_error")
+        else:
+            raise ValidationError("ref_error")
+
     def __get_city_ref(self, city: str) -> str | None:
         if not city:
             raise ValidationError(city_error)
