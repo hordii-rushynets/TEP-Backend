@@ -9,6 +9,8 @@ from django.utils import timezone
 from django.db.models import Avg
 from django.core.validators import FileExtensionValidator
 
+from ckeditor.fields import RichTextField
+
 
 
 class Filter(models.Model):
@@ -27,7 +29,7 @@ class FilterField(models.Model):
 
 
 class Category(TitleSlug):
-    description = models.TextField(blank=True, null=True)
+    description = RichTextField(max_length=30000, blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
     filter = models.ManyToManyField(Filter, related_name='filter')
 
@@ -36,7 +38,7 @@ class Category(TitleSlug):
 
 
 class Product(TitleSlug):
-    description = models.TextField(blank=True, null=True)
+    description = RichTextField(max_length=30000, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     group_id = models.CharField(max_length=128)
     last_modified = models.DateTimeField(auto_now=True)
@@ -133,9 +135,9 @@ class Order(models.Model):
 
 
 class ProductVariantInfo(models.Model):
-    material_and_care = models.TextField()
-    ecology_and_environment = models.TextField()
-    packaging = models.TextField()
+    material_and_care = RichTextField(max_length=30000)
+    ecology_and_environment = RichTextField(max_length=30000)
+    packaging = RichTextField(max_length=30000)
     last_modified = models.DateTimeField(auto_now=True)
     product_variant = models.OneToOneField(ProductVariant, on_delete=models.CASCADE, related_name='variant_info')
 
@@ -165,7 +167,7 @@ class Feedback(models.Model):
     """Feedback Model"""
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='feed_back')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='feed_back')
-    text = models.TextField(blank=True, null=True)
+    text = RichTextField(max_length=30000, blank=True, null=True)
     like_number = models.PositiveIntegerField(default=0)
     dislike_number = models.PositiveIntegerField(default=0)
     evaluation = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(5),])

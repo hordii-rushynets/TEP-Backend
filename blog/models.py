@@ -3,9 +3,11 @@ from django.db import models
 
 from common.models import TitleSlug
 
+from ckeditor.fields import RichTextField
+
 
 class Tag(TitleSlug):
-    description = models.TextField(blank=True, null=True)
+    description = RichTextField(max_length=30000, blank=True, null=True)
     image = models.ImageField(blank=True)
 
     def __str__(self):
@@ -15,7 +17,7 @@ class Tag(TitleSlug):
 class Post(TitleSlug):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_posts')
     tags = models.ManyToManyField('Tag', related_name='posts', blank=True)
-    meta_description = models.TextField()
+    meta_description = RichTextField(max_length=30000)
     image = models.ImageField(blank=True)
     created_at = models.DateField(auto_now_add=True)
 
@@ -34,8 +36,8 @@ class Section(models.Model):
     types = models.CharField(choices=SECTION_TYPES, default=SECTION_TYPES[0][0])
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='section')
     title = models.CharField(max_length=200, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    additional_description = models.TextField(blank=True, null=True)
+    description = RichTextField(max_length=30000, blank=True, null=True)
+    additional_description = RichTextField(max_length=30000, blank=True, null=True)
     image = models.ImageField(upload_to='blog_images/', blank=True, null=True)
 
     def __str__(self):
