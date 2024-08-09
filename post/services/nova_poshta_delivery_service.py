@@ -1,68 +1,20 @@
-import requests
-from django.conf import settings
 import os
-from .Post_Error import nova_post_error_rename
-from django.contrib.auth import get_user_model
-from ..models import Order
-from rest_framework.exceptions import ValidationError
+import requests
+
 from deep_translator import GoogleTranslator
+from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
-User = get_user_model()
+from .constants import *
+from .abstract_delivery_service import AbstractDeliveryService, create_order
 
 
-class NovaPoshtaService:
+class NovaPoshtaService(AbstractDeliveryService):
     api_url = "https://api.novaposhta.ua/v2.0/json/"
-    api_key = settings.NOVA_POST_API_KEY
+    api_key = os.getenv('NOVA_POST_API_KEY')
 
-    def get_city_ref(self, city_name: str) -> str | None:
-        if city_name == "" or city_name is None:
-            raise ValidationError('city name is invalid')
-
-        payload = {
-            "apiKey": self.api_key,
-            "modelName": "Address",
-            "calledMethod": "getCities",
-            "methodProperties": {
-                "FindByString": city_name
-            }
-        }
-        response = requests.post(self.api_url, json=payload, timeout=10)
-        data = response.json()
-        print(data)
-        if data['success'] and data['data']:
-            return data['data'][0]['Ref']
-        elif len(data['data']) == 0:
-            raise ValidationError('city name is invalid')
-
-    def error_rename(self, errors: list, data: list) -> list:
-        for i in errors:
-            error_name = i.split(' ')[0]
-            rename_error = nova_post_error_rename.get(error_name, None)
-            if rename_error is not None:
-                data.append(rename_error)
-        return data
-
-    def get_contact_sender(self, sender_ref: str) -> dict:
-        payload = {
-            "apiKey": self.api_key,
-            "modelName": "CounterpartyGeneral",
-            "calledMethod": "getCounterpartyContactPersons",
-            "methodProperties": {
-                "Ref": f"{sender_ref}",
-                "Page": "1"
-            }
-        }
-
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
-
-        data = {
-            "ref": response.json()['data'][2]['Ref'],
-            "phones": response.json()['data'][2]['Phones']
-        }
-        return data
-
-    def create_parcel(self, data: dict) -> dict:
-        sender_contact = self.get_contact_sender(os.getenv('REF_SENDER'))
+    def create_parcel(self, parcel_details: dict) -> dict:
+        sender_contact = self.__get_contact_sender()
 
         payload = {
             "apiKey": self.api_key,
@@ -75,57 +27,50 @@ class NovaPoshtaService:
                 "ContactSender": sender_contact['ref'],
                 "SendersPhone": sender_contact['phones'],
 
-                "RecipientsPhone": data.get("recipients_phone", ""),
-                "RecipientCityName": data.get('city_recipient', ""),
-                "RecipientArea": data.get('area_recipient', ""),
-                "RecipientAreaRegions": data.get('area_regions_recipient', ""),
-                "RecipientAddressName": data.get('recipient_address', ""),
-                "RecipientHouse": data.get('recipient_house', ""),
-                "RecipientFlat": data.get('recipient_flat', ""),
-                "RecipientName": data.get('recipient_name', ""),
+                "RecipientsPhone": parcel_details.get("recipients_phone", ""),
+                "RecipientCityName": parcel_details.get('city_recipient', ""),
+                "RecipientArea": parcel_details.get('area_recipient', ""),
+                "RecipientAreaRegions": parcel_details.get('area_regions_recipient', ""),
+                "RecipientAddressName": parcel_details.get('recipient_address', ""),
+                "RecipientHouse": parcel_details.get('recipient_house', ""),
+                "RecipientFlat": parcel_details.get('recipient_flat', ""),
+                "RecipientName": parcel_details.get('recipient_name', ""),
                 "RecipientType": "PrivatePerson",
-                "SettlementType": data.get('settlemen_type', ""),
-                "RecipientAddressNote": data.get("recipient_address_note", ""),
+                "SettlementType": parcel_details.get('settlemen_type', ""),
+                "RecipientAddressNote": parcel_details.get("recipient_address_note", ""),
 
                 "CargoType": "Parcel",
                 "SeatsAmount": "1",
-                "ServiceType": data.get("service_type", ""),
+                "ServiceType": parcel_details.get("service_type", ""),
 
                 "PayerType": "Recipient",
                 "PaymentMethod": "Cash",
-                "Description": data['description'],
-                "Cost": data['cost'],
+                "Description": parcel_details['description'],
+                "Cost": parcel_details['cost'],
                 "NewAddress": "1",
-                "Weight": data['weight']
+                "Weight": parcel_details.get('weight')
             }
         }
 
-        response = requests.post(self.api_url, json=payload)
-        if response.json()['success']:
-            try:
-                tep_user = User.objects.get(id=data['tep_user'])
-            except User.DoesNotExist:
-                raise ValidationError({"error": "TEPUser does not exist"})
+        response = requests.post(self.api_url, json=payload).json()
+        if response.get('success'):
+            parcel = response.get('data')[0]
+            number = parcel.get('IntDocNumber')
+            price = parcel.get('CostOnSite')
 
-            order = Order.objects.create(
-                number=response.json()['data'][0]['IntDocNumber'],
-                tep_user=tep_user,
-                post_type="NovaPost"
-            )
+            create_order(parcel_details.get('tep_user'), number,
+                         "NovaPost", parcel_details.get('product_variants', []))
 
-            product_variants = data.get('product_variants', [])
-            order.product_variant.add(*product_variants)
+            return {"number": number,
+                    "price": price}
+        else:
+            errors_list = response.get('errors')
+            errors_rename = []
+            self.__error_rename(errors_list, errors_rename)
+            raise ValidationError(errors_rename)
 
-            return {"number": order.number,
-                    "price": response.json()['data'][0]['CostOnSite'],}
-        elif response.json()['success'] is False:
-            data = []
-            errors_list = response.json()['errors']
-            raise ValidationError(self.error_rename(errors_list, data))
-
-    def get_warehouses(self, data: dict) -> list[dict] | None:
-        a = NovaPoshtaService()
-        city_ref = a.get_city_ref(data.get('city_name'))
+    def get_warehouses(self, search_data: dict) -> list[dict] | None:
+        city_ref = self.__get_city_ref(search_data.get('city_name'))
         if not city_ref:
             return None
 
@@ -137,21 +82,20 @@ class NovaPoshtaService:
                 "CityRef": city_ref
             }
         }
-        response = requests.post(self.api_url, json=payload, timeout=10)
-        print(response.json()['success'])
-        if response.json()['success']:
-            data = []
-            for i in response.json()['data']:
-                if i['CategoryOfWarehouse'] == "Branch":
-                    data.append({
-                        "description_uk": i['Description'],
-                        "description_ru": i['DescriptionRu'],
-                        "description_en": GoogleTranslator(source='uk', target='en').translate(i['Description']),
-                        "number": i['Number']
+        response = requests.post(self.api_url, json=payload, timeout=10).json()
+        if response.get('success'):
+            warehouses = []
+            for warehouse in response.get('data'):
+                if warehouse.get('CategoryOfWarehouse') == nova_post_branch:
+                    warehouses.append({
+                        "description_uk": warehouse.get('Description'),
+                        "description_ru": warehouse.get('DescriptionRu'),
+                        "description_en": GoogleTranslator(source='uk', target='en').translate(warehouse.get('Description')),
+                        "number": warehouse.get('Number')
                     })
-            return data
+            return warehouses
         else:
-            raise ValidationError(response.json()['errors'])
+            raise ValidationError(response.get('errors'))
 
     def track_parcel(self, tracking_number: str) -> list[dict]:
         payload = {
@@ -164,28 +108,29 @@ class NovaPoshtaService:
                 ]
             }
         }
-        response = requests.post(NovaPoshtaService.api_url, json=payload)
+        response = requests.post(self.api_url, json=payload).json()
 
-        if response.json()['success']:
+        if response.get('success'):
+            parcel = response.get('data')[0]
             return [
                 {
                     "status_uk": "Замовлення створено",
                     "status_en": "Order created",
                     "status_ru": "Заказ создан",
-                    "update_date": response.json()['data'][0].get('DateCreated')
+                    "update_date": parcel.get('DateCreated')
                 },
                 {
-                    "status_uk": response.json()['data'][0]['Status'],
-                    "status_en": GoogleTranslator(source='uk', target='en').translate(response.json()['data'][0]['Status']),
-                    "status_ru": GoogleTranslator(source='uk', target='ru').translate(response.json()['data'][0]['Status']),
-                    "update_date": response.json()['data'][0].get('TrackingUpdateDate'),
+                    "status_uk": parcel.get('Status'),
+                    "status_en": GoogleTranslator(source='uk', target='en').translate(parcel.get('Status')),
+                    "status_ru": GoogleTranslator(source='uk', target='ru').translate(parcel.get('Status')),
+                    "update_date": parcel.get('TrackingUpdateDate'),
                 }
             ]
-        elif response.json()['success'] is False:
-            raise ValidationError('tracking number is invalid')
+        else:
+            raise ValidationError(tracking_number_error)
 
     def calculate_delivery_cost(self, data: dict) -> dict:
-        city_recipient_ref = self.get_city_ref(data.get('city_recipient'))
+        city_recipient_ref = self.__get_city_ref(data.get('city_recipient'))
         if not city_recipient_ref:
             raise ValidationError({"error": "City recipient reference not found"})
 
@@ -203,10 +148,54 @@ class NovaPoshtaService:
                 "SeatsAmount": '1',
             }
         }
-        response = requests.post(self.api_url, json=payload)
-        response_data = response.json()
+        response = requests.post(self.api_url, json=payload).json()
 
-        if response.json()['success']:
-            return{"cost": response_data["data"][0]["Cost"]}
+        if response.get('success'):
+            delivery = response.get('data')[0]
+            return {"cost": delivery.get("Cost")}
         else:
-            raise ValidationError(response.json()['errors'])
+            raise ValidationError(response.get('errors'))
+
+    def __get_city_ref(self, city: str) -> str | None:
+        if not city:
+            raise ValidationError(city_error)
+
+        payload = {
+            "apiKey": self.api_key,
+            "modelName": "Address",
+            "calledMethod": "getCities",
+            "methodProperties": {
+                "FindByString": city
+            }
+        }
+        response = requests.post(self.api_url, json=payload, timeout=10).json()
+        city_info = response.get('data')
+        if response.get('success') and city_info:
+            return city_info[0].get('Ref')
+        elif len(city_info) == 0:
+            raise ValidationError(city_error)
+
+    def __error_rename(self, errors: list, data: list):
+        for error in errors:
+            error_name = error.split(' ')[0]
+            rename_error = nova_post_error_rename.get(error_name, None)
+            if rename_error is not None:
+                data.append(rename_error)
+
+    def __get_contact_sender(self) -> dict:
+        payload = {
+            "apiKey": self.api_key,
+            "modelName": "CounterpartyGeneral",
+            "calledMethod": "getCounterpartyContactPersons",
+            "methodProperties": {
+                "Ref": f"{os.getenv('REF_SENDER')}",
+                "Page": "1"
+            }
+        }
+
+        response = requests.post(self.api_url, json=payload).json()
+        contact_sender = response.get('data')[2]
+        return {
+            "ref": contact_sender.get('Ref'),
+            "phones": contact_sender.get('Phones')
+        }

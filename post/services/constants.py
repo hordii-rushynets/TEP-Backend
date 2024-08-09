@@ -46,6 +46,14 @@ nova_post_error_rename = {
         'uk': "неможливо створити отримувача",
         'en': "сannot create a recipient",
         'ru': "Невозможно создать получателя"
-    }
-
+    },
 }
+
+
+nova_post_branch = "Branch"
+
+city_error = "city is invalid"
+tracking_number_error = 'tracking number is invalid'
+region_error = 'region is invalid'
+district_error = 'district is invalid'
+recipient_error = 'recipient is invalid'

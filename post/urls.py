@@ -1,7 +1,15 @@
 from django.urls import path
-from .views import CreateParcelView, GetWarehousesView, TrackParcelView, CalculateDeliveryCostView
+
 from rest_framework.routers import DefaultRouter
-from .views import OrderViewSet
+
+from .views import (
+    CalculateDeliveryCostView,
+    CreateParcelView,
+    GetWarehousesView,
+    OrderViewSet,
+    TrackParcelView,
+)
+
 
 router = DefaultRouter()
 router.register(r'orders', OrderViewSet)

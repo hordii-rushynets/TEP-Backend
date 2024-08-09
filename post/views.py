@@ -1,12 +1,13 @@
-from .services.factory import get_delivery_service
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from cart.models import CartItem
-from rest_framework import viewsets
+
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .models import Order
 from .serializers import OrderSerializer
+from .services.factory import get_delivery_service
 
 
 class CreateParcelView(APIView):
@@ -18,6 +19,7 @@ class CreateParcelView(APIView):
         product_variant_ids = []
         total_price = 0
         total_weight = 0
+        total_title = []
 
         for item_id in cart_item_ids:
             try:
@@ -27,8 +29,6 @@ class CreateParcelView(APIView):
 
                 if product_variant.promotion:
                     price = product_variant.promo_price
-                elif product_variant.drop_shipping_price != 0:
-                    price = product_variant.drop_shipping_price
                 elif product_variant.wholesale_price != 0:
                     price = product_variant.wholesale_price
                 else:
@@ -36,14 +36,16 @@ class CreateParcelView(APIView):
 
                 total_price += price * cart_item.quantity
                 total_weight += product_variant.weight * cart_item.quantity
+                total_title.append(product_variant)
 
             except CartItem.DoesNotExist:
                 continue
-        print(total_weight)
+
         data['cost'] = total_price
         data['weight'] = total_weight
         data['tep_user'] = request.user.id
         data['product_variants'] = product_variant_ids
+        data['description'] = ', '.join([str(product_variant.title) for product_variant in total_title])
 
         service = get_delivery_service(service_type)
         response = service.create_parcel(data)
@@ -55,7 +57,7 @@ class GetWarehousesView(APIView):
 
     def post(self, request, service_type):
         service = get_delivery_service(service_type)
-        response = service.get_warehouses(data=request.data)
+        response = service.get_warehouses(request.data)
         return Response(response, status=status.HTTP_200_OK)
 
 

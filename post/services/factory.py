@@ -1,7 +1,7 @@
-# services/factory.py
+from rest_framework.exceptions import ValidationError
+
 from .nova_poshta_delivery_service import NovaPoshtaService
 from .ukr_poshta_delivery_service import UkrPoshtaDeliveryService
-from rest_framework.exceptions import ValidationError
 
 
 def get_delivery_service(service_type):
