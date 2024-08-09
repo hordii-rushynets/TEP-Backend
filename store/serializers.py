@@ -10,6 +10,9 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
                      ProductVariant, ProductVariantImage, ProductVariantInfo, InspirationImage,
                      Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
 
+from tep_user.serializers import UserProfileSerializer, TEPUser
+
+
 from tep_user.serializers import UserProfileSerializer
 
 from cart.models import CartItem, Cart

@@ -1,5 +1,5 @@
 from django.db import models
-from store.models import ProductVariant, Color, Material, Size, FilterField, Category
+from store.models import ProductVariant, Color, Material, Size, FilterField
 from tep_user.models import TEPUser
 
 
