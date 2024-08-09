@@ -275,6 +275,8 @@ CKEDITOR_CONFIGS = {
         'toolbar': 'full',
         'height': 300,
         'width': '100%',
+        'format_tags': 'p;h1;h2;h3;pre',
+        'removePlugins': 'format',
     },
 }
 
