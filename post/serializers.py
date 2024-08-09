@@ -27,7 +27,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'number', 'post_type', 'order_item', 'status']
+        fields = ['id', 'number', 'post_type', 'order_item', 'status', 'created_at']
 
     def get_status(self, obj):
         try:

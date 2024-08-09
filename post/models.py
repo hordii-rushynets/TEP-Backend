@@ -3,6 +3,7 @@ from django.db import models
 from tep_user.models import TEPUser
 
 from store.models import ProductVariant, Color, Material, Size, FilterField
+from django.utils import timezone
 
 
 class OrderItem(models.Model):
@@ -28,6 +29,7 @@ class Order(models.Model):
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='orders')
     post_type = models.CharField(max_length=100, choices=POST_TYPE_CHOICES)
     order_item = models.ManyToManyField(OrderItem)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.post_type}: {self.number}"

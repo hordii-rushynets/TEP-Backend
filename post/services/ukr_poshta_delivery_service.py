@@ -102,8 +102,8 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
             "deliveryType": parcel_details.get("service_type"),
             "paidByRecipient": False,
             "type": "STANDARD",
-            "declaredPrice": parcel_details.get("cost"),
             "parcels": [{
+                "declaredPrice": parcel_details.get("cost"),
                 "weight": self.__kg_to_g(parcel_details.get('weight')),
                 "length": "50",
             }],
@@ -118,7 +118,7 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
             create_order(
                 tep_user_id=parcel_details.get('tep_user'),
                 number=number,
-                post_type="NovaPost",
+                post_type="UkrPost",
                 order_item_data=parcel_details.get('order_item_data', [])
             )
 
@@ -177,7 +177,7 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
             "postcode": address_info.get("city_recipient"),
             "country": "UA",
             "region": address_info.get("area_recipient"),
-            "city": address_info.get("city_recipient"),
+            "city": address_info.get("city"),
             "district": address_info.get("district"),
             "street": address_info.get("recipient_address"),
             "houseNumber": address_info.get("recipient_house"),
