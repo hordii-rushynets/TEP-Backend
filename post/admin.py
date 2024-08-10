@@ -1,34 +1,38 @@
 from django.contrib import admin
 from django.contrib import messages
-from django.core.exceptions import ValidationError
 
 from .models import Order, OrderItem
+from .services.factory import get_delivery_service
 
-from .services.nova_poshta_delivery_service import NovaPoshtaService
+
+def delete_orders_and_parcels(modeladmin, request, queryset):
+    for order in queryset:
+        if order.unique_post_code:
+            delivery_service = get_delivery_service(order.post_type)
+            deleted = delivery_service.delete_parcel(order.unique_post_code)
+            if deleted:
+                order.delete()
+                modeladmin.message_user(request, f"Посилка {order.number} успішно видалена.", level=messages.SUCCESS)
+            else:
+                modeladmin.message_user(request, f"Не вдалося видалити посилку {order.number} з особистого кабінету "
+                                                 f"{order.post_type}.", level=messages.ERROR)
 
 
-@admin.register(Order)
+delete_orders_and_parcels.short_description = "Видалити вибрані замовлення та посилки"
+
+
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('tep_user', 'number', 'post_type')
-    list_filter = ('tep_user', 'number', 'post_type')
-    search_fields = ('tep_user__email', 'number', 'post_type')
+    list_display = ('tep_user', 'number', 'post_type', 'unique_post_code', 'created_at')
+    list_filter = ('tep_user', 'number', 'post_type', 'unique_post_code', 'created_at')
+    search_fields = ('tep_user__email', 'number', 'post_type', 'unique_post_code', 'created_at')
+
+    actions = [delete_orders_and_parcels]
 
     def has_add_permission(self, request):
         return False
 
     def has_change_permission(self, request, obj=None):
         return False
-
-    def delete_selected(self, request, queryset):
-        for order in queryset:
-            tracking_number = order.number
-            try:
-                result = NovaPoshtaService().delete_parcel(tracking_number)
-                messages.success(request, f"Order {order.number}: {result}")
-            except ValidationError as e:
-                messages.error(request, f"Order {order.number}: {e}")
-
-    actions = [delete_selected]
 
 
 @admin.register(OrderItem)
@@ -42,3 +46,6 @@ class OrderItemAdmin(admin.ModelAdmin):
             return ('product_variant', 'color', 'material', 'size')
         else:
             return ()
+
+
+admin.site.register(Order, OrderAdmin)

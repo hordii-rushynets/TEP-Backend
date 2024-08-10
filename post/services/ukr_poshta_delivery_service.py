@@ -119,7 +119,8 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
                 tep_user_id=parcel_details.get('tep_user'),
                 number=number,
                 post_type="UkrPost",
-                order_item_data=parcel_details.get('order_item_data', [])
+                order_item_data=parcel_details.get('order_item_data', []),
+                post_code=parcel.get('uuid')
             )
 
             return {"number": number,
@@ -220,3 +221,6 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
             return recipient.get('uuid')
         else:
             raise ValidationError(recipient_error)
+
+    def delete_parcel(self, code: str) -> bool:
+        return False

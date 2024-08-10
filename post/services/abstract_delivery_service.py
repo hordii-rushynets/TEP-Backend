@@ -7,13 +7,14 @@ from ..models import Order, OrderItem
 User = get_user_model()
 
 
-def create_order(tep_user_id: int, number: str, post_type: str, order_item_data: list[dict]):
+def create_order(tep_user_id: int, number: str, post_type: str, order_item_data: list[dict], post_code: str):
     tep_user = User.objects.get(id=tep_user_id)
 
     order = Order.objects.create(
         number=number,
         tep_user=tep_user,
-        post_type=post_type
+        post_type=post_type,
+        unique_post_code=post_code
     )
 
     order_items = []
@@ -47,4 +48,8 @@ class AbstractDeliveryService(ABC):
 
     def calculate_delivery_cost(self, data: dict) -> dict:
         """Calculating the cost of delivery"""
+        raise NotImplementedError
+
+    def delete_parcel(self, code: str) -> bool:
+        """Removing a parcel from your personal post office account"""
         raise NotImplementedError

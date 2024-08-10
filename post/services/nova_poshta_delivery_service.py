@@ -14,7 +14,6 @@ class NovaPoshtaService(AbstractDeliveryService):
     api_key = os.getenv('NOVA_POST_API_KEY')
 
     def create_parcel(self, parcel_details: dict) -> dict:
-        sender_contact = self.__get_contact_sender()
 
         payload = {
             "apiKey": self.api_key,
@@ -24,8 +23,8 @@ class NovaPoshtaService(AbstractDeliveryService):
                 "CitySender": os.getenv('REF_CITY_SENDER'),
                 "SenderAddress": os.getenv('REF_ADDRESS_SENDER'),
                 "Sender": os.getenv('REF_SENDER'),
-                "ContactSender": sender_contact['ref'],
-                "SendersPhone": sender_contact['phones'],
+                "ContactSender": os.getenv('REF_CONTACT_SENDER'),
+                "SendersPhone": os.getenv('SENDER_PHONE'),
 
                 "RecipientsPhone": parcel_details.get("recipients_phone", ""),
                 "RecipientCityName": parcel_details.get('city_recipient', ""),
@@ -62,7 +61,8 @@ class NovaPoshtaService(AbstractDeliveryService):
                 tep_user_id=parcel_details.get('tep_user'),
                 number=number,
                 post_type="NovaPost",
-                order_item_data=parcel_details.get('order_item_data', [])
+                order_item_data=parcel_details.get('order_item_data', []),
+                post_code=parcel.get('Ref')
             )
 
             return {"number": number,
@@ -160,22 +160,18 @@ class NovaPoshtaService(AbstractDeliveryService):
         else:
             raise ValidationError(response.get('errors'))
 
-    def delete_parcel(self, tracking_number):
-        ref_number = self.__get_parcel_ref(tracking_number)
+    def delete_parcel(self, code: str) -> bool:
         payload = {
             "apiKey": self.api_key,
             "modelName": "InternetDocument",
             "calledMethod": "delete",
             "methodProperties": {
-                "DocumentRefs": str(ref_number)
+                "DocumentRefs": str(code)
             }
         }
 
-        response = requests.post(self.api_url, json=payload)
-        data = response.json()
-
-        if 'success' in data and data['success']:
-            return "The package has been successfully deleted."
+        response = requests.post(self.api_url, json=payload).json()
+        return response.get('success')
 
     def __get_parcel_ref(self, tracking_number):
         payload = {
@@ -231,22 +227,3 @@ class NovaPoshtaService(AbstractDeliveryService):
             rename_error = nova_post_error_rename.get(error_name, None)
             if rename_error is not None:
                 data.append(rename_error)
-
-    def __get_contact_sender(self) -> dict:
-        payload = {
-            "apiKey": self.api_key,
-            "modelName": "CounterpartyGeneral",
-            "calledMethod": "getCounterpartyContactPersons",
-            "methodProperties": {
-                "Ref": f"{os.getenv('REF_SENDER')}",
-                "Page": "1"
-            }
-        }
-
-        response = requests.post(self.api_url, json=payload).json()
-        contact_sender = response.get('data')[2]
-        print(contact_sender)
-        return {
-            "ref": contact_sender.get('Ref'),
-            "phones": contact_sender.get('Phones')
-        }
