@@ -20,11 +20,11 @@ def create_order(tep_user_id: int, number: str, post_type: str, order_item_data:
     order_items = []
     for item_data in order_item_data:
         order_item = OrderItem(
-            product_variant_id=item_data['product_variant_id'],
+            product_variant_id=item_data.get('product_variant_id'),
             color_id=item_data.get('color_id'),
             material_id=item_data.get('material_id'),
             size_id=item_data.get('size_id'),
-            quantity=item_data['quantity']
+            quantity=item_data.get('quantity')
         )
         order_item.save()
         order_items.append(order_item)
