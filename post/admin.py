@@ -11,14 +11,13 @@ def delete_orders_and_parcels(modeladmin, request, queryset):
             delivery_service = get_delivery_service(order.post_type)
             deleted = delivery_service.delete_parcel(order.unique_post_code)
             if deleted:
-                order.delete()
-                modeladmin.message_user(request, f"Посилка {order.number} успішно видалена.", level=messages.SUCCESS)
+                modeladmin.message_user(request, f"Посилка {order.number} з особистого кабінету.", level=messages.SUCCESS)
             else:
-                modeladmin.message_user(request, f"Не вдалося видалити посилку {order.number} з особистого кабінету "
+                modeladmin.message_user(request, f"Не вдалося видалити посилку {order.number} з особистого кабінету"
                                                  f"{order.post_type}.", level=messages.ERROR)
 
 
-delete_orders_and_parcels.short_description = "Видалити вибрані замовлення та посилки"
+delete_orders_and_parcels.short_description = "Видалити вибрані посилки"
 
 
 class OrderAdmin(admin.ModelAdmin):
