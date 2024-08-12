@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
@@ -35,6 +35,7 @@ def generate_latin_slug(string):
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -43,9 +44,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
     lookup_field = 'slug'
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     filterset_class = ProductFilter
@@ -75,7 +76,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         serializers = {
@@ -96,25 +97,29 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SizeViewSet(viewsets.ModelViewSet):
+class SizeViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Size.objects.all()
     serializer_class = SizeSerializer
     lookup_field = 'slug'
 
 
-class ColorViewSet(viewsets.ModelViewSet):
+class ColorViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Color.objects.all()
     serializer_class = ColorSerializer
     lookup_field = 'slug'
 
 
-class MaterialViewSet(viewsets.ModelViewSet):
+class MaterialViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
     lookup_field = 'slug'
 
 
-class ProductVariantViewSet(viewsets.ModelViewSet):
+class ProductVariantViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
     lookup_field = 'slug'
@@ -122,13 +127,15 @@ class ProductVariantViewSet(viewsets.ModelViewSet):
     filterset_class = ProductVariantFilter
 
 
-class ProductVariantInfoViewSet(viewsets.ModelViewSet):
+class ProductVariantInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = ProductVariantInfo.objects.all()
     serializer_class = ProductVariantInfoSerializer
     lookup_field = 'slug'
 
 
-class FilterViewSet(viewsets.ModelViewSet):
+class FilterViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Filter.objects.all()
     serializer_class = FilterSerializer
     lookup_field = 'id'
@@ -146,8 +153,12 @@ class FeedbackViewSet(ListModelMixin,
     filter_backends = (DjangoFilterBackend,)
     filterset_class = FeedbackFilter
 
-    def perform_create(self, serializer):
-        serializer.save(tep_user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        """Create a new object instance."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        feedback = serializer.save(tep_user=self.request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def like(self, request, *args, **kwargs):
@@ -243,7 +254,7 @@ class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = CompareProductFilter
 
-    
+
 class RecommendationView(APIView):
 
     def get_similar_products_by_slug(self, product_slug=None):
