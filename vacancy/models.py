@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from tep_user.models import TEPUser
+from ckeditor.fields import RichTextField
 
 
 class Name(models.Model):
@@ -46,8 +46,8 @@ class Vacancy(models.Model):
     title = models.CharField(max_length=128)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, related_name='vacancy')
 
-    description = models.TextField()
-    about_company = models.TextField()
+    description = RichTextField(max_length=30000)
+    about_company = RichTextField(max_length=30000)
 
     scope_of_work = models.ManyToManyField(ScopeOfWork)
     type_of_work = models.ManyToManyField(TypeOfWork)
@@ -66,7 +66,7 @@ class CooperationOffer(models.Model):
     name = models.CharField(max_length=200)
     email = models.EmailField()
     phone = models.CharField(max_length=50)
-    message = models.TextField(null=True, blank=True)
+    message = RichTextField(max_length=30000, blank=True, null=True)
 
     def __str__(self):
         return f'{self.name}'

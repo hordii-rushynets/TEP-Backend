@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'ckeditor',
 
     'django.contrib.sites',
     'allauth',
@@ -275,3 +275,14 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 REST_USE_JWT = True
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'format_tags': 'p;h1;h2;h3;pre',
+        'removePlugins': 'format',
+    },
+}
+
+CKEDITOR_BASEPATH = f'{STATIC_URL}ckeditor/ckeditor/'
