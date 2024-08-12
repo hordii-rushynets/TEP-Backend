@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'tep_user',
     'cart',
     'vacancy',
+    'post'
 ]
 
 DEFAULT_RENDERER_CLASSES = (
@@ -265,7 +266,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
+
+NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')
+REF_CITY_SENDER = os.getenv('REF_CITY_SENDER')
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 REST_USE_JWT = True
+
