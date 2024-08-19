@@ -12,7 +12,6 @@ from django.core.validators import FileExtensionValidator
 from ckeditor.fields import RichTextField
 
 
-
 class Filter(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
 
@@ -44,7 +43,6 @@ class Product(TitleSlug):
     last_modified = models.DateTimeField(auto_now=True)
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
     svg_image = models.FileField(upload_to='images/', validators=[FileExtensionValidator(['svg'])], blank=True, null=True)
-
 
     def __str__(self):
         return str(self.slug)

@@ -45,6 +45,3 @@ class OrderItemAdmin(admin.ModelAdmin):
             return ('product_variant', 'color', 'material', 'size')
         else:
             return ()
-
-
-admin.site.register(Order, OrderAdmin)

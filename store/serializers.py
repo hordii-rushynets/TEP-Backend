@@ -18,8 +18,6 @@ from tep_user.serializers import UserProfileSerializer
 from cart.models import CartItem, Cart
 
 
-
-
 class FilterFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = FilterField
