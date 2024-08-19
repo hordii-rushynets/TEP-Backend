@@ -1,8 +1,12 @@
 from django.contrib import admin
+from modeltranslation.admin import TranslationAdmin
 
 from .models import Post, Section, Tag
 
-admin.site.register(Tag)
+
+@admin.register(Tag)
+class TagAdmin(TranslationAdmin):
+    fields = ['slug', 'title_uk', 'title_en', 'title_ru']
 
 
 class SectionInline(admin.TabularInline):
