@@ -91,6 +91,9 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
 
+    verbose_name = "Product photo in interior"
+    verbose_name_plural = "Photos of products in the interior"
+
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views',
