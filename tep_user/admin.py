@@ -10,7 +10,8 @@ class TEPUserSocialNetworksAdmin(admin.ModelAdmin):
 
 @admin.register(TEPUser)
 class TEPUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_active')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_active', 'interested_in_wholesale',
+                    'subscribed_to_updates', 'privacy_policy_accepted')
     list_filter = ('is_active', 'is_staff', 'is_superuser')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
