@@ -7,12 +7,15 @@ from ..models import Order, OrderItem
 User = get_user_model()
 
 
-def create_order(tep_user_id: int, number: str, post_type: str, order_item_data: list[dict], post_code: str):
-    tep_user = User.objects.get(id=tep_user_id)
+def create_order(tep_user_id: None, ip_address: str, number: str, post_type: str, order_item_data: list[dict], post_code: str):
+    tep_user = None
+    if tep_user_id:
+        tep_user = User.objects.get(id=tep_user_id)
 
     order = Order.objects.create(
         number=number,
         tep_user=tep_user,
+        ip_address=ip_address,
         post_type=post_type,
         unique_post_code=post_code
     )
@@ -30,6 +33,7 @@ def create_order(tep_user_id: int, number: str, post_type: str, order_item_data:
         order_items.append(order_item)
 
     order.order_item.set(order_items)
+    return order
 
 
 class AbstractDeliveryService(ABC):

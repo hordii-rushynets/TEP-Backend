@@ -2,42 +2,28 @@ from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
                      Category, PromoCode, Filter, FilterField, Order, Feedback, DimensionalGrid, DimensionalGridSize,
                      FeedbackImage, ProductImage, InspirationImage)
-from django.forms import Textarea
-from django.db import models
-from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
-
-JS = (
-    'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
-    'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
-    'modeltranslation/js/tabbed_translation_fields.js',
-)
-CSS = {
-    'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
-}
 
 
-class CategoryAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['slug', 'title_uk',  'title_en',  'title_ru', 'description_uk', 'description_en', 'description_ru',
+                    'image']
+    filter_vertical = ['filter']
+    exclude = ('title', 'description')
 
 
-class ColorAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class ColorAdmin(admin.ModelAdmin):
+    list_display = ('slug', 'title_uk', 'title_en', 'title_ru', 'hex')
+    exclude = ('title', )
 
 
-class SizeAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ('slug', 'title_uk', 'title_en', 'title_ru')
+    exclude = ('title', )
 
 
-class MaterialAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class MaterialAdmin(admin.ModelAdmin):
+    list_display = ('slug', 'title_uk', 'title_en', 'title_ru')
+    exclude = ('title', )
 
 
 class ProductVariantImageInline(admin.TabularInline):
@@ -47,34 +33,38 @@ class ProductVariantImageInline(admin.TabularInline):
 class ProductVariantInfoInline(admin.StackedInline):
     model = ProductVariantInfo
     extra = 1
-
-
-class ProductVariantInline(admin.StackedInline):
-    model = ProductVariant
+    exclude = ('material_and_car', 'ecology_and_environment', 'packaging')
 
 
 class ProductVariantAdmin(admin.ModelAdmin):
     inlines = [ProductVariantImageInline, ProductVariantInfoInline]
+    list_display = ('product', 'title_uk', 'title_en', 'title_ru', 'sku', 'default_price', 'is_wholesale', 'wholesale_price',
+                    'drop_shipping_price', 'weight', 'main_image', 'promotion', 'promo_price', 'count',
+                    'variant_order')
+    filter_horizontal = ('sizes', 'colors', 'materials', 'filter_field')
+    exclude = ('title', )
 
 
-class СustomFilterAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class FilterAdmin(admin.ModelAdmin):
+    list_display = ('name_uk', 'name_en', 'name_ru')
+    exclude = ('name', )
 
 
-class СustomFilterFieldAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class FilterFieldAdmin(admin.ModelAdmin):
+    list_display = ('filter', 'value_uk', 'value_en', 'value_ru')
+    exclude = ('value', )
 
 
-class DimensionalGridSizeInline(TranslationTabularInline):
+class DimensionalGridSizeInline(admin.TabularInline):
     model = DimensionalGridSize
+    list_display = ('dimensional_grid', 'title_uk', 'title_en', 'title_ru', 'size_uk', 'size_en', 'size_ru')
+    exclude = ('title', 'size')
 
 
-class DimensionalGridAdmin(TranslationAdmin):
+class DimensionalGridAdmin(admin.ModelAdmin):
     inlines = [DimensionalGridSizeInline]
+    list_display = ('title_uk', 'title_en', 'title_ru', 'product')
+    exclude = ('title', )
 
 
 class FeedbackImageInline(admin.TabularInline):
@@ -99,6 +89,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views',
                     'svg_image']
     inlines = [ProductImageInline]
+    exclude = ('title', 'description')
 
 
 admin.site.register(Order)
@@ -110,8 +101,8 @@ admin.site.register(Size, SizeAdmin)
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Material, MaterialAdmin)
 admin.site.register(PromoCode)
-admin.site.register(Filter, СustomFilterAdmin)
-admin.site.register(FilterField, СustomFilterFieldAdmin)
+admin.site.register(Filter, FilterAdmin)
+admin.site.register(FilterField, FilterFieldAdmin)
 admin.site.register(Feedback, FeedbackAdmin)
 admin.site.register(FeedbackImage)
 admin.site.register(InspirationImage)

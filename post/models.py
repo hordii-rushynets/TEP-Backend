@@ -24,11 +24,15 @@ class Order(models.Model):
         (NOVAPOST, 'NovaPost'),
     ]
     number = models.CharField(max_length=100)
-    tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='orders')
+    tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
+    ip_address = models.CharField(max_length=45, null=True, blank=True)  # Поле для зберігання IP-адреси
     post_type = models.CharField(max_length=100, choices=POST_TYPE_CHOICES)
     order_item = models.ManyToManyField(OrderItem)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     unique_post_code = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.post_type}: {self.number}"
+        if self.tep_user:
+            return f"{self.tep_user.email}: {self.number}"
+        return f"Order for IP {self.ip_address}: {self.number}"
+

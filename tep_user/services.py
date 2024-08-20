@@ -29,6 +29,9 @@ class IPControlService:
         remote_addr = self.request.META.get('REMOTE_ADDR')
         return x_real_ip or (x_forwarded_for and x_forwarded_for.split(',')[0]) or remote_addr
 
+    def get_ip(self):
+        return self._get_ip_address()
+
     def _check_ip_access(self, key: str, max_count: int, expire_seconds: int) -> bool:
         ip_address = self._get_ip_address()
         if settings.DEBUG and not ip_address:

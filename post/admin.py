@@ -20,6 +20,7 @@ def delete_orders_and_parcels(modeladmin, request, queryset):
 delete_orders_and_parcels.short_description = "Видалити вибрані посилки"
 
 
+@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('tep_user', 'number', 'post_type', 'unique_post_code', 'created_at')
     list_filter = ('tep_user', 'number', 'post_type', 'unique_post_code', 'created_at')
@@ -45,6 +46,3 @@ class OrderItemAdmin(admin.ModelAdmin):
             return ('product_variant', 'color', 'material', 'size')
         else:
             return ()
-
-
-admin.site.register(Order, OrderAdmin)

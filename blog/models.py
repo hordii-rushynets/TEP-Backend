@@ -25,20 +25,38 @@ class Post(TitleSlug):
         return self.title
 
 
-class Section(models.Model):
-    SECTION_TYPES = (
-        ('complexity', 'Complexity'),
-        ('requirements', 'Requirements'),
-        ('what_materials', 'Materials'),
-        ('for_children', 'For children'),
-    )
-
-    types = models.CharField(choices=SECTION_TYPES, default=SECTION_TYPES[0][0])
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='section')
-    title = models.CharField(max_length=200, blank=True, null=True)
-    description = RichTextField(max_length=30000, blank=True, null=True)
-    additional_description = RichTextField(max_length=30000, blank=True, null=True)
-    image = models.ImageField(upload_to='blog_images/', blank=True, null=True)
+class Complexity(models.Model):
+    photo = models.ImageField(upload_to='complexity_images/', blank=True, null=True)
+    title = models.CharField(max_length=128)
+    description = RichTextField(max_length=30000)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='complexity')
 
     def __str__(self):
-        return f"{self.title}"
+        return self.title
+
+
+class Requirements(models.Model):
+    title = models.CharField(max_length=128)
+    description = RichTextField(max_length=30000)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='requirements')
+
+    def __str__(self):
+        return self.title
+
+
+class Materials(models.Model):
+    title = models.CharField(max_length=128)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='what_materials')
+
+    def __str__(self):
+        return self.title
+
+
+class ForChildren(models.Model):
+    photo = models.ImageField(upload_to='complexity_images/', blank=True, null=True)
+    description = RichTextField(max_length=30000)
+    additional_description = RichTextField(max_length=30000)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='for_children')
+
+    def __str__(self):
+        return self.description

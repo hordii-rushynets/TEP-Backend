@@ -1,44 +1,39 @@
 from django.contrib import admin
 from .models import (Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer,
                      CooperationOfferFile)
-from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
-from store.admin import JS, CSS
 
 
-class VacancyAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class VacancyAdmin(admin.ModelAdmin):
+    list_display = ('image', 'title_uk', 'title_en', 'title_ru', 'address', 'description_uk', 'description_en',
+                    'description_ru', 'about_company_uk', 'about_company_en', 'creation_time')
+
+    filter_horizontal = ('scope_of_work', 'type_of_work', 'type_of_employment', 'tag')
+    exclude = ('title', 'description', 'about_company')
 
 
-class ScopeOfWorkAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class ScopeOfWorkAdmin(admin.ModelAdmin):
+    list_display = ('name_uk', 'name_en', 'name_ru')
+    exclude = ('name', )
 
 
-class TypeOfWorkAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class TypeOfWorkAdmin(admin.ModelAdmin):
+    list_display = ('name_uk', 'name_en', 'name_ru')
+    exclude = ('name', )
 
 
-class TypeOfEmploymentAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class TypeOfEmploymentAdmin(admin.ModelAdmin):
+    list_display = ('name_uk', 'name_en', 'name_ru')
+    exclude = ('name', )
 
 
-class TagAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name_uk', 'name_en', 'name_ru')
+    exclude = ('name', )
 
 
-class AddressAdmin(TranslationAdmin):
-    class Media:
-        js = JS
-        css = CSS
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ('city_uk', 'region_uk', 'city_en', 'region_en', 'city_ru', 'region_ru')
+    exclude = ('city', 'region')
 
 
 class CooperationOfferFileInline(admin.TabularInline):
