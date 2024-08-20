@@ -5,10 +5,13 @@ from tep_user.models import TEPUser
 
 class Cart(models.Model):
     """ Model Cart """
-    tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user')
+    tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user', null=True, blank=True)
+    ip_address = models.CharField(max_length=45, unique=True, null=True, blank=True)  # IPv6 підтримка
 
     def __str__(self):
-        return f"{self.tep_user.email}"
+        if self.tep_user:
+            return f"{self.tep_user.email}"
+        return f"Cart for IP {self.ip_address}"
 
 
 class CartItem(models.Model):
@@ -23,6 +26,8 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f"{self.cart.tep_user.email}, {self.product_variants.title}"
+        if self.cart.tep_user:
+            return f"{self.cart.tep_user.email}, {self.product_variants.title}"
+        return f"For {self.cart.ip_address}, {self.product_variants.title}"
 
 

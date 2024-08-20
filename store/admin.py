@@ -33,9 +33,6 @@ class ProductVariantImageInline(admin.TabularInline):
 class ProductVariantInfoInline(admin.StackedInline):
     model = ProductVariantInfo
     extra = 1
-    fields = ('material_and_car_uk', 'material_and_car_en', 'material_and_car_ru',
-              'ecology_and_environment_uk',  'ecology_and_environment_en',  'ecology_and_environment_ru',
-              'packaging_uk', 'packaging_en', 'packaging_ru' 'last_modified')
     exclude = ('material_and_car', 'ecology_and_environment', 'packaging')
 
 
@@ -89,6 +86,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views',
                     'svg_image']
     inlines = [ProductImageInline]
+    exclude = ('title', 'description')
 
 
 admin.site.register(Order)

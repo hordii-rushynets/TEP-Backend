@@ -59,6 +59,7 @@ class NovaPoshtaService(AbstractDeliveryService):
 
             create_order(
                 tep_user_id=parcel_details.get('tep_user'),
+                ip_address=parcel_details.get('ip_address'),
                 number=number,
                 post_type="NovaPost",
                 order_item_data=parcel_details.get('order_item_data', []),
