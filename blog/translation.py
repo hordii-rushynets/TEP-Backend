@@ -1,5 +1,5 @@
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Tag, Post, Section
+from .models import Tag, Post, Complexity, Requirements, Materials, ForChildren
 
 
 class TagTranslationOptions(TranslationOptions):
@@ -10,10 +10,26 @@ class PostTranslationOptions(TranslationOptions):
     fields = ('title', 'meta_description')
 
 
-class SectionTranslationOptions(TranslationOptions):
-    fields = ('title', 'description', 'additional_description')
+class ComplexityTranslationOptions(TranslationOptions):
+    fields = ('title', 'description')
+
+
+class RequirementsTranslationOptions(TranslationOptions):
+    fields = ('title', 'description')
+
+
+class MaterialsTranslationOptions(TranslationOptions):
+    fields = ('title', )
+
+
+class ForChildrenTranslationOptions(TranslationOptions):
+    fields = ('description', 'additional_description')
 
 
 translator.register(Tag, TagTranslationOptions)
 translator.register(Post, PostTranslationOptions)
-translator.register(Section, SectionTranslationOptions)
+translator.register(Complexity, ComplexityTranslationOptions)
+translator.register(Requirements, RequirementsTranslationOptions)
+translator.register(Materials, MaterialsTranslationOptions)
+translator.register(ForChildren, ForChildrenTranslationOptions)
+
