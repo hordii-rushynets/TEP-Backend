@@ -7,10 +7,7 @@ from ..models import Order, OrderItem
 User = get_user_model()
 
 
-def create_order(tep_user_id: None, ip_address: str, number: str, post_type: str, order_item_data: list[dict], post_code: str):
-    tep_user = None
-    if tep_user_id:
-        tep_user = User.objects.get(id=tep_user_id)
+def create_order(tep_user: None, ip_address: str, number: str, post_type: str, order_item_data: list[dict], post_code: str):
 
     order = Order.objects.create(
         number=number,

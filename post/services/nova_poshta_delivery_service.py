@@ -58,7 +58,7 @@ class NovaPoshtaService(AbstractDeliveryService):
             price = parcel.get('CostOnSite')
 
             create_order(
-                tep_user_id=parcel_details.get('tep_user'),
+                tep_user=parcel_details.get('tep_user'),
                 ip_address=parcel_details.get('ip_address'),
                 number=number,
                 post_type="NovaPost",

@@ -53,11 +53,10 @@ class CreateParcelView(APIView):
 
         data['cost'] = total_price
         data['weight'] = total_weight
-        data['tep_user'] = request.user.id if request.user.is_authenticated else None
+        data['tep_user'] = request.user if request.user.is_authenticated else None
         data['ip_address'] = IPControlService(request, RedisDatabases.IP_CONTROL).get_ip()
         data['description'] = ', '.join([str(product_variant.title) for product_variant in total_title])
         data['order_item_data'] = order_item_data
-        print(1)
 
         service = get_delivery_service(service_type)
         response = service.create_parcel(data)

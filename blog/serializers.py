@@ -49,10 +49,10 @@ class ForChildrenSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     tags = TagTitleSerializer(read_only=True, many=True)
     author = serializers.SerializerMethodField()
-    complexity = ComplexitySerializer(many=True, read_only=True)
-    requirements = RequirementsSerializer(many=True, read_only=True)
-    what_materials = MaterialsSerializer(many=True, read_only=True)
-    for_children = ForChildrenSerializer(many=True, read_only=True)
+    complexity = ComplexitySerializer(read_only=True)
+    requirements = RequirementsSerializer(read_only=True)
+    what_materials = MaterialsSerializer(read_only=True)
+    for_children = ForChildrenSerializer(read_only=True)
 
     class Meta:
         model = Post
