@@ -29,7 +29,7 @@ class Complexity(models.Model):
     photo = models.ImageField(upload_to='complexity_images/', blank=True, null=True)
     title = models.CharField(max_length=128)
     description = RichTextField(max_length=30000)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='complexity')
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='complexity')
 
     def __str__(self):
         return self.title
@@ -38,7 +38,7 @@ class Complexity(models.Model):
 class Requirements(models.Model):
     title = models.CharField(max_length=128)
     description = RichTextField(max_length=30000)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='requirements')
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='requirements')
 
     def __str__(self):
         return self.title
@@ -46,7 +46,7 @@ class Requirements(models.Model):
 
 class Materials(models.Model):
     title = models.CharField(max_length=128)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='what_materials')
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='what_materials')
 
     def __str__(self):
         return self.title
@@ -56,7 +56,7 @@ class ForChildren(models.Model):
     photo = models.ImageField(upload_to='complexity_images/', blank=True, null=True)
     description = RichTextField(max_length=30000)
     additional_description = RichTextField(max_length=30000)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='for_children')
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='for_children')
 
     def __str__(self):
         return self.description
