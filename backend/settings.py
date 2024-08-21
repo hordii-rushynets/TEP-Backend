@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from enum import IntEnum
+from corsheaders.defaults import default_headers
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -154,7 +156,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.google.GoogleOAuth2',
     'tep_user.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
@@ -183,6 +184,10 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'real-ip',
+]
 
 
 class RedisDatabases(IntEnum):
@@ -261,9 +266,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
 NOVA_POST_API_KEY = os.getenv('NOVA_POST_API_KEY')
 REF_CITY_SENDER = os.getenv('REF_CITY_SENDER')
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 REST_USE_JWT = True
 
