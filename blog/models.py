@@ -48,7 +48,7 @@ class Materials(models.Model):
     title = models.CharField(max_length=128)
     post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='what_materials')
     photo = models.ImageField(upload_to='what_materials_images/', blank=True, null=True)
-    description = RichTextField(max_length=30000)
+    description = RichTextField(max_length=30000, blank=True, null=True)
 
     def __str__(self):
         return self.title
