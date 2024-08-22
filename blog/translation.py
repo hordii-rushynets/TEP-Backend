@@ -19,7 +19,7 @@ class RequirementsTranslationOptions(TranslationOptions):
 
 
 class MaterialsTranslationOptions(TranslationOptions):
-    fields = ('title', )
+    fields = ('title', 'description')
 
 
 class ForChildrenTranslationOptions(TranslationOptions):

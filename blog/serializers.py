@@ -36,7 +36,8 @@ class RequirementsSerializer(serializers.ModelSerializer):
 class MaterialsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Materials
-        fields = ('id', 'title_uk', 'title_en', 'title_ru', 'post')
+        fields = ('id', 'photo', 'title_uk', 'title_en', 'title_ru', 'description_uk', 'description_en',
+                  'description_ru', 'post')
 
 
 class ForChildrenSerializer(serializers.ModelSerializer):

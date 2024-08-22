@@ -47,13 +47,15 @@ class Requirements(models.Model):
 class Materials(models.Model):
     title = models.CharField(max_length=128)
     post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='what_materials')
+    photo = models.ImageField(upload_to='what_materials_images/', blank=True, null=True)
+    description = RichTextField(max_length=30000, blank=True, null=True)
 
     def __str__(self):
         return self.title
 
 
 class ForChildren(models.Model):
-    photo = models.ImageField(upload_to='complexity_images/', blank=True, null=True)
+    photo = models.ImageField(upload_to='for_children_images/', blank=True, null=True)
     description = RichTextField(max_length=30000)
     additional_description = RichTextField(max_length=30000)
     post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='for_children')

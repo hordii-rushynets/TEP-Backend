@@ -24,7 +24,7 @@ class RequirementsInline(admin.StackedInline):
 class MaterialsInline(admin.StackedInline):
     model = Materials
     extra = 1
-    exclude = ('title', )
+    exclude = ('title', 'description')
 
 
 class ForChildrenInline(admin.StackedInline):
