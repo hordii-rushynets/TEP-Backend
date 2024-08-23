@@ -6,7 +6,7 @@ from .models import Post, Tag, Complexity, Requirements, Materials, ForChildren
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    exclude = ('title', 'description')
+    exclude = ('title',)
 
 
 class ComplexityInline(admin.StackedInline):

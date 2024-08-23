@@ -3,7 +3,7 @@ from .models import Tag, Post, Complexity, Requirements, Materials, ForChildren
 
 
 class TagTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+    fields = ('title',)
 
 
 class PostTranslationOptions(TranslationOptions):

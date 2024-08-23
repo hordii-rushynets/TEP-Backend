@@ -7,8 +7,6 @@ from ckeditor.fields import RichTextField
 
 
 class Tag(TitleSlug):
-    description = RichTextField(max_length=30000, blank=True, null=True)
-    image = models.ImageField(blank=True)
 
     def __str__(self):
         return self.title
