@@ -72,7 +72,7 @@ class DimensionalGrid(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='dimensional_grid')
 
     def __str__(self) -> str:
-        return self.title
+        return f"{self.title_uk} in the product {self.product.title_uk}"
 
 
 class DimensionalGridSize(models.Model):

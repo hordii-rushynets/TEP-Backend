@@ -57,13 +57,16 @@ class FilterFieldAdmin(admin.ModelAdmin):
 
 class DimensionalGridSizeInline(admin.TabularInline):
     model = DimensionalGridSize
+    extra = 1
     list_display = ('dimensional_grid', 'title_uk', 'title_en', 'title_ru', 'size_uk', 'size_en', 'size_ru')
     exclude = ('title', 'size')
 
 
 class DimensionalGridAdmin(admin.ModelAdmin):
     inlines = [DimensionalGridSizeInline]
-    list_display = ('title_uk', 'title_en', 'title_ru', 'product')
+    search_fields = ('title_uk', 'title_en', 'title_ru', 'product__title_uk',
+                     'product__title_en', 'product__title_ru', 'product__slug')
+    list_filter = ('title_uk', 'product__slug')
     exclude = ('title', )
 
 
