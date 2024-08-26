@@ -10,8 +10,6 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
                      ProductVariant, ProductVariantImage, ProductVariantInfo, InspirationImage,
                      Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
 
-from tep_user.serializers import UserProfileSerializer, TEPUser
-
 
 from tep_user.serializers import UserProfileSerializer
 
@@ -92,10 +90,27 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     variant_info = ProductVariantInfoSerializer(read_only=True)
     variant_images = ProductVariantImageSerializer(many=True, read_only=True)
     number_of_add_to_cart = serializers.IntegerField(read_only=True)
+    in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductVariant
         fields = '__all__'
+
+    def get_in_cart(self, product_variants: ProductVariant) -> bool:
+        """Check if the product variant is in the cart for the current user."""
+        request = self.context.get('request')
+
+        if not request.user.is_authenticated:
+            return False
+
+        try:
+            cart = Cart.objects.get(tep_user=request.user)
+            return CartItem.objects.filter(
+                cart=cart,
+                product_variants=product_variants
+            ).exists()
+        except Cart.DoesNotExist:
+            return False
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
