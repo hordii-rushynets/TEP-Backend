@@ -1,5 +1,7 @@
 from typing import OrderedDict
 
+from django.db.models import Q
+
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 
@@ -12,7 +14,6 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
 
 
 from tep_user.serializers import UserProfileSerializer
-
 from cart.models import CartItem, Cart
 
 
@@ -100,11 +101,10 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         """Check if the product variant is in the cart for the current user."""
         request = self.context.get('request')
 
-        if not request.user.is_authenticated:
-            return False
-
         try:
-            cart = Cart.objects.get(tep_user=request.user)
+            ip_service = IPControlService(request, RedisDatabases.IP_CONTROL)
+            ip_address = ip_service.get_ip()
+            cart = Cart.objects.get(Q(tep_user=request.user) | Q(ip_address=ip_address))
             return CartItem.objects.filter(
                 cart=cart,
                 product_variants=product_variants
@@ -156,11 +156,10 @@ class ProductSerializer(serializers.ModelSerializer):
         """Check if the product is in the cart for the current user."""
         request = self.context.get('request')
 
-        if not request.user.is_authenticated:
-            return False
-
         try:
-            cart = Cart.objects.get(tep_user=request.user)
+            ip_service = IPControlService(request, RedisDatabases.IP_CONTROL)
+            ip_address = ip_service.get_ip()
+            cart = Cart.objects.get(Q(tep_user=request.user) | Q(ip_address=ip_address))
             return CartItem.objects.filter(
                 cart=cart,
                 product_variants__product=product
