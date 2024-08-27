@@ -10,11 +10,8 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
                      ProductVariant, ProductVariantImage, ProductVariantInfo, InspirationImage,
                      Size, FavoriteProduct, Feedback, FeedbackImage, FeedbackVote, ProductImage)
 
-from tep_user.serializers import UserProfileSerializer, TEPUser
-
 
 from tep_user.serializers import UserProfileSerializer
-
 from cart.models import CartItem, Cart
 
 
@@ -92,10 +89,30 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     variant_info = ProductVariantInfoSerializer(read_only=True)
     variant_images = ProductVariantImageSerializer(many=True, read_only=True)
     number_of_add_to_cart = serializers.IntegerField(read_only=True)
+    in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductVariant
         fields = '__all__'
+
+    def get_in_cart(self, product_variants: ProductVariant) -> bool:
+        """Check if the product variant is in the cart for the current user."""
+        request = self.context.get('request')
+        ip_service = IPControlService(request, RedisDatabases.IP_CONTROL)
+        ip_address = ip_service.get_ip()
+
+        if request.user.is_authenticated:
+            cart = Cart.objects.filter(tep_user=request.user).first()
+        else:
+            cart = Cart.objects.filter(ip_address=ip_address).first()
+
+        if cart:
+            return CartItem.objects.filter(
+                cart=cart,
+                product_variants=product_variants
+            ).exists()
+
+        return False
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -140,18 +157,21 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_in_cart(self, product: Product) -> bool:
         """Check if the product is in the cart for the current user."""
         request = self.context.get('request')
+        ip_service = IPControlService(request, RedisDatabases.IP_CONTROL)
+        ip_address = ip_service.get_ip()
 
-        if not request.user.is_authenticated:
-            return False
+        if request.user.is_authenticated:
+            user_cart = Cart.objects.filter(tep_user=request.user).first()
+        else:
+            user_cart = Cart.objects.filter(ip_address=ip_address).first()
 
-        try:
-            cart = Cart.objects.get(tep_user=request.user)
+        if user_cart:
             return CartItem.objects.filter(
-                cart=cart,
+                cart=user_cart,
                 product_variants__product=product
             ).exists()
-        except Cart.DoesNotExist:
-            return False
+
+        return False
 
 
 class IncreaseNumberOfViewsSerializer(serializers.Serializer):

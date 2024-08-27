@@ -1,7 +1,7 @@
 from django.db import models
 
 from tep_user.models import TEPUser
-from store.models import ProductVariant, Color, Material, Size
+from store.models import ProductVariant, Color, Material, Size, FilterField
 
 
 class OrderItem(models.Model):
@@ -9,6 +9,7 @@ class OrderItem(models.Model):
     color = models.ForeignKey(Color, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
     material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
     size = models.ForeignKey(Size, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
+    filter_field = models.ForeignKey(FilterField, on_delete=models.CASCADE, related_name='order_item', blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):

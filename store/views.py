@@ -1,9 +1,20 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.decorators import action
+from rest_framework import status
+from rest_framework.request import Request
+from rest_framework.filters import OrderingFilter
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from django.db.models import QuerySet, Count
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
+
 from transliterate import translit
 from .tasks import import_data_task
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
@@ -14,17 +25,10 @@ from .serializers import (
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
     SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer
 )
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
-from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
-from rest_framework.decorators import action
-from rest_framework import status
-from rest_framework.request import Request
-from django.db.models import QuerySet, Count
-from rest_framework.filters import OrderingFilter
+
 from cart.models import CartItem, Cart
-from django.shortcuts import get_object_or_404
-from django.http import Http404
+from tep_user.authentication import IgnoreInvalidTokenAuthentication
 
 
 def generate_latin_slug(string):
@@ -35,6 +39,7 @@ def generate_latin_slug(string):
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -44,6 +49,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -98,6 +104,7 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
 
 
 class SizeViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = Size.objects.all()
     serializer_class = SizeSerializer
@@ -105,6 +112,7 @@ class SizeViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ColorViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = Color.objects.all()
     serializer_class = ColorSerializer
@@ -112,6 +120,7 @@ class ColorViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class MaterialViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
@@ -119,6 +128,7 @@ class MaterialViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductVariantViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = ProductVariant.objects.all()
     serializer_class = ProductVariantSerializer
@@ -128,6 +138,7 @@ class ProductVariantViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductVariantInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = ProductVariantInfo.objects.all()
     serializer_class = ProductVariantInfoSerializer
@@ -135,6 +146,7 @@ class ProductVariantInfoViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class FilterViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     queryset = Filter.objects.all()
     serializer_class = FilterSerializer
@@ -229,6 +241,7 @@ class ProductsImport(APIView):
 
 
 class FullDataViewSet(viewsets.ViewSet):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
 
     def list(self, request):
@@ -246,10 +259,10 @@ class FullDataViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
 class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = CompareProductFilter
@@ -294,5 +307,6 @@ class RecommendationView(APIView):
 class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = InspirationImage.objects.all()
     serializer_class = InspirationImageSerializer
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     lookup_field = 'id'

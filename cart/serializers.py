@@ -2,7 +2,11 @@ from rest_framework import serializers
 from .models import Cart, CartItem
 from tep_user.serializers import UserProfileSerializer
 from store.models import ProductVariant, Color, Material, Size, FilterField
-from store.serializers import  ProductVariantSerializer, ColorSerializer, MaterialSerializer, SizeSerializer, FilterFieldSerializer
+from store.serializers import (ProductVariantSerializer,
+                               ColorSerializer,
+                               MaterialSerializer,
+                               SizeSerializer,
+                               FilterFieldSerializer)
 
 
 class CartItemSerializer(serializers.ModelSerializer):

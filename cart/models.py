@@ -6,7 +6,8 @@ from tep_user.models import TEPUser
 class Cart(models.Model):
     """ Model Cart """
     tep_user = models.OneToOneField(TEPUser, on_delete=models.CASCADE, related_name='tep_user', null=True, blank=True)
-    ip_address = models.CharField(max_length=45, unique=True, null=True, blank=True)  # IPv6 підтримка
+    ip_address = models.CharField(max_length=45, unique=True, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         if self.tep_user:
