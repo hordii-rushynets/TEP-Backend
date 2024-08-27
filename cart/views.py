@@ -1,18 +1,24 @@
+from typing import Any
+
+from django.db.models.query import QuerySet
+from backend.settings import RedisDatabases
+
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny
-from .models import Cart, CartItem
-from .serializers import CartSerializer, CartItemSerializer
 from rest_framework.response import Response
-from typing import Tuple, Any
 from rest_framework.request import Request
-from django.db.models.query import QuerySet
+
+from .models import Cart, CartItem
+from .serializers import CartItemSerializer
+
 from tep_user.services import IPControlService
-from backend.settings import RedisDatabases
+from tep_user.authentication import IgnoreInvalidTokenAuthentication
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
     """CartItem ViewSet"""
     queryset = CartItem.objects.all()
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     serializer_class = CartItemSerializer
     pagination_class = None
