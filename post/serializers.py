@@ -7,7 +7,8 @@ from .services.factory import get_delivery_service
 from store.serializers import (ProductVariantSerializer,
                                MaterialSerializer,
                                ColorSerializer,
-                               SizeSerializer)
+                               SizeSerializer,
+                               FilterFieldSerializer)
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -15,10 +16,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
     color = ColorSerializer(read_only=True)
     material = MaterialSerializer(read_only=True)
     size = SizeSerializer(read_only=True)
+    filter_fields = FilterFieldSerializer(read_only=True, many=True)
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product_variant', 'color', 'material', 'size', 'quantity']
+        fields = ['id', 'product_variant', 'color', 'material', 'size', 'filter_fields', 'quantity']
 
 
 class OrderSerializer(serializers.ModelSerializer):

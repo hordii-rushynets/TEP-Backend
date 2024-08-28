@@ -48,9 +48,10 @@ class CreateParcelView(APIView):
                     'color_id': cart_item.color.id if cart_item.color else None,
                     'material_id': cart_item.material.id if cart_item.material else None,
                     'size_id': cart_item.size.id if cart_item.size else None,
-                    'filter_field_id': cart_item.filter_field.id if cart_item.filter_field else None,
+                    'filter_field_ids': list(cart_item.filter_field.values_list('id', flat=True)),
                     'quantity': cart_item.quantity
                 })
+                print(list(cart_item.filter_field.values_list('id', flat=True)),)
 
             except CartItem.DoesNotExist:
                 continue
