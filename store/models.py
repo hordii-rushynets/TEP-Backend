@@ -36,6 +36,13 @@ class Category(TitleSlug):
         return self.title
 
 
+class DimensionalGrid(models.Model):
+    title = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return f"{self.title_uk}"
+
+
 class Product(TitleSlug):
     description = RichTextField(max_length=30000, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
@@ -43,6 +50,7 @@ class Product(TitleSlug):
     last_modified = models.DateTimeField(auto_now=True)
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
     svg_image = models.FileField(upload_to='images/', validators=[FileExtensionValidator(['svg'])], blank=True, null=True)
+    dimensional_grid = models.ManyToManyField(DimensionalGrid, blank=True, null=True)
 
     def __str__(self):
         return str(self.slug)
@@ -65,14 +73,6 @@ class FavoriteProduct(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user.email} - {self.product.title} - favorite: {self.favorite}.'
-
-
-class DimensionalGrid(models.Model):
-    title = models.CharField(max_length=255)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='dimensional_grid')
-
-    def __str__(self) -> str:
-        return f"{self.title_uk} in the product {self.product.title_uk}"
 
 
 class DimensionalGridSize(models.Model):
