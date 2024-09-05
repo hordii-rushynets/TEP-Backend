@@ -91,6 +91,7 @@ class ProductImageInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug', 'description', 'category', 'group_id', 'last_modified', 'number_of_views',
                     'svg_image']
+    filter_horizontal = ['dimensional_grid']
     inlines = [ProductImageInline]
     exclude = ('title', 'description')
 

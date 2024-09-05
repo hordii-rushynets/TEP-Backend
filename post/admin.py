@@ -39,9 +39,3 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('product_variant', 'color', 'material', 'size', 'quantity')
     list_filter = ('product_variant', 'color', 'material', 'size')
     search_fields = ('product_variant__title', 'color__title', 'material__title', 'size__title')
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ('product_variant', 'color', 'material', 'size')
-        else:
-            return ()
