@@ -29,6 +29,8 @@ from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, Feedba
 
 from cart.models import CartItem, Cart
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
+from tep_user.services import IPControlService, RedisDatabases
+
 
 
 def generate_latin_slug(string):
@@ -284,7 +286,12 @@ class RecommendationView(APIView):
 
     def get(self, request, product_slug=None):
         try:
-            cart = Cart.objects.get(tep_user=request.user.id)
+            if request.user.is_authenticated:
+                cart = Cart.objects.filter(tep_user=request.user).first()
+            else:
+                ip_address = IPControlService(request, RedisDatabases.IP_CONTROL).get_ip()
+                cart = Cart.objects.filter(ip_address=ip_address).first()
+
             cart_items = CartItem.objects.filter(cart=cart)
             cart_product_variants = cart_items.values_list('product_variants', flat=True)
 
