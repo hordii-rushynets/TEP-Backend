@@ -142,4 +142,3 @@ class UserService:
         characters = [random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(8)]
         random.shuffle(characters)
         return ''.join(characters)
-

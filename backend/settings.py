@@ -280,3 +280,7 @@ CKEDITOR_CONFIGS = {
 }
 
 CKEDITOR_BASEPATH = f'{STATIC_URL}ckeditor/ckeditor/'
+
+MAILCHIMP_API_KEY = os.getenv('MAILCHIMP_API_KEY')
+MAILCHIMP_AUDIENCE_ID = os.getenv('MAILCHIMP_AUDIENCE_ID')
+MAILCHIMP_DATA_CENTER = os.getenv('MAILCHIMP_DATA_CENTER')  # The prefix of your API key (e.g., 'us1', 'us2')

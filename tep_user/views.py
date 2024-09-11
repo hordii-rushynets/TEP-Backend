@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from tep_user.models import TEPUser
+from tep_user.tasks import subscribe_to_mail_chimp
 from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserForgetPasswordSerializer,
                                   ForgetPasswordConfirmCodeSerializer,
@@ -23,7 +24,6 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from django.conf import settings
 
 
 class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
@@ -44,6 +44,11 @@ class UserRegistrationViewSet(CreateModelMixin, viewsets.GenericViewSet):
         serializer = UserConfirmCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        user = TEPUser.objects.get(email=request.data.get('email'))
+        if user.interested_in_wholesale or user.subscribed_to_updates:
+            subscribe_to_mail_chimp.delay(user.email, user.first_name, user.last_name)
+
         return Response(status=status.HTTP_200_OK)
 
 
