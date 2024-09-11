@@ -46,3 +46,4 @@ requests==2.32.3
 deep-translator==1.11.4
 google-auth==2.32.0
 django-ckeditor==6.7.1
+mailchimp-marketing==3.0.80
