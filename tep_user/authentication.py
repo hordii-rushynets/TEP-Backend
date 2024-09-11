@@ -4,7 +4,10 @@ from typing import Union
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import AbstractUser
+
 from rest_framework.request import Request
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 
 class EmailBackend(ModelBackend):
@@ -41,4 +44,12 @@ class EmailBackend(ModelBackend):
         try:
             return UserModel.objects.get(pk=user_id)
         except UserModel.DoesNotExist:
+            return None
+
+
+class IgnoreInvalidTokenAuthentication(TokenAuthentication):
+    def authenticate(self, request):
+        try:
+            return super().authenticate(request)
+        except AuthenticationFailed:
             return None

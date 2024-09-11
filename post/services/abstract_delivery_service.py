@@ -7,8 +7,8 @@ from ..models import Order, OrderItem
 User = get_user_model()
 
 
-def create_order(tep_user: None, ip_address: str, number: str, post_type: str, order_item_data: list[dict], post_code: str):
-
+def create_order(tep_user: None, ip_address: str, number: str, post_type: str, order_item_data: list[dict],
+                 post_code: str):
     order = Order.objects.create(
         number=number,
         tep_user=tep_user,
@@ -27,6 +27,8 @@ def create_order(tep_user: None, ip_address: str, number: str, post_type: str, o
             quantity=item_data.get('quantity')
         )
         order_item.save()
+        order_item.filter_fields.set(item_data.get('filter_field_ids'))
+
         order_items.append(order_item)
 
     order.order_item.set(order_items)

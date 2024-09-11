@@ -6,12 +6,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Order, OrderItem
+from .models import Order
 from .serializers import OrderSerializer
 from .services.factory import get_delivery_service
 
+from tep_user.authentication import IgnoreInvalidTokenAuthentication
+
 
 class CreateParcelView(APIView):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request, service_type):
@@ -45,8 +48,10 @@ class CreateParcelView(APIView):
                     'color_id': cart_item.color.id if cart_item.color else None,
                     'material_id': cart_item.material.id if cart_item.material else None,
                     'size_id': cart_item.size.id if cart_item.size else None,
+                    'filter_field_ids': list(cart_item.filter_field.values_list('id', flat=True)),
                     'quantity': cart_item.quantity
                 })
+                print(list(cart_item.filter_field.values_list('id', flat=True)),)
 
             except CartItem.DoesNotExist:
                 continue
@@ -64,6 +69,7 @@ class CreateParcelView(APIView):
 
 
 class GetWarehousesView(APIView):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request, service_type):
@@ -73,6 +79,7 @@ class GetWarehousesView(APIView):
 
 
 class TrackParcelView(APIView):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request, tracking_number):
@@ -87,6 +94,7 @@ class TrackParcelView(APIView):
 
 
 class CalculateDeliveryCostView(APIView):
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request, service_type):
