@@ -24,8 +24,8 @@ router.register(r'inspiration-image', InspirationImageViewSet, basename='inspira
 router.register(r'compare', CompareProductViewSet, basename='compare')
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('products/import/', ProductsImport.as_view()),
+    path('import/', ProductsImport.as_view()),
     path('recommendation/', RecommendationView.as_view(), name='recommendation'),
     path('recommendation/<slug:product_slug>/', RecommendationView.as_view(), name='recommendations_with_slug'),
+    path('', include(router.urls)),
 ]
