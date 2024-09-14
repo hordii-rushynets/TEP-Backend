@@ -49,7 +49,6 @@ class Product(TitleSlug):
     group_id = models.CharField(max_length=128)
     last_modified = models.DateTimeField(auto_now=True)
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
-    svg_image = models.FileField(upload_to='images/', validators=[FileExtensionValidator(['svg'])], blank=True, null=True)
     dimensional_grid = models.ManyToManyField(DimensionalGrid, blank=True, null=True)
 
     def __str__(self):
