@@ -30,7 +30,7 @@ def add_product_variant_info(group_offer: dict, product_variant: ProductVariant)
 
         packaging_en=group_offer.get('description_packaging_en'),
         packaging_ru=group_offer.get('description_packaging_ru'),
-        packaging_ua=group_offer.get('description_packaging_ua'),
+        packaging_uk=group_offer.get('description_packaging_ua'),
     )
 
 def add_image_of_the_view_in_interior(product: Product, images: list):
@@ -99,10 +99,9 @@ def import_data_task(data):
                     'drop_shipping_price': price_2,
                     'count': count,
                     'variant_order': group_order,
-                    'description': description_uk
                 }
             )
 
-            variant.sizes.set(size)
+            variant.sizes.add(size)
 
             add_product_variant_info(group_offer, variant)
