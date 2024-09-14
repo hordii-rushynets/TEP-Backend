@@ -26,7 +26,9 @@ def create_order(tep_user: None, ip_address: str, number: str, post_type: str, o
             size_id=item_data.get('size_id'),
             quantity=item_data.get('quantity')
         )
-        order_item.filter_fields.set(item_data.get('filter_field_ids'))
+        filter_fields = item_data.get('filter_field_ids', [])
+        if filter_fields:
+            order_item.filter_fields.set(item_data.get('filter_field_ids'))
         order_item.save()
 
         order_items.append(order_item)
