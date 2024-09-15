@@ -47,3 +47,4 @@ deep-translator==1.11.4
 google-auth==2.32.0
 django-ckeditor==6.7.1
 mailchimp-marketing==3.0.80
+liqpay-sdk-python3==1.0.6
