@@ -6,7 +6,7 @@ from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
 from .constants import *
-from .abstract_delivery_service import AbstractDeliveryService, create_order
+from .abstract_delivery_service import AbstractDeliveryService
 
 
 class NovaPoshtaService(AbstractDeliveryService):
@@ -44,8 +44,8 @@ class NovaPoshtaService(AbstractDeliveryService):
 
                 "PayerType": "Recipient",
                 "PaymentMethod": "Cash",
-                "Description": parcel_details['description'],
-                "Cost": parcel_details['cost'],
+                "Description": parcel_details.get('description'),
+                "Cost": parcel_details.get('cost'),
                 "NewAddress": "1",
                 "Weight": parcel_details.get('weight')
             }
@@ -57,17 +57,7 @@ class NovaPoshtaService(AbstractDeliveryService):
             number = parcel.get('IntDocNumber')
             price = parcel.get('CostOnSite')
 
-            create_order(
-                tep_user=parcel_details.get('tep_user'),
-                ip_address=parcel_details.get('ip_address'),
-                number=number,
-                post_type="NovaPost",
-                order_item_data=parcel_details.get('order_item_data', []),
-                post_code=parcel.get('Ref')
-            )
-
-            return {"number": number,
-                    "price": price}
+            return {"number": number, "price": price, "post_code": parcel.get('Ref')}
         else:
             errors_list = response.get('errors')
             errors_rename = []

@@ -4,7 +4,7 @@ import requests
 from deep_translator import GoogleTranslator
 from rest_framework.exceptions import ValidationError
 
-from .abstract_delivery_service import AbstractDeliveryService, create_order
+from .abstract_delivery_service import AbstractDeliveryService
 from .constants import *
 
 
@@ -115,17 +115,7 @@ class UkrPoshtaDeliveryService(AbstractDeliveryService):
         if response.status_code == 200:
             number = parcel.get("barcode")
 
-            create_order(
-                tep_user=parcel_details.get('tep_user'),
-                ip_address=parcel_details.get('ip_address'),
-                number=number,
-                post_type="UkrPost",
-                order_item_data=parcel_details.get('order_item_data', []),
-                post_code=parcel.get('uuid')
-            )
-
-            return {"number": number,
-                    "price": parcel.get("rawDeliveryPrice")}
+            return {"number": number, "price": parcel.get("rawDeliveryPrice"), "post_code": parcel.get('uuid')}
         else:
             raise ValidationError(parcel.get("message"))
 
