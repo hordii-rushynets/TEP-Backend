@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script type="text/javascript">
+        function submitForm() {
+            document.getElementById('payment-form').submit();
+        }
+        window.onload = submitForm;
+    </script>
+</head>
+<body>
+    <form id="payment-form" method="POST" action="https://www.liqpay.ua/api/3/checkout">
+        <input type="hidden" name="data" value="{{ data }}">
+        <input type="hidden" name="signature" value="{{ signature }}">
+    </form>
+</body>
+</html>
