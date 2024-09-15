@@ -7,14 +7,12 @@ from ..models import Order, OrderItem
 User = get_user_model()
 
 
-def create_order(tep_user: None, ip_address: str, number: str, post_type: str, order_item_data: list[dict],
-                 post_code: str):
+def create_order(tep_user: None, ip_address: str, post_type: str, order_item_data: list[dict], **kwargs):
     order = Order.objects.create(
-        number=number,
         tep_user=tep_user,
         ip_address=ip_address,
         post_type=post_type,
-        unique_post_code=post_code
+        **kwargs
     )
 
     order_items = []
