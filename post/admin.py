@@ -21,8 +21,8 @@ delete_orders_and_parcels.short_description = "Видалити посилки �
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('tep_user', 'number', 'post_type', 'unique_post_code', 'created_at')
-    list_filter = ('tep_user', 'number', 'post_type', 'unique_post_code', 'created_at')
+    list_display = ('tep_user', 'number', 'post_type', 'paid', 'payment_method', 'created_at')
+    list_filter = ('tep_user', 'number', 'post_type', 'created_at', 'payment_method', 'paid')
     search_fields = ('tep_user__email', 'number', 'post_type', 'unique_post_code', 'created_at')
 
     actions = [delete_orders_and_parcels]

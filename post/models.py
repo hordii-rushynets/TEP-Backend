@@ -20,17 +20,30 @@ class Order(models.Model):
     UKRPOST = 'UkrPost'
     NOVAPOST = 'NovaPost'
 
-    POST_TYPE_CHOICES = [
-        (UKRPOST, 'UkrPost'),
-        (NOVAPOST, 'NovaPost'),
-    ]
-    number = models.CharField(max_length=100)
+    POST_TYPE_CHOICES = (
+        (UKRPOST, UKRPOST),
+        (NOVAPOST, NOVAPOST),
+    )
+
+    UPON_RECEIPT = 'UponReceipt'
+    BY_CARD = 'ByCard'
+
+    PAYMENT_METHODS = (
+        (UPON_RECEIPT, UPON_RECEIPT),
+        (BY_CARD, BY_CARD)
+    )
+
+    number = models.CharField(max_length=100, blank=True, null=True)
     tep_user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
-    ip_address = models.CharField(max_length=45, null=True, blank=True)  # Поле для зберігання IP-адреси
+    ip_address = models.CharField(max_length=45, null=True, blank=True)
     post_type = models.CharField(max_length=100, choices=POST_TYPE_CHOICES)
     order_item = models.ManyToManyField(OrderItem)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     unique_post_code = models.CharField(max_length=100, null=True, blank=True)
+    payment_method = models.CharField(max_length=12, default=UPON_RECEIPT, choices=PAYMENT_METHODS)
+    paid = models.BooleanField(default=False)
+    price = models.FloatField(null=True)
+    weight = models.FloatField(null=True)
 
     def __str__(self):
         if self.tep_user:
