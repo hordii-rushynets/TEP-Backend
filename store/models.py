@@ -111,7 +111,7 @@ class ProductVariant(models.Model):
     wholesale_price = models.IntegerField(default=0)
     drop_shipping_price = models.IntegerField(default=0)
     sizes = models.ManyToManyField(Size, blank=True)
-    colors = models.ManyToManyField(Color, blank=True)
+    colors = models.ForeignKey(Color, on_delete=models.SET_NULL, related_name='product_variants', blank=True, null=True)
     materials = models.ManyToManyField(Material, blank=True)
     main_image = models.ImageField(upload_to='products/images/', blank=True)
     promotion = models.BooleanField(default=False)
