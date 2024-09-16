@@ -38,10 +38,9 @@ class ProductVariantInfoInline(admin.StackedInline):
 
 class ProductVariantAdmin(admin.ModelAdmin):
     inlines = [ProductVariantImageInline, ProductVariantInfoInline]
-    list_display = ('product', 'title_uk', 'title_en', 'title_ru', 'sku', 'default_price', 'is_wholesale', 'wholesale_price',
-                    'drop_shipping_price', 'weight', 'main_image', 'promotion', 'promo_price', 'count',
-                    'variant_order')
-    filter_horizontal = ('sizes', 'colors', 'materials', 'filter_field')
+    list_display = ('product', 'title_en', 'sku', 'default_price', 'wholesale_price',
+                    'drop_shipping_price', 'promotion', 'promo_price')
+    filter_horizontal = ('sizes', 'materials', 'filter_field')
     exclude = ('title', )
 
 
