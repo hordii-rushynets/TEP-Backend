@@ -39,7 +39,7 @@ class ProductVariantInfoInline(admin.StackedInline):
 class ProductVariantAdmin(admin.ModelAdmin):
     inlines = [ProductVariantImageInline, ProductVariantInfoInline]
     list_display = ('sku', 'get_product_group_id')
-    filter_horizontal = ('sizes', 'materials', 'filter_field')
+    filter_horizontal = ('sizes', 'colors', 'materials', 'filter_field')
     search_fields = ('sku', 'product__group_id')
     exclude = ('title', )
 

@@ -83,7 +83,7 @@ class DimensionalGridSerializer(serializers.ModelSerializer):
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
-    color = ColorSerializer()
+    colors = ColorSerializer(many=True)
     materials = MaterialSerializer(many=True)
     filter_field = FilterFieldSerializer(many=True)
     variant_info = ProductVariantInfoSerializer(read_only=True)
