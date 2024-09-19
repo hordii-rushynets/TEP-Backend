@@ -28,7 +28,7 @@ urlpatterns = [
     path('import/', ProductsImport.as_view()),
     path('recommendation/', RecommendationView.as_view(), name='recommendation'),
     path('recommendation/<slug:product_slug>/', RecommendationView.as_view(), name='recommendations_with_slug'),
-    path('categories-fields/<int:category_id>/', CategoryProductVariantViewSet.as_view({'get': 'list'}),
+    path('categories-fields/<str:category_slug>/', CategoryProductVariantViewSet.as_view({'get': 'list'}),
          name='category-product-variants'),
     path('', include(router.urls)),
 ]

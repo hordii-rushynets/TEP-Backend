@@ -324,8 +324,8 @@ class CategoryProductVariantViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategoryProductVariantSerializer
 
     def get_queryset(self):
-        category_id = self.kwargs.get('category_id')
-        products = Product.objects.filter(category__id=category_id)
+        category_id = self.kwargs.get('category_slug')
+        products = Product.objects.filter(category__slug=category_id)
         return ProductVariant.objects.filter(product__in=products)
 
     def list(self, request, *args, **kwargs):
