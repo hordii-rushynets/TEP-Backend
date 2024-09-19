@@ -93,6 +93,7 @@ class ProductAdmin(admin.ModelAdmin):
     filter_horizontal = ['dimensional_grid']
     inlines = [ProductImageInline]
     exclude = ('title', 'description')
+    search_fields = ['slug', 'description', 'group_id']
 
 
 admin.site.register(Order)
