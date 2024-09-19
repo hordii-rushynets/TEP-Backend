@@ -106,6 +106,8 @@ class ProductFilter(BaseFilter):
     filter_fields_value_uk = MultipleStringValuesFilter(field_name='product_variants__filter_field__value_uk')
     filter_fields_id = MultipleNumberValuesFilter(field_name='product_variants__filter_field__id')
 
+    time = django_filters.OrderingFilter(fields=[('last_modified', 'faster'), ('-last_modified', 'later')])
+
     ordering = django_filters.OrderingFilter(
         fields=(
             ('number_of_views', 'number_of_views'),
@@ -123,7 +125,7 @@ class ProductFilter(BaseFilter):
             'slug', 'title', 'description', 'price_min', 'price_max', 'size', 'color', 'material',
             'promo_price_min', 'promo_price_max', 'is_promotion', 'category_slug', 'category_title',
             'category_title_uk', 'category_description', 'category_description_uk', 'filter_fields_value_en',
-            'filter_fields_value_uk', 'filter_fields_id']
+            'filter_fields_value_uk', 'filter_fields_id', 'time']
 
     def filter_promo_price_min(self, queryset, name, value):
         return queryset.filter(product_variants__promotion=True, product_variants__promo_price__gte=value)
