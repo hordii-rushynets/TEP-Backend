@@ -23,7 +23,8 @@ from .serializers import (
     CategorySerializer, ProductSerializer, SizeSerializer,
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
-    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer
+    SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer,
+    CategoryProductVariantSerializer
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 
@@ -317,3 +318,17 @@ class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
     lookup_field = 'id'
+
+
+class CategoryProductVariantViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CategoryProductVariantSerializer
+
+    def get_queryset(self):
+        category_id = self.kwargs.get('category_id')
+        products = Product.objects.filter(category__id=category_id)
+        return ProductVariant.objects.filter(product__in=products)
+
+    def list(self, request, *args, **kwargs):
+        serializer = self.get_serializer()
+        data = serializer.aggregate_data(self.get_queryset())
+        return Response(data)
