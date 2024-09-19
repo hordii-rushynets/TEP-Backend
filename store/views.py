@@ -32,7 +32,6 @@ from tep_user.authentication import IgnoreInvalidTokenAuthentication
 from tep_user.services import IPControlService, RedisDatabases
 
 
-
 def generate_latin_slug(string):
     latin_string = translit(string, 'uk', reversed=True)
     clean_string = ''.join(e for e in latin_string if e.isalnum() or e == ' ')
@@ -58,7 +57,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'slug'
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     filterset_class = ProductFilter
-    ordering_fields = ['number_of_views', 'number_of_add_to_cart']
+    ordering_fields = ['number_of_views', 'number_of_add_to_cart', 'last_modified']
     ordering = ['-number_of_views', '-number_of_add_to_cart']
 
     def get_queryset(self):
