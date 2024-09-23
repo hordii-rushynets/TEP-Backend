@@ -163,9 +163,16 @@ class CalculateDeliveryCostView(APIView):
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        ip_address = IPControlService(self.request, RedisDatabases.IP_CONTROL).get_ip()
-        return Order.objects.filter(Q(tep_user=self.request.user) | Q(ip_address=ip_address))
+        user = self.request.user
+        if user.is_authenticated:
+            order = Order.objects.filter(tep_user=user)
+        else:
+            ip_service = IPControlService(self.request, RedisDatabases.IP_CONTROL)
+            ip_address = ip_service.get_ip()
+            order = Order.objects.filter(ip_address=ip_address)
+
+        return order
 
