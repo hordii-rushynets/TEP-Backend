@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from rest_framework import status, viewsets
@@ -163,6 +162,7 @@ class CalculateDeliveryCostView(APIView):
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
 
     def get_queryset(self):
