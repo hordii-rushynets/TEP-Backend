@@ -50,6 +50,7 @@ class Product(TitleSlug):
     last_modified = models.DateTimeField(auto_now=True)
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
     dimensional_grid = models.ManyToManyField(DimensionalGrid, blank=True, null=True)
+    dimensional_grid_description = RichTextField(max_length=30000, blank=True, null=True)
 
     def __str__(self):
         return str(self.slug)
