@@ -1,8 +1,8 @@
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.db.models import Q
 from django.shortcuts import render
 from rest_framework import status, viewsets
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -163,9 +163,12 @@ class CalculateDeliveryCostView(APIView):
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
+        user = self.request.user
         ip_address = IPControlService(self.request, RedisDatabases.IP_CONTROL).get_ip()
-        return Order.objects.filter(Q(tep_user=self.request.user) | Q(ip_address=ip_address))
+        query = Q(tep_user=user) if user.is_authenticated else Q(ip_address=ip_address)
+        return Order.objects.filter(query)
 
