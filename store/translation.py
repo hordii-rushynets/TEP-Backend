@@ -8,7 +8,7 @@ class CategoryTranslationOptions(TranslationOptions):
 
 
 class ProductTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+    fields = ('title', 'description', 'dimensional_grid_description')
 
 
 class DimensionalGridTranslationOptions(TranslationOptions):
