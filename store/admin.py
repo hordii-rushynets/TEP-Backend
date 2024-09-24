@@ -38,11 +38,14 @@ class ProductVariantInfoInline(admin.StackedInline):
 
 class ProductVariantAdmin(admin.ModelAdmin):
     inlines = [ProductVariantImageInline, ProductVariantInfoInline]
-    list_display = ('product', 'title_uk', 'title_en', 'title_ru', 'sku', 'default_price', 'is_wholesale', 'wholesale_price',
-                    'drop_shipping_price', 'weight', 'main_image', 'promotion', 'promo_price', 'count',
-                    'variant_order')
+    list_display = ('sku', 'get_product_group_id')
     filter_horizontal = ('sizes', 'colors', 'materials', 'filter_field')
+    search_fields = ('sku', 'product__group_id')
     exclude = ('title', )
+
+    def get_product_group_id(self, obj):
+        return obj.product.group_id
+    get_product_group_id.short_description = 'Group ID'
 
 
 class FilterAdmin(admin.ModelAdmin):
