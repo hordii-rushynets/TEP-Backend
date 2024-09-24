@@ -305,3 +305,43 @@ class InspirationImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = InspirationImage
         fields = ['image']
+
+
+class CategoryProductVariantSerializer(serializers.ModelSerializer):
+    colors = ColorSerializer(many=True, read_only=True)
+    sizes = SizeSerializer(many=True, read_only=True)
+    materials = MaterialSerializer(many=True, read_only=True)
+    filter_fields = FilterFieldSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductVariant
+        fields = ['colors', 'sizes', 'materials', 'filter_fields']
+
+    @staticmethod
+    def aggregate_data(queryset):
+        colors = set()
+        sizes = set()
+        materials = set()
+        filter_fields = set()
+
+        for variant in queryset:
+            colors.update(variant.colors.all())
+            sizes.update(variant.sizes.all())
+            materials.update(variant.materials.all())
+            filter_fields.update(variant.filter_field.all())
+
+        color_data = [ColorSerializer(color).data for color in colors]
+        size_data = [SizeSerializer(size).data for size in sizes]
+        material_data = [MaterialSerializer(material).data for material in materials]
+        filter_field_data = [FilterFieldSerializer(filter_field).data for filter_field in filter_fields]
+
+        return {
+            'colors': color_data,
+            'sizes': size_data,
+            'materials': material_data,
+            'filter_fields': filter_field_data,
+        }
+
+
+
+
