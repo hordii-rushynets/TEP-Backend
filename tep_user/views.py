@@ -18,8 +18,8 @@ from tep_user.serializers import (UserConfirmCodeSerializer,
                                   UserResentCodeSerializer,
                                   UserEmailUpdateRequestSerializer,
                                   UserEmailUpdateConfirmSerializer,
-                                  UserPasswordUpdateRequestSerializer
-                                  )
+                                  UserPasswordUpdateRequestSerializer,
+                                  MetaPixelSerializer)
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
@@ -150,3 +150,20 @@ class GoogleLoginView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MetaPixelViewSet(viewsets.GenericViewSet):
+    serializer_class = MetaPixelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.context['request'] = request
+        serializer.is_valid(raise_exception=True)
+
+        status_code = serializer.save()
+
+        if status_code == 200:
+            return Response({"detail": "Event sent successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Error sending event"}, status=status.HTTP_400_BAD_REQUEST)

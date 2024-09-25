@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from tep_user.services import IPControlService, EmailService
+from tep_user.services import IPControlService, EmailService, MetaPixelService
 from tep_user import constants as user_const
 from tep_user.models import TEPUser
 from tep_user.services import UserService
@@ -289,3 +289,48 @@ class UserPasswordUpdateRequestSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save()
         return user
+
+
+class MetaPixelSerializer(serializers.Serializer):
+    event_name = serializers.CharField()
+    event_time = serializers.IntegerField()
+    event_source_url = serializers.CharField()
+    client_ip_address = serializers.CharField()
+    client_user_agent = serializers.CharField()
+    fbc = serializers.CharField()
+    fbp = serializers.CharField()
+
+    class Meta:
+        fields = ['event_name', 'event_time', 'event_source_url', 'client_ip_address', 'client_user_agent', 'fbc', 'fbp']
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+
+        event_name = self.validated_data.get('event_name')
+        event_time = self.validated_data.get('event_time')
+        event_source_url = self.validated_data.get('event_source_url')
+        client_ip_address = self.validated_data.get('client_ip_address')
+        client_user_agent = self.validated_data.get('client_user_agent')
+        fbc = self.validated_data.get('fbc')
+        fbp = self.validated_data.get('fbp')
+
+        meta_pixel_service = MetaPixelService()
+        status_code = meta_pixel_service.send(
+            event_name=event_name,
+            event_time=event_time,
+            event_source_url=event_source_url,
+            client_ip_address=client_ip_address,
+            client_user_agent=client_user_agent,
+            fbc=fbc,
+            fbp=fbp,
+            phone=user.phone_number,
+            email=user.email,
+            firstname=user.first_name,
+            lastname=user.last_name,
+            birthday=user.birth_date,
+            city=user.city,
+            index=user.index,
+        )
+
+        return status_code
+
