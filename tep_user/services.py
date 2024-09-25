@@ -183,5 +183,5 @@ class MetaPixelService:
             ]
         }
 
-        #request = requests.post(self.__url, body)
-        return 200 #request.status_code
+        request = requests.post(self.__url, body)
+        return request.status_code
