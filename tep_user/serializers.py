@@ -297,7 +297,7 @@ class MetaPixelSerializer(serializers.Serializer):
     event_source_url = serializers.CharField()
     client_ip_address = serializers.CharField()
     client_user_agent = serializers.CharField()
-    fbc = serializers.CharField()
+    fbc = serializers.CharField(allow_blank=True)
     fbp = serializers.CharField()
     custom_data = serializers.DictField()
 
