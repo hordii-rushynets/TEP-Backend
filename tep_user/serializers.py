@@ -299,6 +299,7 @@ class MetaPixelSerializer(serializers.Serializer):
     client_user_agent = serializers.CharField()
     fbc = serializers.CharField()
     fbp = serializers.CharField()
+    custom_data = serializers.DictField()
 
     class Meta:
         fields = ['event_name', 'event_time', 'event_source_url', 'client_ip_address', 'client_user_agent', 'fbc', 'fbp']
@@ -313,6 +314,7 @@ class MetaPixelSerializer(serializers.Serializer):
         client_user_agent = self.validated_data.get('client_user_agent')
         fbc = self.validated_data.get('fbc')
         fbp = self.validated_data.get('fbp')
+        custom_data = self.validated_data.get('custom_data')
 
         meta_pixel_service = MetaPixelService()
         status_code = meta_pixel_service.send(
@@ -323,6 +325,7 @@ class MetaPixelSerializer(serializers.Serializer):
             client_user_agent=client_user_agent,
             fbc=fbc,
             fbp=fbp,
+            custom_data=custom_data,
             phone=user.phone_number,
             email=user.email,
             firstname=user.first_name,

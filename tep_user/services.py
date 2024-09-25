@@ -155,7 +155,7 @@ class MetaPixelService:
 
     def send(self, event_name: str, event_time: int, event_source_url: str, client_ip_address: str, client_user_agent: str,
              fbc: str, fbp: str, phone: str | None, email: str | None, firstname: str | None, lastname: str | None,
-             birthday: str | None, city: str | None, index: str | None) -> int:
+             birthday: str | None, city: str | None, index: str | None, custom_data: dict) -> int:
         body = {
             "data": [
                 {
@@ -177,9 +177,12 @@ class MetaPixelService:
                         "ct": city,
                         "zp": index
                     },
+                    "custom_data": custom_data,
                 }
             ]
         }
+        print(body)
+        return 200
 
-        request = requests.post(self.__url, body)
-        return request.status_code
+        #request = requests.post(self.__url, body)
+        #return request.status_code
