@@ -25,5 +25,5 @@ urlpatterns = router.urls + [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', ProfileView.as_view(), name='update_profile'),
     path('auth/google/', GoogleLoginView.as_view(), name='google_login'),
-    path('meta-pixel/', MetaPixelViewSet.as_view(), name='meta-pixel')
+    path('meta-pixel/', MetaPixelViewSet.as_view({'post': 'create'}), name='meta-pixel')
 ]

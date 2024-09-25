@@ -164,6 +164,6 @@ class MetaPixelViewSet(viewsets.GenericViewSet):
         status_code = serializer.save()
 
         if status_code == 200:
-            return Response({"detail": "Event sent successfully"}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
         else:
-            return Response({"detail": "Error sending event"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
