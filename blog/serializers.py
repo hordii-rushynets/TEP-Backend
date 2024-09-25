@@ -1,5 +1,3 @@
-from typing import OrderedDict
-
 from rest_framework import serializers
 
 from tep_user.models import TEPUserSocialNetworks
