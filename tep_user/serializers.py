@@ -307,32 +307,23 @@ class MetaPixelSerializer(serializers.Serializer):
     def save(self, **kwargs):
         user = self.context['request'].user
 
-        event_name = self.validated_data.get('event_name')
-        event_time = self.validated_data.get('event_time')
-        event_source_url = self.validated_data.get('event_source_url')
-        client_ip_address = self.validated_data.get('client_ip_address')
-        client_user_agent = self.validated_data.get('client_user_agent')
-        fbc = self.validated_data.get('fbc')
-        fbp = self.validated_data.get('fbp')
-        custom_data = self.validated_data.get('custom_data')
-
         meta_pixel_service = MetaPixelService()
         status_code = meta_pixel_service.send(
-            event_name=event_name,
-            event_time=event_time,
-            event_source_url=event_source_url,
-            client_ip_address=client_ip_address,
-            client_user_agent=client_user_agent,
-            fbc=fbc,
-            fbp=fbp,
-            custom_data=custom_data,
-            phone=user.phone_number,
-            email=user.email,
-            firstname=user.first_name,
-            lastname=user.last_name,
-            birthday=user.birth_date,
-            city=user.city,
-            index=user.index,
+            event_name=self.validated_data.get('event_name'),
+            event_time=self.validated_data.get('event_time'),
+            event_source_url=self.validated_data.get('event_source_url'),
+            client_ip_address=self.validated_data.get('client_ip_address'),
+            client_user_agent=self.validated_data.get('client_user_agent'),
+            fbc=self.validated_data.get('fbc'),
+            fbp=self.validated_data.get('fbp'),
+            custom_data=self.validated_data.get('custom_data'),
+            phone=user.phone_number if user.is_authenticated else None,
+            email=user.email if user.is_authenticated else None,
+            firstname=user.first_name if user.is_authenticated else None,
+            lastname=user.last_name if user.is_authenticated else None,
+            birthday=user.birth_date if user.is_authenticated else None,
+            city=user.city if user.is_authenticated else None,
+            index=user.index if user.is_authenticated else None,
         )
 
         return status_code

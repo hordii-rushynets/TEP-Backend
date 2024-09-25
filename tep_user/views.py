@@ -154,7 +154,6 @@ class GoogleLoginView(APIView):
 
 class MetaPixelViewSet(viewsets.GenericViewSet):
     serializer_class = MetaPixelSerializer
-    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
