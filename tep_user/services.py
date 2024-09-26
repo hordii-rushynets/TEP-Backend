@@ -1,7 +1,9 @@
 import datetime
+import os
 import random
 import string
 from typing import Optional
+import requests
 
 import redis
 from django.conf import settings
@@ -142,3 +144,44 @@ class UserService:
         characters = [random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(8)]
         random.shuffle(characters)
         return ''.join(characters)
+
+
+class MetaPixelService:
+    def __init__(self):
+        self.__pixel_id = settings.META_PIXEL_ID
+        self.__pixel_access_token = settings.META_PIXEL_ACCESS_TOKEN
+        self.__api_version = settings.META_GRAPH_API
+        self.__url = f"https://graph.facebook.com/{self.__api_version}/{self.__pixel_id}/events?access_token={self.__pixel_access_token}"
+
+    def send(self, event_name: str, event_time: int, event_source_url: str, client_ip_address: str, client_user_agent: str,
+             fbc: str, fbp: str, phone: str | None, email: str | None, firstname: str | None, lastname: str | None,
+             birthday: str | None, city: str | None, index: str | None, custom_data: dict) -> int:
+        body = {
+            "data": [
+                {
+                    "event_name": event_name,
+                    "event_time": event_time,
+                    "action_source": "website",
+                    "event_source_url": event_source_url,
+                    "user_data": {
+                        "client_ip_address": client_ip_address,
+                        "client_user_agent": client_user_agent,
+                        "fbc": fbc,
+                        "fbp": fbp,
+
+
+                        "ph": phone,
+                        "em": email,
+                        "fn": firstname,
+                        "ln": lastname,
+                        "db": birthday,
+                        "ct": city,
+                        "zp": index
+                    },
+                    "custom_data": custom_data,
+                }
+            ]
+        }
+
+        request = requests.post(self.__url, json=body)
+        return request.status_code
