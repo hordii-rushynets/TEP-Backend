@@ -24,7 +24,7 @@ class FilterField(models.Model):
     filter = models.ForeignKey(Filter, on_delete=models.CASCADE, related_name='filter_field', blank=True, null=True)
 
     def __str__(self):
-        return self.value
+        return f"{self.value} - {self.filter.name}"
 
 
 class Category(TitleSlug):
