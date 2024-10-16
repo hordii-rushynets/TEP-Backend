@@ -224,7 +224,8 @@ REDIS_CONNECTION_STRING = '{protocol}://{auth}{host}:{port}/%s{query}'.format(
 
 CELERY_TIMEZONE = "Europe/Kiev"
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_TASK_TIME_LIMIT = 3600*3  # Hard limit for all tasks (1 hour)
+CELERY_TASK_SOFT_TIME_LIMIT = 3500*3  # Soft limit for all tasks (58 minutes)
 CELERY_BROKER_URL = REDIS_CONNECTION_STRING % int(RedisDatabases.CELERY)
 
 LANGUAGES = (
@@ -256,7 +257,7 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = 'us-east-1'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-DEFAULT_FILE_STORAGE = 'backend.storages.CustomS3Boto3Storage'
+DEFAULT_FILE_STORAGE = 'backend.storages.MediaS3Boto3Storage'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -298,11 +299,11 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} \n {message}',
             'style': '{',
         },
         'simple': {
-            'format': '{levelname} {message}',
+            'format': '{levelname} - {message}',
             'style': '{',
         },
     },
@@ -337,3 +338,5 @@ LOGGING = {
         },
     },
 }
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
