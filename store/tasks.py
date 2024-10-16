@@ -1,6 +1,6 @@
 import requests
 from celery import shared_task
-from .models import Product, ProductVariant, Size, ProductVariantInfo, ProductImage, Filter, FilterField, ProductVariantImage, Color
+from .models import Product, ProductVariant, Size, ProductVariantInfo, ProductImage, Filter, FilterField, ProductVariantImage, Color, Category
 from django.core.files.base import ContentFile
 from urllib.parse import urlparse
 import os
@@ -19,17 +19,17 @@ def get_size(group_offer: dict) -> Size:
 def add_product_variant_info(group_offer: dict, product_variant: ProductVariant):
     ProductVariantInfo.objects.get_or_create(
         product_variant=product_variant,
-        material_and_care_uk=group_offer.get('description_materials_and_care_ua'),
-        material_and_care_en=group_offer.get('description_materials_and_care_en'),
-        material_and_care_ru=group_offer.get('description_materials_and_care_ru'),
+        material_and_care_uk=group_offer.get('description_materials_and_care_ua', 'Empty'),
+        material_and_care_en=group_offer.get('description_materials_and_care_en', 'Empty'),
+        material_and_care_ru=group_offer.get('description_materials_and_care_ru', 'Empty'),
 
-        ecology_and_environment_uk=group_offer.get('description_ecology_and_environment_ua'),
-        ecology_and_environment_en=group_offer.get('description_ecology_and_environment_en'),
-        ecology_and_environment_ru=group_offer.get('description_ecology_and_environment_ru'),
+        ecology_and_environment_uk=group_offer.get('description_ecology_and_environment_ua', 'Empty'),
+        ecology_and_environment_en=group_offer.get('description_ecology_and_environment_en', 'Empty'),
+        ecology_and_environment_ru=group_offer.get('description_ecology_and_environment_ru', 'Empty'),
 
-        packaging_en=group_offer.get('description_packaging_en'),
-        packaging_ru=group_offer.get('description_packaging_ru'),
-        packaging_uk=group_offer.get('description_packaging_ua'),
+        packaging_en=group_offer.get('description_packaging_en', 'Empty'),
+        packaging_ru=group_offer.get('description_packaging_ru', 'Empty'),
+        packaging_uk=group_offer.get('description_packaging_ua', 'Empty'),
     )
 
 def add_image_of_the_view_in_interior(product: Product, images: list):
@@ -62,9 +62,9 @@ def create_filters(filters: list) -> list:
 
         for value in filter.get('values'):
             filter_field, _ = FilterField.objects.get_or_create(value=value.get('name_ua'), filter=created_filter)
-            filter_field.value_uk = filter.get('name_ua')
-            filter_field.value_ru = filter.get('name_ru')
-            filter_field.value_en = filter.get('name_en')
+            filter_field.value_uk = value.get('name_ua')
+            filter_field.value_ru = value.get('name_ru')
+            filter_field.value_en = value.get('name_en')
             filter_field.save()
 
             value['filter_field'] = filter_field
@@ -83,7 +83,38 @@ def create_colors(colors: list) -> list:
 
     return colors
 
+def create_categories(categories: list) -> list:
+    for category in categories:
+        created_category, _ = Category.objects.get_or_create(slug=category.get('name_en').lower().replace(' ', '-').replace("'", ''))
+        created_category.title = category.get('name_en')
+        created_category.title_uk = category.get('name_ua')
+        created_category.title_ru = category.get('name_ru')
+        created_category.title_en = category.get('name_en')
+        created_category.description_uk = category.get('description_ua')
+        created_category.description_ru = category.get('namedescription_ru_ru')
+        created_category.description_en = category.get('description_en')
+
+        image = category.get('image')
+        response = requests.get(image)
+        if response.status_code == 200:
+            parsed_url = urlparse(image)
+            filename = os.path.basename(parsed_url.path)
+            created_category.image.save(filename, ContentFile(response.content), save=True)
+
+        created_category.save()
+
+        category['created_category'] = created_category
+
+    return categories
+
+def get_category_by_slug(slug, categories):
+    for category in categories:
+        if category["slug"] == slug:
+            return category.get('created_category')
+    return None
+
 def create_product_variant_images(images: list, variant: ProductVariant):
+     i = 0
      for image in images:
         try:
             # Download the image
@@ -93,18 +124,27 @@ def create_product_variant_images(images: list, variant: ProductVariant):
                 filename = os.path.basename(parsed_url.path)
                 product_variant_image = ProductVariantImage(product_variant=variant)
 
+                if i == 0:
+                    variant.main_image.save(filename, ContentFile(response.content), save=True)
+                    variant.save()
+
                 product_variant_image.image.save(filename, ContentFile(response.content), save=True)
                 
+                product_variant_image.save()
                 print({"success": "Image uploaded successfully", "image_id": product_variant_image.id})
             else:
                 print({"error": f"Failed to download image, status code: {response.status_code}"})
         except requests.exceptions.RequestException as e:
             print({"error": str(e)})
+        
+        i+=1
 
 
-@shared_task
+@shared_task(time_limit=3600*3, soft_time_limit=3500*3)
 def import_data_task(data):
+    print(data.get('filters'))
     filters = create_filters(data.get('filters'))
+    categories = create_categories(data.get('categories'))
     create_colors(data.get('colors'))
 
     offers = data.get('offers', [])
@@ -122,19 +162,28 @@ def import_data_task(data):
             defaults={
                 'title': group_name_en,
                 'description': description_uk,
+                'slug': group_id,
                 'dimensional_grid_description': ''
             }
         )
 
+        product.title_uk = offer.get('group_name_ua', '')
+        product.title_en = offer.get('group_name_en', '')
+        product.title_ru = offer.get('group_name_ru', '')
+
         product.description_en = description_en
         product.description_uk = description_uk
         product.description_ru = description_ru
+        product.category = get_category_by_slug(offer.get('category'), categories)
 
-        # add_image_of_the_view_in_interior(product, offer.get('images', []))
+        product.save()
 
         for group_offer in group_offers:
+            if not group_offer:
+                continue
+
             article = group_offer.get('article')
-            name = group_offer.get('name')
+            name_en = group_offer.get('name_en')
             group_order = group_offer.get('group_order')
             price = group_offer.get('price', 0)
             price_1 = group_offer.get('price_1', 0)
@@ -147,17 +196,21 @@ def import_data_task(data):
                 product=product,
                 sku=article,
                 defaults={
-                    'title': name,
+                    'title': name_en,
                     'default_price': price,
                     'wholesale_price': price_1,
                     'drop_shipping_price': price_2,
                     'count': count,
-                    'variant_order': group_order,
+                    'variant_order': group_order
                 }
             )
+            variant.title_uk = group_offer.get('name_ua')
+            variant.title_en = name_en
+            variant.title_ru = group_offer.get('name_ru')
 
             variant.sizes.add(size)
-            for color in group_offer.get('color'):
+            colors = group_offer.get('color') if group_offer.get('color') else []
+            for color in colors:
                 try:
                     created_color = Color.objects.get(slug=color)
                     variant.colors.add(created_color)
@@ -170,6 +223,7 @@ def import_data_task(data):
                     result = next((value for value in filter.get('values') if value['guid'] == filter_field), None)
                     variant.filter_field.add(result['filter_field'])
 
-
-            create_product_variant_images(group_offer.get('images'), variant)
+            variant.save()
+            images = group_offer.get('images') if group_offer.get('images') else []
+            create_product_variant_images(images, variant)
             add_product_variant_info(group_offer, variant)

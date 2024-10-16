@@ -238,6 +238,7 @@ class FeedbackViewSet(ListModelMixin,
 class ProductsImport(APIView):
     def post(self, request):
         data = request.data
+        # import_data_task(data)
         import_data_task.delay(data)
         return Response({'status': 'success'})
 
