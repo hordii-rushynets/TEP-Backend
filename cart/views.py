@@ -8,6 +8,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.request import Request
 
+from django.views.decorators.cache import never_cache, cache_page
+from django.utils.decorators import method_decorator
+
 from .models import Cart, CartItem
 from .serializers import CartItemSerializer
 
@@ -15,6 +18,8 @@ from tep_user.services import IPControlService
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
 
 
+@method_decorator(cache_page(20), name='list')
+@method_decorator(never_cache, name='dispatch')
 class CartItemViewSet(viewsets.ModelViewSet):
     """CartItem ViewSet"""
     queryset = CartItem.objects.all()
