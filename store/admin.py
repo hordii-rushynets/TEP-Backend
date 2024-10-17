@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
                      Category, PromoCode, Filter, FilterField, Order, Feedback, DimensionalGrid, DimensionalGridSize,
-                     FeedbackImage, ProductImage, InspirationImage)
+                     FeedbackImage, ProductImage, InspirationImage, Choice)
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -48,7 +48,13 @@ class ProductVariantAdmin(admin.ModelAdmin):
     get_product_group_id.short_description = 'Group ID'
 
 
+class FilterFieldInline(admin.TabularInline):
+    model = FilterField
+    extra = 1
+
+
 class FilterAdmin(admin.ModelAdmin):
+    inlines = [FilterFieldInline]
     list_display = ('name_uk', 'name_en', 'name_ru')
     exclude = ('name', )
 
@@ -99,6 +105,11 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ['slug', 'description', 'group_id']
 
 
+class ChoiceAdmin(admin.ModelAdmin):
+    filter_horizontal = ['filter_fields']
+    search_fields = ['filter__name', 'filter_fields__value']
+
+
 admin.site.register(Order)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(DimensionalGrid, DimensionalGridAdmin)
@@ -113,3 +124,4 @@ admin.site.register(FilterField, FilterFieldAdmin)
 admin.site.register(Feedback, FeedbackAdmin)
 admin.site.register(FeedbackImage)
 admin.site.register(InspirationImage)
+admin.site.register(Choice, ChoiceAdmin)

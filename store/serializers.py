@@ -85,7 +85,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True)
     colors = ColorSerializer(many=True)
     materials = MaterialSerializer(many=True)
-    filter_field = FilterFieldSerializer(many=True)
+    filter_field = serializers.SerializerMethodField()
     variant_info = ProductVariantInfoSerializer(read_only=True)
     variant_images = ProductVariantImageSerializer(many=True, read_only=True)
     number_of_add_to_cart = serializers.IntegerField(read_only=True)
@@ -94,6 +94,17 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariant
         fields = '__all__'
+
+    def get_filter_field(self, obj):
+        """Returns unique filter fields from the selected ones."""
+        filter_choices = obj.filter_field.all()
+        filter_fields = set()
+
+        for choice in filter_choices:
+            for field in choice.filter_fields.all():
+                filter_fields.add(field)
+
+        return FilterFieldSerializer(list(filter_fields), many=True).data
 
     def get_in_cart(self, product_variants: ProductVariant) -> bool:
         """Check if the product variant is in the cart for the current user."""
