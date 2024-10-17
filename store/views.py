@@ -160,6 +160,7 @@ class FeedbackViewSet(ListModelMixin,
                       RetrieveModelMixin,
                       viewsets.GenericViewSet):
     """Feedback ViewSet"""
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
