@@ -14,6 +14,8 @@ from django.db.models import QuerySet, Count
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.views.decorators.cache import never_cache
+
 
 from transliterate import translit
 from .tasks import import_data_task
@@ -66,6 +68,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         return Product.objects.annotate(
             number_of_add_to_cart=Count('product_variants__cart_item')
         )
+
+    @never_cache
+    def list(self, request, *args, **kwargs):
+        return super().list(request)
 
     @action(methods=['post'], detail=False)
     def increase_number_of_view(self, request: Request) -> Response:
