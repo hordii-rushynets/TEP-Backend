@@ -4,7 +4,7 @@ from django.db import models
 
 class TitleSlug(models.Model):
     """Abstract model that contain title and slug fied."""
-    slug = models.CharField(max_length=128)
+    slug = models.CharField(max_length=128, db_index=True)
     title = models.CharField(max_length=128)
 
     class Meta:
