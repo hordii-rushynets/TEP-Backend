@@ -27,6 +27,14 @@ class FilterField(models.Model):
         return f"{self.value} - {self.filter.name}"
 
 
+class Choice(models.Model):
+    filter = models.ForeignKey(Filter, on_delete=models.CASCADE, related_name='choice')
+    filter_fields = models.ManyToManyField(FilterField, related_name='choice')
+
+    def __str__(self) -> str:
+        return f"{self.filter.name} and filter fields"
+
+
 class Category(TitleSlug):
     description = RichTextField(max_length=30000, blank=True, null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)
@@ -119,7 +127,7 @@ class ProductVariant(models.Model):
     promo_price = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     variant_order = models.IntegerField(default=0)
-    filter_field = models.ManyToManyField(FilterField, related_name='product_variants')
+    filter_field = models.ManyToManyField(Choice, related_name='product_variants')
     weight = models.PositiveIntegerField(blank=True, default=0)
 
     def __str__(self):
