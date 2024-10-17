@@ -16,18 +16,19 @@ class CartItemSerializer(serializers.ModelSerializer):
                                                              source='product_variants')
 
     color = ColorSerializer(read_only=True)
-    color_id = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all(), write_only=True, source='color')
+    color_id = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all(), write_only=True, source='color',
+                                                  required=False)
 
     material = MaterialSerializer(read_only=True)
     material_id = serializers.PrimaryKeyRelatedField(queryset=Material.objects.all(), write_only=True,
-                                                     source='material')
+                                                     source='material', required=False)
 
     size = SizeSerializer(read_only=True)
-    size_id = serializers.PrimaryKeyRelatedField(queryset=Size.objects.all(), write_only=True, source='size')
+    size_id = serializers.PrimaryKeyRelatedField(queryset=Size.objects.all(), write_only=True, source='size', required=False)
 
     filter_field = FilterFieldSerializer(read_only=True, many=True)
     filter_field_ids = serializers.PrimaryKeyRelatedField(queryset=FilterField.objects.all(), many=True,
-                                                          write_only=True, source='filter_field')
+                                                          write_only=True, source='filter_field', required=False)
 
     cart = serializers.PrimaryKeyRelatedField(queryset=Cart.objects.all(), required=False)
 
