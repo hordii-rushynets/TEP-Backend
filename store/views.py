@@ -162,6 +162,7 @@ class FeedbackViewSet(ListModelMixin,
     """Feedback ViewSet"""
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'id'
     filter_backends = (DjangoFilterBackend,)
