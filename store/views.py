@@ -8,8 +8,7 @@ from rest_framework.request import Request
 from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_control, never_cache
+from django.core.cache import cache
 from django.db.models import QuerySet, Count
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -27,6 +26,7 @@ from .serializers import (
     CategoryProductVariantSerializer
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
+from .until import get_auth_date
 
 from cart.models import CartItem, Cart
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
@@ -67,6 +67,30 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
+    def list(self, request, *args, **kwargs):
+        user_data = get_auth_date(request)
+        url = str(request.build_absolute_uri()).split('api')[1]
+        cache_key = f'user-{user_data}-url-{url}'
+        cache_key_to_url = f'user-{user_data}-urls'
+
+        cache_data = cache.get(cache_key)
+
+        if cache_data is None:
+            serializer = self.get_serializer(self.get_queryset(), many=True)
+            cache.set(cache_key, serializer.data, timeout=3600)
+            return Response(serializer.data)
+
+        cache_keys_data = cache.get(cache_key_to_url)
+        if cache_keys_data is None:
+            keys = set(cache_key)
+            cache.set(cache_key_to_url, keys, timeout=3600)
+        else:
+            keys = set(cache_keys_data)
+            keys.add(cache_key)
+            cache.set(cache_key_to_url, keys, timeout=3600)
+
+        return Response(cache_data)
+
     @action(methods=['post'], detail=False)
     def increase_number_of_view(self, request: Request) -> Response:
         """
@@ -82,7 +106,6 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-@method_decorator(cache_control(no_cache=True), name='dispatch')
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     authentication_classes = [IgnoreInvalidTokenAuthentication]

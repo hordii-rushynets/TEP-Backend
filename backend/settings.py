@@ -99,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'backend.middleware.GlobalLoggingMiddleware',
+    'django.middleware.common.CommonMiddleware'
 ]
 
 

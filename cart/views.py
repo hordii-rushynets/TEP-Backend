@@ -1,6 +1,8 @@
 from typing import Any
 
 from django.db.models.query import QuerySet
+from django.core.cache import cache
+
 from backend.settings import RedisDatabases
 
 from rest_framework import viewsets, status
@@ -13,6 +15,7 @@ from .serializers import CartItemSerializer
 
 from tep_user.services import IPControlService
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
+from store.until import get_auth_date
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
@@ -88,9 +91,30 @@ class CartItemViewSet(viewsets.ModelViewSet):
         cart_item.filter_field.set(filter_fields)
         cart_item.save()
         serializer = self.get_serializer(cart_item)
+
+        user_data = get_auth_date(request)
+        cache_key_to_url = f'user-{user_data}-urls'
+        cache_keys_data = cache.get(cache_key_to_url)
+
+        if cache_keys_data:
+            for cache_key in cache_keys_data:
+                cached_data = cache.get(cache_key)
+
+                if cached_data:
+                    for entry in cached_data:
+                        if 'product_variants' in entry:
+                            for variant in entry['product_variants']:
+                                if variant['id'] == product_variant.id:
+                                    variant['in_cart'] = True
+                                    entry['in_cart'] = True
+
+                    cache.set(cache_key, cached_data)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self) -> QuerySet:
         cart = self._get_cart(self.request)
         return CartItem.objects.filter(cart=cart)
+
+
 
