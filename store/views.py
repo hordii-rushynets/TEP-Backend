@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
@@ -9,7 +9,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_control, never_cache
 from django.db.models import QuerySet, Count
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -82,9 +82,11 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+@method_decorator(cache_control(no_cache=True), name='dispatch')
 class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         serializers = {
@@ -94,9 +96,18 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         return serializers[self.action]
 
     def get_queryset(self) -> QuerySet:
-        """Return products that marked as favorite."""
-        product_ids = FavoriteProduct.objects.filter(favorite=True, user=self.request.user).values_list('product__id', flat=True)
-        return Product.objects.filter(id__in=product_ids)
+        """Return products that are marked as favorite."""
+        request = self.request
+
+        ip_control_service = IPControlService(request=request, database=RedisDatabases.IP_CONTROL)
+        favorite_products = FavoriteProduct.objects.filter(favorite=True)
+
+        if request.user.is_authenticated:
+            products = favorite_products.filter(user=request.user)
+        else:
+            products = favorite_products.filter(ip_address=ip_control_service.get_ip())
+
+        return Product.objects.filter(id__in=products.values_list('product__id', flat=True))
 
     def destroy(self, request, *args, **kwargs):
         """Remove all products from favorites."""
@@ -235,7 +246,6 @@ class FeedbackViewSet(ListModelMixin,
         return context
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ProductsImport(APIView):
     def post(self, request):
         data = request.data

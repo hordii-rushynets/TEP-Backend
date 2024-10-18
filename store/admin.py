@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Product, ProductVariant, Size, Color, Material, ProductVariantInfo, ProductVariantImage,
                      Category, PromoCode, Filter, FilterField, Order, Feedback, DimensionalGrid, DimensionalGridSize,
-                     FeedbackImage, ProductImage, InspirationImage)
+                     FeedbackImage, ProductImage, InspirationImage, FavoriteProduct)
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -113,3 +113,4 @@ admin.site.register(FilterField, FilterFieldAdmin)
 admin.site.register(Feedback, FeedbackAdmin)
 admin.site.register(FeedbackImage)
 admin.site.register(InspirationImage)
+admin.site.register(FavoriteProduct)

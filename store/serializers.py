@@ -1,3 +1,4 @@
+import logging
 from typing import OrderedDict
 
 from rest_framework import serializers
@@ -12,6 +13,7 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
 
 
 from tep_user.serializers import UserProfileSerializer
+from tep_user.models import TEPUser
 from cart.models import CartItem, Cart
 
 
@@ -139,16 +141,14 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_is_favorite(self, product: Product) -> bool:
-        """Get is_favorite flag for specific product."""
-        request = self.context.get('request')
+        """Returns True if the product is in the current user's favourites."""
+        request = self.context['request']
+        ip_address = IPControlService(request=request, database=RedisDatabases.IP_CONTROL).get_ip()
 
-        try:
-            if not request.user.is_authenticated:
-                return False
-
-            return FavoriteProduct.objects.get(user=request.user, product=product).favorite
-        except FavoriteProduct.DoesNotExist:
-            return False
+        if request.user.is_authenticated:
+            return FavoriteProduct.objects.filter(user=request.user, product=product, favorite=True).exists()
+        else:
+            return FavoriteProduct.objects.filter(ip_address=ip_address, product=product, favorite=True).exists()
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -222,7 +222,7 @@ class SetFavoriteProductSerializer(serializers.Serializer):
         :param validated_data: validated data.
 
         :raises NotFound: raise http 404 error if product does not exists.
-        :raises PermissionDenied: raise http 403 error if user try to mark product as favorite more that 6 times in minute.
+        :raises PermissionDenied: raise http 403 error if user try to mark product as favorite more than 6 times in a minute.
 
         :return: validated data.
         """
@@ -231,17 +231,23 @@ class SetFavoriteProductSerializer(serializers.Serializer):
         except FavoriteProduct.DoesNotExist:
             raise NotFound()
 
-        ip_control_service = IPControlService(request=self.context.get('request'),  database=RedisDatabases.IP_CONTROL)
+        request = self.context.get('request')
+        ip_control_service = IPControlService(request=request, database=RedisDatabases.IP_CONTROL)
 
         if not ip_control_service.check_product_set_favorite_ip_access(instance.slug):
             raise PermissionDenied()
-        
-        favorite = self.validated_data.get('favorite')
-        request = self.context.get('request')
+
+        favorite = validated_data.get('favorite')
+
+        if request.user.is_authenticated:
+            user_or_ip = request.user
+        else:
+            user_or_ip = ip_control_service.get_ip()
 
         FavoriteProduct.objects.update_or_create(
             product=instance,
-            user=request.user,
+            user=user_or_ip if isinstance(user_or_ip, TEPUser) else None,
+            ip_address=user_or_ip if isinstance(user_or_ip, str) else None,
             defaults={'favorite': favorite}
         )
 
