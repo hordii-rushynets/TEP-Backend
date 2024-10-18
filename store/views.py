@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.filters import OrderingFilter
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, DestroyModelMixin
 
 from django.core.cache import cache
 from django.db.models import QuerySet, Count
@@ -23,7 +23,7 @@ from .serializers import (
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
     SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer,
-    CategoryProductVariantSerializer
+    CategoryProductVariantSerializer, update_cache_is_favorite_status
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from .until import get_auth_date
@@ -106,7 +106,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
+class FavoriteProductViewset(CreateModelMixin, ListModelMixin, DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     authentication_classes = [IgnoreInvalidTokenAuthentication]
     permission_classes = [AllowAny]
@@ -132,9 +132,17 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
 
         return Product.objects.filter(id__in=products.values_list('product__id', flat=True))
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args, **kwargs):
         """Remove all products from favorites."""
-        num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
+        ip_control_service = IPControlService(request=request, database=RedisDatabases.IP_CONTROL)
+        if request.user.is_authenticated:
+            favorite_products, _ = FavoriteProduct.objects.filter(user=request.user)
+        else:
+            favorite_products, _ = FavoriteProduct.objects.filter(ip_address=ip_control_service.get_ip())
+
+        for favorite_product in favorite_products:
+            update_cache_is_favorite_status(request, favorite_product.product, False)
+            favorite_product.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

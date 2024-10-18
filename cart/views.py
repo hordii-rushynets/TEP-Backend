@@ -18,6 +18,7 @@ from tep_user.authentication import IgnoreInvalidTokenAuthentication
 from store.until import get_auth_date
 from store.models import ProductVariant
 
+
 class CartItemViewSet(viewsets.ModelViewSet):
     """CartItem ViewSet"""
     queryset = CartItem.objects.all()
