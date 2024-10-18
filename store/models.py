@@ -49,7 +49,7 @@ class Product(TitleSlug):
     group_id = models.CharField(max_length=128)
     last_modified = models.DateTimeField(auto_now=True)
     number_of_views = models.IntegerField(default=0, validators=[MinValueValidator(0),])
-    dimensional_grid = models.ManyToManyField(DimensionalGrid, blank=True, null=True)
+    dimensional_grid = models.ManyToManyField(DimensionalGrid, blank=True)
     dimensional_grid_description = RichTextField(max_length=30000, blank=True, null=True)
 
     def __str__(self):
@@ -67,12 +67,14 @@ class ProductImage(models.Model):
 
 
 class FavoriteProduct(models.Model):
-    user = models.ForeignKey(TEPUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(TEPUser, on_delete=models.CASCADE, null=True, blank=True)
+    ip_address = models.CharField(max_length=45, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     favorite = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f'{self.user.email} - {self.product.title} - favorite: {self.favorite}.'
+        name = self.user.email if self.user else self.ip_address
+        return f'{name} - {self.product.title} - favorite: {self.favorite}.'
 
 
 class DimensionalGridSize(models.Model):
