@@ -16,7 +16,7 @@ from .serializers import CartItemSerializer
 from tep_user.services import IPControlService
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
 from store.until import get_auth_date
-
+from store.models import ProductVariant
 
 class CartItemViewSet(viewsets.ModelViewSet):
     """CartItem ViewSet"""
@@ -92,6 +92,30 @@ class CartItemViewSet(viewsets.ModelViewSet):
         cart_item.save()
         serializer = self.get_serializer(cart_item)
 
+        self._update_cache_in_cart_status(request, product_variant, True)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        product_variant = instance.product_variants
+        self.perform_destroy(instance)
+
+        self._update_cache_in_cart_status(request, product_variant, False)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_queryset(self) -> QuerySet:
+        cart = self._get_cart(self.request)
+        return self.queryset.filter(cart=cart)
+
+    def _update_cache_in_cart_status(self, request: Request, product_variant: ProductVariant, in_cart_status: bool):
+        """
+        Updates the 'in_cart' field in the cache for a specific product_variant.
+        :param request: HTTP request
+        :param product_variant: The instance of the product you want to update
+        :param in_cart_status: New status for the 'in_cart' field (True or False)
+        """
         user_data = get_auth_date(request)
         cache_key_to_url = f'user-{user_data}-urls'
         cache_keys_data = cache.get(cache_key_to_url)
@@ -105,16 +129,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
                         if 'product_variants' in entry:
                             for variant in entry['product_variants']:
                                 if variant['id'] == product_variant.id:
-                                    variant['in_cart'] = True
-                                    entry['in_cart'] = True
+                                    variant['in_cart'] = in_cart_status
+                                    entry['in_cart'] = in_cart_status
 
                     cache.set(cache_key, cached_data)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def get_queryset(self) -> QuerySet:
-        cart = self._get_cart(self.request)
-        return CartItem.objects.filter(cart=cart)
-
-
 
