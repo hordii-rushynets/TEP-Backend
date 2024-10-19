@@ -1,15 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.filters import OrderingFilter
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, DestroyModelMixin
 
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.core.cache import cache
 from django.db.models import QuerySet, Count
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -24,9 +23,10 @@ from .serializers import (
     ColorSerializer, MaterialSerializer, ProductVariantSerializer,
     ProductVariantInfoSerializer, FilterSerializer, IncreaseNumberOfViewsSerializer,
     SetFavoriteProductSerializer, FeedbackSerializer, FullDataSerializer, InspirationImageSerializer,
-    CategoryProductVariantSerializer
+    CategoryProductVariantSerializer, update_cache_is_favorite_status
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
+from .until import get_auth_date
 
 from cart.models import CartItem, Cart
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
@@ -67,6 +67,30 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
+    def list(self, request, *args, **kwargs):
+        user_data = get_auth_date(request)
+        url = str(request.build_absolute_uri()).split('api')[1]
+        cache_key = f'user-{user_data}-url-{url}'
+        cache_key_to_url = f'user-{user_data}-urls'
+
+        cache_data = cache.get(cache_key)
+
+        if cache_data is None:
+            serializer = self.get_serializer(self.get_queryset(), many=True)
+            cache.set(cache_key, serializer.data, timeout=3600)
+            return Response(serializer.data)
+
+        cache_keys_data = cache.get(cache_key_to_url)
+        if cache_keys_data is None:
+            keys = set(cache_key)
+            cache.set(cache_key_to_url, keys, timeout=3600)
+        else:
+            keys = set(cache_keys_data)
+            keys.add(cache_key)
+            cache.set(cache_key_to_url, keys, timeout=3600)
+
+        return Response(cache_data)
+
     @action(methods=['post'], detail=False)
     def increase_number_of_view(self, request: Request) -> Response:
         """
@@ -82,9 +106,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
+class FavoriteProductViewset(CreateModelMixin, ListModelMixin, DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [IgnoreInvalidTokenAuthentication]
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         serializers = {
@@ -94,13 +119,30 @@ class FavoriteProductViewset(CreateModelMixin, ListModelMixin, viewsets.GenericV
         return serializers[self.action]
 
     def get_queryset(self) -> QuerySet:
-        """Return products that marked as favorite."""
-        product_ids = FavoriteProduct.objects.filter(favorite=True, user=self.request.user).values_list('product__id', flat=True)
-        return Product.objects.filter(id__in=product_ids)
+        """Return products that are marked as favorite."""
+        request = self.request
 
-    def destroy(self, request, *args, **kwargs):
+        ip_control_service = IPControlService(request=request, database=RedisDatabases.IP_CONTROL)
+        favorite_products = FavoriteProduct.objects.filter(favorite=True)
+
+        if request.user.is_authenticated:
+            products = favorite_products.filter(user=request.user)
+        else:
+            products = favorite_products.filter(ip_address=ip_control_service.get_ip())
+
+        return Product.objects.filter(id__in=products.values_list('product__id', flat=True))
+
+    def destroy(self, request: Request, *args, **kwargs):
         """Remove all products from favorites."""
-        num_deleted, _ = FavoriteProduct.objects.filter(user=request.user).delete()
+        ip_control_service = IPControlService(request=request, database=RedisDatabases.IP_CONTROL)
+        if request.user.is_authenticated:
+            favorite_products, _ = FavoriteProduct.objects.filter(user=request.user)
+        else:
+            favorite_products, _ = FavoriteProduct.objects.filter(ip_address=ip_control_service.get_ip())
+
+        for favorite_product in favorite_products:
+            update_cache_is_favorite_status(request, favorite_product.product, False)
+            favorite_product.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -235,7 +277,6 @@ class FeedbackViewSet(ListModelMixin,
         return context
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ProductsImport(APIView):
     def post(self, request):
         data = request.data

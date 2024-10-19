@@ -1,7 +1,11 @@
+import logging
 from typing import OrderedDict
+
+from django.core.cache import cache
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.request import Request
 
 from backend.settings import RedisDatabases
 from tep_user.services import IPControlService
@@ -12,7 +16,9 @@ from .models import (Category, Color, DimensionalGridSize, DimensionalGrid, Filt
 
 
 from tep_user.serializers import UserProfileSerializer
+from tep_user.models import TEPUser
 from cart.models import CartItem, Cart
+from .until import get_auth_date
 
 
 class FilterFieldSerializer(serializers.ModelSerializer):
@@ -139,16 +145,16 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_is_favorite(self, product: Product) -> bool:
-        """Get is_favorite flag for specific product."""
-        request = self.context.get('request')
+        """Returns True if the product is in the current user's favourites."""
+        request = self.context['request']
+        ip_address = IPControlService(request=request, database=RedisDatabases.IP_CONTROL).get_ip()
 
-        try:
-            if not request.user.is_authenticated:
-                return False
+        if request.user.is_authenticated:
+            status = FavoriteProduct.objects.filter(user=request.user, product=product, favorite=True).exists()
+        else:
+            status = FavoriteProduct.objects.filter(ip_address=ip_address, product=product, favorite=True).exists()
+        return status
 
-            return FavoriteProduct.objects.get(user=request.user, product=product).favorite
-        except FavoriteProduct.DoesNotExist:
-            return False
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -186,8 +192,8 @@ class IncreaseNumberOfViewsSerializer(serializers.Serializer):
 
         :param validated_data: validated data.
 
-        :raises NotFound: raise http 404 error if product does not exists.
-        :raises PermissionDenied: raise http 403 error if user try to increase number of views more that one time in week.
+        :raises NotFound: raise http 404 error if product does not do exists.
+        :raises PermissionDenied: raise http 403 error if user try to increase number of views more than one time in week.
 
         :return: validated data.
         """
@@ -221,8 +227,8 @@ class SetFavoriteProductSerializer(serializers.Serializer):
 
         :param validated_data: validated data.
 
-        :raises NotFound: raise http 404 error if product does not exists.
-        :raises PermissionDenied: raise http 403 error if user try to mark product as favorite more that 6 times in minute.
+        :raises NotFound: raise http 404 error if product does not do exists.
+        :raises PermissionDenied: raise http 403 error if user try to mark product as favorite more than 6 times in a minute.
 
         :return: validated data.
         """
@@ -231,19 +237,27 @@ class SetFavoriteProductSerializer(serializers.Serializer):
         except FavoriteProduct.DoesNotExist:
             raise NotFound()
 
-        ip_control_service = IPControlService(request=self.context.get('request'),  database=RedisDatabases.IP_CONTROL)
+        request = self.context.get('request')
+        ip_control_service = IPControlService(request=request, database=RedisDatabases.IP_CONTROL)
 
         if not ip_control_service.check_product_set_favorite_ip_access(instance.slug):
             raise PermissionDenied()
-        
-        favorite = self.validated_data.get('favorite')
-        request = self.context.get('request')
+
+        favorite = validated_data.get('favorite')
+
+        if request.user.is_authenticated:
+            user_or_ip = request.user
+        else:
+            user_or_ip = ip_control_service.get_ip()
 
         FavoriteProduct.objects.update_or_create(
             product=instance,
-            user=request.user,
+            user=user_or_ip if isinstance(user_or_ip, TEPUser) else None,
+            ip_address=user_or_ip if isinstance(user_or_ip, str) else None,
             defaults={'favorite': favorite}
         )
+
+        update_cache_is_favorite_status(request, instance, favorite)
 
         return validated_data
 
@@ -343,5 +357,24 @@ class CategoryProductVariantSerializer(serializers.ModelSerializer):
         }
 
 
+def update_cache_is_favorite_status(request: Request, product: Product, is_favorite_status: bool) -> None:
+    """
+    Updates the 'is_favorite' field in the cache for a specific product_variant.
+    :param request: HTTP request
+    :param product: The instance of the product you want to update
+    :param is_favorite_status: New status for the 'is_favorite' field (True or False)
+    """
+    user_data = get_auth_date(request)
+    cache_key_to_url = f'user-{user_data}-urls'
+    cache_keys_data = cache.get(cache_key_to_url)
 
+    if cache_keys_data:
+        for cache_key in cache_keys_data:
+            cached_data = cache.get(cache_key)
+            if cached_data:
+                for entry in cached_data:
+                    if entry['id'] == product.id:
+                        entry['is_favorite'] = is_favorite_status
+
+                cache.set(cache_key, cached_data)
 
