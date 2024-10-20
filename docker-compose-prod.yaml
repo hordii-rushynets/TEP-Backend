@@ -22,10 +22,7 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - redis
       - db
-    links:
-      - redis:redis
     env_file:
       - .env
 
