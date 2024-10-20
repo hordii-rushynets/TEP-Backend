@@ -53,6 +53,8 @@ services:
       - PGPOOL_POSTGRES_PASSWORD={PGPOOL_POSTGRES_PASSWORD}
       - PGPOOL_ADMIN_USERNAME={PGPOOL_ADMIN_USERNAME}
       - PGPOOL_ADMIN_PASSWORD={PGPOOL_ADMIN_PASSWORD}
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
