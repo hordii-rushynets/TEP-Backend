@@ -1,0 +1,39 @@
+version: '3'
+services:
+  web:
+    image: hordiirushynets/tep-core:latest
+    build: .
+    command:
+      bash -c "
+      sleep 1
+      && python manage.py makemigrations
+      && python manage.py migrate
+      && python manage.py collectstatic --noinput
+      && gunicorn --bind 0.0.0.0:8000 backend.wsgi:application"
+    volumes:
+      - .:/app
+      - ./static:/var/static
+      - ./uploads:/var/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+    links:
+      - redis:redis
+    env_file:
+      - .env
+
+  celery:
+    image: hordiirushynets/tep-core:latest
+    depends_on:
+      - db
+    env_file:
+       - .env
+    volumes:
+      - .:/app
+    command: >
+      bash -c "
+              sleep 3 &&
+              celery -A backend worker -E -B -ldebug
+              "

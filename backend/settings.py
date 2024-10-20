@@ -200,6 +200,7 @@ class RedisDatabases(IntEnum):
     LOGIN_CODE: int = 3
     IP_CONTROL: int = 4
     LOCK: int = 5
+    CACHE: int = 6
 
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
@@ -226,8 +227,8 @@ REDIS_CONNECTION_STRING = '{protocol}://{auth}{host}:{port}/%s{query}'.format(
 
 CELERY_TIMEZONE = "Europe/Kiev"
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 3600*3  # Hard limit for all tasks (1 hour)
-CELERY_TASK_SOFT_TIME_LIMIT = 3500*3  # Soft limit for all tasks (58 minutes)
+CELERY_TASK_TIME_LIMIT = 3600*3
+CELERY_TASK_SOFT_TIME_LIMIT = 3500*3
 CELERY_BROKER_URL = REDIS_CONNECTION_STRING % int(RedisDatabases.CELERY)
 
 LANGUAGES = (
@@ -347,7 +348,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/1",
+        'LOCATION': f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{int(RedisDatabases.CACHE)}",
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
