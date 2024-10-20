@@ -44,15 +44,6 @@ services:
     image: bitnami/pgpool:4
     ports:
       - 5432:5432
-    environment:
-      - PGPOOL_BACKEND_NODES=0:pgbouncer-master:5432,1:pgbouncer-replica:5432
-      - PGPOOL_SR_CHECK_USER={PGPOOL_SR_CHECK_USER}
-      - PGPOOL_SR_CHECK_PASSWORD={PGPOOL_SR_CHECK_PASSWORD}
-      - PGPOOL_ENABLE_LDAP=no
-      - PGPOOL_POSTGRES_USERNAME={PGPOOL_POSTGRES_USERNAME}
-      - PGPOOL_POSTGRES_PASSWORD={PGPOOL_POSTGRES_PASSWORD}
-      - PGPOOL_ADMIN_USERNAME={PGPOOL_ADMIN_USERNAME}
-      - PGPOOL_ADMIN_PASSWORD={PGPOOL_ADMIN_PASSWORD}
     env_file:
       - .env
     healthcheck:
