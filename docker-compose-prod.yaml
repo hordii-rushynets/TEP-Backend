@@ -1,4 +1,9 @@
 version: '3'
+
+networks:
+  db-network:
+    driver: bridge
+
 services:
   web:
     image: hordiirushynets/tep-core:latest
@@ -37,3 +42,45 @@ services:
               sleep 3 &&
               celery -A backend worker -E -B -ldebug
               "
+
+  db:
+    image: bitnami/pgpool:4
+    ports:
+      - 5432:5432
+    environment:
+      - PGPOOL_BACKEND_NODES=0:pgbouncer-master:5432,1:pgbouncer-replica:5432
+      - PGPOOL_SR_CHECK_USER={PGPOOL_SR_CHECK_USER}
+      - PGPOOL_SR_CHECK_PASSWORD={PGPOOL_SR_CHECK_PASSWORD}
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME={PGPOOL_POSTGRES_USERNAME}
+      - PGPOOL_POSTGRES_PASSWORD={PGPOOL_POSTGRES_PASSWORD}
+      - PGPOOL_ADMIN_USERNAME={PGPOOL_ADMIN_USERNAME}
+      - PGPOOL_ADMIN_PASSWORD={PGPOOL_ADMIN_PASSWORD}
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db-network
+
+  pgbouncer-master:
+    image: edoburu/pgbouncer:latest
+    volumes:
+      - ./docker/pgbouncer/pgbouncer_master.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./docker/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - 5432
+    networks:
+      - db-network
+
+  pgbouncer-replica:
+    image: edoburu/pgbouncer:latest
+    volumes:
+      - ./docker/pgbouncer/pgbouncer_slave.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./docker/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - 5432
+    networks:
+      - db-network
+
