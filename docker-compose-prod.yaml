@@ -25,6 +25,8 @@ services:
       - db
     env_file:
       - .env
+    networks:
+      - db-network
 
   celery:
     image: hordiirushynets/tep-core:latest
@@ -39,6 +41,8 @@ services:
               sleep 3 &&
               celery -A backend worker -E -B -ldebug
               "
+    networks:
+      - db-network
 
   db:
     image: bitnami/pgpool:4
@@ -53,8 +57,6 @@ services:
       - PGPOOL_POSTGRES_PASSWORD={PGPOOL_POSTGRES_PASSWORD}
       - PGPOOL_ADMIN_USERNAME={PGPOOL_ADMIN_USERNAME}
       - PGPOOL_ADMIN_PASSWORD={PGPOOL_ADMIN_PASSWORD}
-    env_file:
-      - .env
     healthcheck:
       test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
       interval: 10s
