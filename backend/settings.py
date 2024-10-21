@@ -218,7 +218,7 @@ REDIS_CONNECTION = {
 }
 
 REDIS_CONNECTION_QUERY = '?ssl_cert_reqs=none' if REDIS_USE_SSL else ''
-REDIS_CONNECTION_STRING = '{protocol}://{auth}@{host}:{port}/%s{query}'.format(
+REDIS_CONNECTION_STRING = '{protocol}://{auth}{host}:{port}/%s{query}'.format(
     protocol=REDIS_PROTOCOL,
     auth=REDIS_AUTH,
     **REDIS_CONNECTION,
