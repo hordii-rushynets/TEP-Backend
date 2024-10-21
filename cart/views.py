@@ -126,7 +126,14 @@ class CartItemViewSet(viewsets.ModelViewSet):
                 cached_data = cache.get(cache_key)
 
                 if cached_data:
-                    for entry in cached_data:
+                    if isinstance(cached_data, dict) and 'results' in cached_data:
+                        data_list = cached_data['results']
+                    elif isinstance(cached_data, list):
+                        data_list = cached_data
+                    else:
+                        continue
+
+                    for entry in data_list:
                         if 'product_variants' in entry:
                             for variant in entry['product_variants']:
                                 if variant['id'] == product_variant.id:

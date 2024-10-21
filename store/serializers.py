@@ -372,7 +372,13 @@ def update_cache_is_favorite_status(request: Request, product: Product, is_favor
         for cache_key in cache_keys_data:
             cached_data = cache.get(cache_key)
             if cached_data:
-                for entry in cached_data:
+                if isinstance(cached_data, dict) and 'results' in cached_data:
+                    data_list = cached_data['results']
+                elif isinstance(cached_data, list):
+                    data_list = cached_data
+                else:
+                    continue
+                for entry in data_list:
                     if entry['id'] == product.id:
                         entry['is_favorite'] = is_favorite_status
 
