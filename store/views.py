@@ -27,6 +27,7 @@ from .serializers import (
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from .until import get_auth_date
+from .pagination import CustomPagination
 
 from cart.models import CartItem, Cart
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
@@ -60,6 +61,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = ProductFilter
     ordering_fields = ['number_of_views', 'number_of_add_to_cart', 'last_modified']
     ordering = ['-number_of_views', '-number_of_add_to_cart']
+    cache_timeout = 3600
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         """Counts how many times an item has been added to the cart."""
@@ -76,18 +79,27 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         cache_data = cache.get(cache_key)
 
         if cache_data is None:
-            serializer = self.get_serializer(self.filter_queryset(self.get_queryset()), many=True)
-            cache.set(cache_key, serializer.data, timeout=3600)
+            queryset = self.filter_queryset(self.get_queryset())
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                paginated_response = self.get_paginated_response(serializer.data)
+                cache.set(cache_key, paginated_response.data, timeout=self.cache_timeout)
+                return paginated_response
+
+            serializer = self.get_serializer(queryset, many=True)
+            cache.set(cache_key, serializer.data, timeout=self.cache_timeout)
             return Response(serializer.data)
 
         cache_keys_data = cache.get(cache_key_to_url)
         if cache_keys_data is None:
             keys = set(cache_key)
-            cache.set(cache_key_to_url, keys, timeout=3600)
+            cache.set(cache_key_to_url, keys, timeout=self.cache_timeout)
         else:
             keys = set(cache_keys_data)
             keys.add(cache_key)
-            cache.set(cache_key_to_url, keys, timeout=3600)
+            cache.set(cache_key_to_url, keys, timeout=self.cache_timeout)
 
         return Response(cache_data)
 
