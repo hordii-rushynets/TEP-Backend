@@ -21,9 +21,10 @@ services:
       - ./uploads:/var/uploads
     ports:
       - "8000:8000"
+      - "5678:5678"
     depends_on:
-      - db
       - redis
+      - db
     links:
       - redis:redis
     env_file:
@@ -45,8 +46,6 @@ services:
               sleep 3 &&
               celery -A backend worker -E -B -ldebug
               "
-    networks:
-      - db-network
 
   redis:
     image: redis

@@ -224,6 +224,7 @@ REDIS_CONNECTION_STRING = '{protocol}://{auth}{host}:{port}/%s{query}'.format(
     **REDIS_CONNECTION,
     query=REDIS_CONNECTION_QUERY,
 )
+print('REDIS_CONNECTION_STRING:', REDIS_CONNECTION_STRING)
 
 CELERY_TIMEZONE = "Europe/Kiev"
 CELERY_TASK_TRACK_STARTED = True
