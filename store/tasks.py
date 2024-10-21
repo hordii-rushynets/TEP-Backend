@@ -1,9 +1,13 @@
+import os
+from urllib.parse import urlparse
+
 import requests
 from celery import shared_task
-from .models import Product, ProductVariant, Size, ProductVariantInfo, ProductImage, Filter, FilterField, ProductVariantImage, Color, Category
 from django.core.files.base import ContentFile
-from urllib.parse import urlparse
-import os
+
+from .models import (Category, Color, Filter, FilterField, Material, Product,
+                     ProductImage, ProductVariant, ProductVariantImage,
+                     ProductVariantInfo, Size)
 
 
 def get_size(group_offer: dict) -> Size:
@@ -113,6 +117,22 @@ def get_category_by_slug(slug, categories):
             return category.get('created_category')
     return None
 
+def create_materials(materials: list) -> list:
+    result_materials = {}
+
+    for material in materials:
+        created_material, _ = Material.objects.get_or_create(slug=material.get('guid'))
+        created_material.title_uk = material.get('name_ua')
+        created_material.title_rn = material.get('name_en')
+        created_material.title_ru = material.get('name_ru')
+
+        created_material.save()
+
+        result_materials[material.get('guid')] = created_material
+
+    return materials
+
+
 def create_product_variant_images(images: list, variant: ProductVariant):
      i = 0
      for image in images:
@@ -145,6 +165,7 @@ def import_data_task(data):
     print(data.get('filters'))
     filters = create_filters(data.get('filters'))
     categories = create_categories(data.get('categories'))
+    materials = create_materials(data.get('components'))
     create_colors(data.get('colors'))
 
     offers = data.get('offers', [])
@@ -222,6 +243,10 @@ def import_data_task(data):
                 for filter_field in filter_fields:
                     result = next((value for value in filter.get('values') if value['guid'] == filter_field), None)
                     variant.filter_field.add(result['filter_field'])
+
+            for material in group_offer.get('components'):
+                created_material = materials.get(material)
+                variant.materials.add(created_material)
 
             variant.save()
             images = group_offer.get('images') if group_offer.get('images') else []
