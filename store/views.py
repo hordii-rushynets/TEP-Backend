@@ -76,7 +76,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         cache_data = cache.get(cache_key)
 
         if cache_data is None:
-            serializer = self.get_serializer(self.get_queryset(), many=True)
+            serializer = self.get_serializer(self.filter_queryset(self.get_queryset()), many=True)
             cache.set(cache_key, serializer.data, timeout=3600)
             return Response(serializer.data)
 
