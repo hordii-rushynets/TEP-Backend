@@ -130,7 +130,7 @@ def create_materials(materials: list) -> list:
 
         result_materials[material.get('guid')] = created_material
 
-    return materials
+    return result_materials
 
 
 def create_product_variant_images(images: list, variant: ProductVariant):
@@ -246,7 +246,7 @@ def import_data_task(data):
 
             for material in group_offer.get('components'):
                 created_material = materials.get(material)
-                variant.materials.add(created_material)
+                if created_material: variant.materials.add(created_material)
 
             variant.save()
             images = group_offer.get('images') if group_offer.get('images') else []
