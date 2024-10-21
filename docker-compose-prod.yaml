@@ -59,6 +59,8 @@ services:
     env_file:
       - .env
     command: redis-server /usr/local/etc/redis/redis.conf --requirepass "${REDIS_PASSWORD}"
+    networks:
+      - db-network
 
   db:
     image: bitnami/pgpool:4
