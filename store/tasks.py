@@ -260,6 +260,7 @@ def import_data_task(data):
 save_queryset_key = 'product_queryset_key'
 
 
+@shared_task
 def save_queryset():
     queryset = Product.objects.all()
 
@@ -278,5 +279,4 @@ def get_queryset_from_cache():
         queryset = Product.objects.filter(id__in=ids)
         return queryset
     else:
-        # Якщо кеш порожній
         return Product.objects.none()
