@@ -12,7 +12,6 @@ from .models import (Category, Color, Filter, FilterField, Material, Product,
                      ProductVariantInfo, Size)
 
 
-
 def get_size(group_offer: dict) -> Size:
     size, _ = Size.objects.get_or_create(
         slug=group_offer.get('size_en').replace(' ', ''),
@@ -22,6 +21,7 @@ def get_size(group_offer: dict) -> Size:
     )
 
     return size
+
 
 def add_product_variant_info(group_offer: dict, product_variant: ProductVariant):
     ProductVariantInfo.objects.get_or_create(
@@ -263,20 +263,4 @@ save_queryset_key = 'product_queryset_key'
 @shared_task
 def save_queryset():
     queryset = Product.objects.all()
-
-    ids = list(queryset.values_list('id', flat=True))
-
-    cache.set(save_queryset_key, ids, timeout=10800)
-
-    return ids
-
-
-def get_queryset_from_cache():
-
-    ids = cache.get(save_queryset_key)
-
-    if ids is not None:
-        queryset = Product.objects.filter(id__in=ids)
-        return queryset
-    else:
-        return Product.objects.none()
+    cache.set(save_queryset_key, queryset, timeout=10800)

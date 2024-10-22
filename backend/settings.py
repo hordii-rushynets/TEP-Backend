@@ -312,13 +312,6 @@ CACHES = {
     }
 }
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-import os
-from pathlib import Path
-
-# Додаємо шлях до директорії для зберігання логів
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOGGING = {
     'version': 1,

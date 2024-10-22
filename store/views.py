@@ -26,7 +26,7 @@ from .serializers import (
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from .until import get_auth_date
-from .tasks import get_queryset_from_cache
+from .tasks import save_queryset_key
 
 from cart.models import CartItem, Cart
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
@@ -71,7 +71,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return Product.objects.filter(id__in=product).annotate(
                 number_of_add_to_cart=Count('product_variants__cart_item'))
 
-        return get_queryset_from_cache().annotate(
+        return QuerySet(cache.get(save_queryset_key)).annotate(
                 number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
