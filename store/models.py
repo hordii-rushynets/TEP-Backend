@@ -1,13 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
+from django.db.models import Avg
 
 from common.models import TitleSlug
 from tep_user.models import TEPUser
-from django.utils import timezone
-
-from django.db.models import Avg
-from django.core.validators import FileExtensionValidator
 
 from ckeditor.fields import RichTextField
 

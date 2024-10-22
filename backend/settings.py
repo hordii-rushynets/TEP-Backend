@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 from enum import IntEnum
 from corsheaders.defaults import default_headers
+from celery.schedules import crontab
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -346,3 +347,9 @@ CACHES = {
     }
 }
 
+CELERY_BEAT_SCHEDULE = {
+    'save_queryset_every_3_hours': {
+        'task': 'store.tasks.save_queryset',
+        'schedule': crontab(minute=0, hour='*/3'),  # Кожні 3 години
+    },
+}

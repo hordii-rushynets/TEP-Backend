@@ -15,7 +15,8 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from transliterate import translit
-from .tasks import import_data_task
+from .tasks import import_data_task, save_queryset_key
+
 from .models import (Category, Product, Size, Color, Material, ProductVariant,
                      ProductVariantInfo, Filter, FavoriteProduct, Feedback, FeedbackVote, InspirationImage)
 from .serializers import (
@@ -63,9 +64,11 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Counts how many times an item has been added to the cart."""
-        return Product.objects.annotate(
-            number_of_add_to_cart=Count('product_variants__cart_item')
-        )
+        if self.request.user.is_authenticated:
+            return Product.objects.annotate(
+                number_of_add_to_cart=Count('product_variants__cart_item')
+            )
+        return cache.get(save_queryset_key)
 
     def list(self, request, *args, **kwargs):
         user_data = get_auth_date(request)
