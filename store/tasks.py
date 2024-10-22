@@ -1,13 +1,16 @@
 import os
-from urllib.parse import urlparse
-
 import requests
 from celery import shared_task
+
 from django.core.files.base import ContentFile
+from django.core.cache import cache
+
+from urllib.parse import urlparse
 
 from .models import (Category, Color, Filter, FilterField, Material, Product,
                      ProductImage, ProductVariant, ProductVariantImage,
                      ProductVariantInfo, Size)
+
 
 
 def get_size(group_offer: dict) -> Size:
@@ -252,3 +255,28 @@ def import_data_task(data):
             images = group_offer.get('images') if group_offer.get('images') else []
             create_product_variant_images(images, variant)
             add_product_variant_info(group_offer, variant)
+
+
+save_queryset_key = 'product_queryset_key'
+
+
+def save_queryset():
+    queryset = Product.objects.all()
+
+    ids = list(queryset.values_list('id', flat=True))
+
+    cache.set(save_queryset_key, ids, timeout=10800)
+
+    return ids
+
+
+def get_queryset_from_cache():
+
+    ids = cache.get(save_queryset_key)
+
+    if ids is not None:
+        queryset = Product.objects.filter(id__in=ids)
+        return queryset
+    else:
+        # Якщо кеш порожній
+        return Product.objects.none()

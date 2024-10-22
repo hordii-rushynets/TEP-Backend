@@ -11,7 +11,6 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveMode
 from django.core.cache import cache
 from django.db.models import QuerySet, Count
 from django.shortcuts import get_object_or_404
-from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from transliterate import translit
@@ -27,6 +26,7 @@ from .serializers import (
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from .until import get_auth_date
+from .tasks import get_queryset_from_cache
 
 from cart.models import CartItem, Cart
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
@@ -71,7 +71,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return Product.objects.filter(id__in=product).annotate(
                 number_of_add_to_cart=Count('product_variants__cart_item'))
 
-        return Product.objects.annotate(
+        return get_queryset_from_cache().annotate(
                 number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
