@@ -63,8 +63,16 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Counts how many times an item has been added to the cart."""
+        limit = self.request.query_params.get('limit')
+
+        if limit and limit.isdigit():
+            limit = int(limit)
+            product = Product.objects.all()[:limit].values_list('id', flat=True)
+            return Product.objects.filter(id__in=product).annotate(
+                number_of_add_to_cart=Count('product_variants__cart_item'))
+
         return Product.objects.annotate(
-            number_of_add_to_cart=Count('product_variants__cart_item')
+                number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
     def list(self, request, *args, **kwargs):
