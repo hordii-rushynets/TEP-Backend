@@ -54,9 +54,9 @@ services:
       - .:/app
     command: >
       bash -c "
-              sleep 3 &&
-              celery -A backend worker -E -B -ldebug
-              "
+          sleep 3 &&
+          celery -A backend worker -E -B -l debug &&
+          celery -A backend beat -s -l debug"
 
   redis:
     image: redis

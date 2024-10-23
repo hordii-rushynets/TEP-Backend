@@ -1,9 +1,11 @@
 import os
-from urllib.parse import urlparse
-
 import requests
 from celery import shared_task
+
 from django.core.files.base import ContentFile
+from django.core.cache import cache
+
+from urllib.parse import urlparse
 
 from .models import (Category, Color, Filter, FilterField, Material, Product,
                      ProductImage, ProductVariant, ProductVariantImage,
@@ -19,6 +21,7 @@ def get_size(group_offer: dict) -> Size:
     )
 
     return size
+
 
 def add_product_variant_info(group_offer: dict, product_variant: ProductVariant):
     ProductVariantInfo.objects.get_or_create(
@@ -252,3 +255,12 @@ def import_data_task(data):
             images = group_offer.get('images') if group_offer.get('images') else []
             create_product_variant_images(images, variant)
             add_product_variant_info(group_offer, variant)
+
+
+save_queryset_key = 'product_queryset_key'
+
+
+@shared_task
+def save_queryset():
+    queryset = Product.objects.all()
+    cache.set(save_queryset_key, queryset, timeout=10800)

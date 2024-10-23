@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 from enum import IntEnum
 from corsheaders.defaults import default_headers
+from celery.schedules import crontab
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -98,7 +100,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'backend.middleware.GlobalLoggingMiddleware',
     'django.middleware.common.CommonMiddleware'
 ]
 
@@ -298,51 +299,6 @@ META_PIXEL_ID = os.getenv('META_PIXEL_ID')
 META_PIXEL_ACCESS_TOKEN = os.getenv('META_PIXEL_ACCESS_TOKEN')
 META_GRAPH_API = os.getenv('META_GRAPH_API')
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} \n {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} - {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'django.request': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'backend': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
-
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 
 
@@ -356,3 +312,45 @@ CACHES = {
     }
 }
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+CELERY_BEAT_SCHEDULE = {
+    'save_queryset_every_3_hours': {
+        'task': 'store.tasks.save_queryset',
+        'schedule': crontab(minute=0, hour='*/3'),
+    },
+}

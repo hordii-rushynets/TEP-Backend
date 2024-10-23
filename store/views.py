@@ -11,7 +11,6 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveMode
 from django.core.cache import cache
 from django.db.models import QuerySet, Count
 from django.shortcuts import get_object_or_404
-from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from transliterate import translit
@@ -27,6 +26,7 @@ from .serializers import (
 )
 from .filters import ProductFilter, CategoryFilter, ProductVariantFilter, FeedbackFilter, CompareProductFilter
 from .until import get_auth_date
+from .tasks import save_queryset_key
 from .pagination import CustomPagination
 
 from cart.models import CartItem, Cart
@@ -66,8 +66,16 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Counts how many times an item has been added to the cart."""
-        return Product.objects.annotate(
-            number_of_add_to_cart=Count('product_variants__cart_item')
+        limit = self.request.query_params.get('limit')
+
+        if limit and limit.isdigit():
+            limit = int(limit)
+            product = Product.objects.all()[:limit].values_list('id', flat=True)
+            return Product.objects.filter(id__in=product).annotate(
+                number_of_add_to_cart=Count('product_variants__cart_item'))
+
+        return QuerySet(cache.get(save_queryset_key)).annotate(
+                number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
     def list(self, request, *args, **kwargs):
@@ -326,44 +334,56 @@ class CompareProductViewSet(ListModelMixin, viewsets.GenericViewSet):
 
 
 class RecommendationView(APIView):
-
-    def get_similar_products_by_slug(self, product_slug=None):
-        if product_slug is not None:
-            try:
-                product = get_object_or_404(Product, slug=product_slug)
-                category = product.category
-                similar_products = Product.objects.filter(category=category).exclude(slug=product.slug)
-            except Http404:
-                similar_products = Product.objects.all()
-        else:
-            similar_products = Product.objects.all()
-        return similar_products
-
     def get(self, request, product_slug=None):
-        try:
-            if request.user.is_authenticated:
-                cart = Cart.objects.filter(tep_user=request.user).first()
-            else:
-                ip_address = IPControlService(request, RedisDatabases.IP_CONTROL).get_ip()
-                cart = Cart.objects.filter(ip_address=ip_address).first()
+        """Handles the GET request."""
+        queryset = self.get_queryset(request, product_slug)
+        serializer = ProductSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-            cart_items = CartItem.objects.filter(cart=cart)
-            cart_product_variants = cart_items.values_list('product_variants', flat=True)
+    def get_queryset(self, request, product_slug=None):
+        """Generates a queryset of similar products."""
+        cart = self.get_cart(request)
+        cart_items = self.get_cart_items(cart)
 
-            similar_products = Product.objects.filter(
-                product_variants__in=cart_product_variants
-            ).distinct()
-            similar_products = similar_products.exclude(
-                title__in=[item.product_variants.product.title for item in cart_items])
+        similar_products = self.get_similar_products_by_cart(cart_items)
 
-            if not similar_products.exists():
-                similar_products = self.get_similar_products_by_slug(product_slug)
-
-        except Cart.DoesNotExist:
+        if not similar_products.exists():
             similar_products = self.get_similar_products_by_slug(product_slug)
 
-        serializer = ProductSerializer(similar_products, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return self.apply_limit(similar_products, request)
+
+    def get_cart(self, request):
+        """Retrieves the user's cart or by IP address."""
+        if request.user.is_authenticated:
+            return Cart.objects.filter(tep_user=request.user).first()
+        else:
+            ip_address = IPControlService(request, RedisDatabases.IP_CONTROL).get_ip()
+            return Cart.objects.filter(ip_address=ip_address).first()
+
+    def get_cart_items(self, cart):
+        """Retrieves all items from the cart."""
+        return CartItem.objects.filter(cart=cart) if cart else CartItem.objects.none()
+
+    def get_similar_products_by_cart(self, cart_items):
+        """Retrieves products similar to those in the cart."""
+        cart_product_variants = cart_items.values_list('product_variants', flat=True)
+        similar_products = Product.objects.filter(product_variants__in=cart_product_variants).distinct()
+        excluded_titles = cart_items.values_list('product_variants__product__title', flat=True)
+        return similar_products.exclude(title__in=excluded_titles)
+
+    def get_similar_products_by_slug(self, product_slug=None):
+        """Retrieves products similar to the current one based on its category."""
+        if product_slug:
+            product = get_object_or_404(Product, slug=product_slug)
+            return Product.objects.filter(category=product.category).exclude(slug=product.slug)
+        return Product.objects.all()
+
+    def apply_limit(self, queryset, request):
+        """Applies a limit on the number of products."""
+        limit = request.query_params.get('limit')
+        if limit and limit.isdigit():
+            return queryset[:int(limit)]
+        return queryset
 
 
 class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):
