@@ -383,23 +383,29 @@ class RecommendationView(APIView):
     def get_similar_products_by_cart(self, cart_items):
         """Retrieves products similar to those in the cart."""
         cart_product_variants = cart_items.values_list('product_variants', flat=True)
-        similar_products = Product.objects.filter(product_variants__in=cart_product_variants).distinct()
+        limit = self.request.query_params.get('limit')
+        if limit and limit.isdigit():
+            similar_products = Product.objects.filter(product_variants__in=cart_product_variants).distinct()[
+                               :int(limit)]
+        else:
+            similar_products = Product.objects.filter(product_variants__in=cart_product_variants).distinct()
         excluded_titles = cart_items.values_list('product_variants__product__title', flat=True)
         return similar_products.exclude(title__in=excluded_titles)
 
     def get_similar_products_by_slug(self, product_slug=None):
         """Retrieves products similar to the current one based on its category."""
+        limit = self.request.query_params.get('limit')
+
+        if limit and limit.isdigit():
+            limit = int(limit)
+            if product_slug:
+                product = get_object_or_404(Product, slug=product_slug)
+                return Product.objects.filter(category=product.category).exclude(slug=product.slug)[:int(limit)]
+            return Product.objects.all()[:int(limit)]
         if product_slug:
             product = get_object_or_404(Product, slug=product_slug)
             return Product.objects.filter(category=product.category).exclude(slug=product.slug)
         return Product.objects.all()
-
-    def apply_limit(self, queryset, request):
-        """Applies a limit on the number of products."""
-        limit = request.query_params.get('limit')
-        if limit and limit.isdigit():
-            return queryset[:int(limit)]
-        return queryset
 
 
 class InspirationImageViewSet(viewsets.ReadOnlyModelViewSet):

@@ -1,6 +1,10 @@
+import logging
+
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.db.models import Q
 from django.shortcuts import render
+from django.core.cache import cache
+
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -11,6 +15,7 @@ from post.services import LiqPayService
 from post.services.abstract_delivery_service import AbstractDeliveryService, create_order
 from tep_user.authentication import IgnoreInvalidTokenAuthentication
 from tep_user.services import IPControlService, RedisDatabases
+from store.until import get_auth_date
 
 from .models import Order
 from .serializers import OrderSerializer
@@ -128,9 +133,17 @@ class GetWarehousesView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, service_type):
-        service: AbstractDeliveryService = get_delivery_service(service_type)
-        response = service.get_warehouses(request.data)
-        return Response(response, status=status.HTTP_200_OK)
+        user_identifier = get_auth_date(request)
+        cache_key = f'user-{user_identifier}-service-{service_type}-params-{"-".join(request.data.values())}'
+
+        cache_data = cache.get(cache_key)
+        if cache_data is None:
+            service: AbstractDeliveryService = get_delivery_service(service_type)
+            response = service.get_warehouses(request.data)
+            cache.set(cache_key, response, timeout=10800)
+            return Response(response, status=status.HTTP_200_OK)
+
+        return Response(cache_data, status=status.HTTP_200_OK)
 
 
 class TrackParcelView(APIView):
