@@ -74,7 +74,18 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return Product.objects.filter(id__in=product).annotate(
                 number_of_add_to_cart=Count('product_variants__cart_item'))
 
-        return QuerySet(cache.get(save_queryset_key)).annotate(
+        cached_queryset = cache.get(save_queryset_key)
+
+        if cached_queryset:
+            return cached_queryset.annotate(
+                number_of_add_to_cart=Count('product_variants__cart_item')
+            )
+
+        queryset = Product.objects.all()
+
+        cache.set(save_queryset_key, queryset, timeout=self.cache_timeout*3)
+
+        return queryset.annotate(
                 number_of_add_to_cart=Count('product_variants__cart_item')
         )
 
