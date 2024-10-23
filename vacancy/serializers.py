@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import (Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer,
-                     CooperationOfferFile)
+from .models import (Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy,
+                     ResponseToVacancyFile, Cooperation)
 
 
 class ScopeOfWorkSerializer(serializers.ModelSerializer):
@@ -63,7 +63,7 @@ class FullDataSerializer(serializers.Serializer):
         fields = ['scope_of_work', 'type_of_work', 'type_of_employment', 'tag', 'address']
 
 
-class CooperationOfferSerializer(serializers.ModelSerializer):
+class ResponseToVacancySerializer(serializers.ModelSerializer):
     """Cooperation Offer Serializer"""
     files = serializers.ListField(
         child=serializers.FileField(),
@@ -71,7 +71,7 @@ class CooperationOfferSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = CooperationOffer
+        model = ResponseToVacancy
         fields = ['name', 'email', 'phone', 'message', 'vacancy', 'files']
         extra_kwargs = {
             'vacancy': {'required': False}
@@ -81,7 +81,7 @@ class CooperationOfferSerializer(serializers.ModelSerializer):
         vacancy = data.get('vacancy')
         email = data.get('email')
 
-        if vacancy and CooperationOffer.objects.filter(vacancy=vacancy, email=email).exists():
+        if vacancy and ResponseToVacancy.objects.filter(vacancy=vacancy, email=email).exists():
             raise serializers.ValidationError("You have already applied for this vacancy.")
 
         return data
@@ -91,6 +91,13 @@ class CooperationOfferSerializer(serializers.ModelSerializer):
         cooperation_offer = super().create(validated_data)
 
         for file_data in files_data:
-            CooperationOfferFile.objects.create(cooperation_offer=cooperation_offer, file=file_data)
+            ResponseToVacancyFile.objects.create(cooperation_offer=cooperation_offer, file=file_data)
 
         return cooperation_offer
+
+
+class CooperationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cooperation
+        fields = ['name', 'phone', 'email', 'topic', 'message']
+
