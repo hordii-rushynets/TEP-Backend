@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import (Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer,
-                     CooperationOfferFile)
+from .models import (Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy,
+                     ResponseToVacancyFile, Cooperation)
 
 
 class VacancyAdmin(admin.ModelAdmin):
@@ -36,15 +36,25 @@ class AddressAdmin(admin.ModelAdmin):
     exclude = ('city', 'region')
 
 
-class CooperationOfferFileInline(admin.TabularInline):
-    model = CooperationOfferFile
+class ResponseToVacancyFileInline(admin.TabularInline):
+    model = ResponseToVacancyFile
     extra = 1
 
 
-class CooperationOfferAdmin(admin.ModelAdmin):
+class ResponseToVacancyAdmin(admin.ModelAdmin):
     list_display = ('vacancy', 'name', 'email', 'phone')
     search_fields = ('vacancy__title_uk', 'vacancy__title_en', 'vacancy__title_ru')
-    inlines = [CooperationOfferFileInline]
+    inlines = [ResponseToVacancyFileInline]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class CooperationAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'phone', 'email', 'topic', 'message')
 
     def has_add_permission(self, request):
         return False
@@ -59,6 +69,7 @@ admin.site.register(TypeOfEmployment, TypeOfEmploymentAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Vacancy, VacancyAdmin)
-admin.site.register(CooperationOffer, CooperationOfferAdmin)
+admin.site.register(ResponseToVacancy, ResponseToVacancyAdmin)
+admin.site.register(Cooperation, CooperationAdmin)
 
 

@@ -1,7 +1,8 @@
 from rest_framework import viewsets, mixins
-from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, CooperationOffer
+from .models import Vacancy, ScopeOfWork, TypeOfWork, TypeOfEmployment, Tag, Address, ResponseToVacancy, Cooperation
 from .serializers import (VacancySerializer, ScopeOfWorkSerializer, TypeOfWorkSerializer, TypeOfEmploymentSerializer,
-                          TagSerializer, AddressSerializer, FullDataSerializer, CooperationOfferSerializer)
+                          TagSerializer, AddressSerializer, FullDataSerializer, ResponseToVacancySerializer,
+                          CooperationSerializer)
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import VacancyFilter
@@ -88,11 +89,11 @@ class FullDataViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CooperationOfferViewSet(mixins.CreateModelMixin,
-                              viewsets.GenericViewSet):
+class ResponseToVacancyViewSet(mixins.CreateModelMixin,
+                               viewsets.GenericViewSet):
     """Cooperation Offer ViewSet"""
-    queryset = CooperationOffer.objects.all()
-    serializer_class = CooperationOfferSerializer
+    queryset = ResponseToVacancy.objects.all()
+    serializer_class = ResponseToVacancySerializer
     permission_classes = [AllowAny]
     lookup_field = 'id'
 
@@ -100,3 +101,16 @@ class CooperationOfferViewSet(mixins.CreateModelMixin,
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
+
+
+class CooperationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = Cooperation.objects.all()
+    serializer_class = CooperationSerializer
+    pagination_class = [AllowAny]
+    lookup_field = 'id'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+

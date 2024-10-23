@@ -60,7 +60,7 @@ class Vacancy(models.Model):
         return str(self.title)
 
 
-class CooperationOffer(models.Model):
+class ResponseToVacancy(models.Model):
     """Cooperation Offer Model"""
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='response_to_a_vacancy', null=True)
     name = models.CharField(max_length=200)
@@ -72,8 +72,19 @@ class CooperationOffer(models.Model):
         return f'{self.name}'
 
 
-class CooperationOfferFile(models.Model):
+class ResponseToVacancyFile(models.Model):
     """Cooperation Offer file Model"""
     file = models.FileField(upload_to='cooperation_offer/files/', blank=True)
-    cooperation_offer = models.ForeignKey(CooperationOffer, on_delete=models.CASCADE,
+    cooperation_offer = models.ForeignKey(ResponseToVacancy, on_delete=models.CASCADE,
                                           related_name='cooperation_offer_files', null=True)
+
+
+class Cooperation(models.Model):
+    name = models.CharField(max_length=200)
+    phone = models.CharField(max_length=50)
+    email = models.EmailField()
+    topic = models.CharField(max_length=200)
+    message = RichTextField(max_length=30000, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.name} - {self.topic}'
