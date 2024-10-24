@@ -366,7 +366,7 @@ class RecommendationView(APIView):
         if not similar_products.exists():
             similar_products = self.get_similar_products_by_slug(product_slug)
 
-        return self.apply_limit(similar_products, request)
+        return similar_products
 
     def get_cart(self, request):
         """Retrieves the user's cart or by IP address."""
@@ -384,13 +384,14 @@ class RecommendationView(APIView):
         """Retrieves products similar to those in the cart."""
         cart_product_variants = cart_items.values_list('product_variants', flat=True)
         limit = self.request.query_params.get('limit')
-        if limit and limit.isdigit():
-            similar_products = Product.objects.filter(product_variants__in=cart_product_variants).distinct()[
-                               :int(limit)]
-        else:
-            similar_products = Product.objects.filter(product_variants__in=cart_product_variants).distinct()
         excluded_titles = cart_items.values_list('product_variants__product__title', flat=True)
-        return similar_products.exclude(title__in=excluded_titles)
+
+        if limit and limit.isdigit():
+            return Product.objects.filter(product_variants__in=cart_product_variants,
+                                          title__in=excluded_titles).distinct()[:int(limit)]
+        else:
+            return Product.objects.filter(product_variants__in=cart_product_variants,
+                                          title__in=excluded_titles).distinct()
 
     def get_similar_products_by_slug(self, product_slug=None):
         """Retrieves products similar to the current one based on its category."""
